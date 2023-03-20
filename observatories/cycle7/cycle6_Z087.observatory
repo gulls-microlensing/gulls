@@ -1,0 +1,54 @@
+#Date 10/10/2011
+
+#INSTRUMENT - WFIRST IDRM ImC
+#FILTER - W169
+
+#Observatory data
+
+#Observatory name
+NAME		NRO_W
+
+LATITUDE	99.99
+LONGITUDE	99.99
+SPACE		1
+ORBIT		2
+
+#Altitude above MSL 
+ALTITUDE	99.99	
+
+#Telescope data
+PRIMARY		2.4
+BLOCKAGE	0.3
+
+#Available filters
+FILTER		0
+
+#Camera data
+PIXELSIZE	0.11
+NPIX_X		150000
+NPIX_Y		150000
+
+READ_OHEAD	5.0
+NFIELDS		1
+
+REFERENCE_TEXP	85
+REFERENCE_NSTACK	1
+PHOTOMETRY	-1
+
+EXTCOEFF	0
+SKY_BACKGROUND	999
+
+#Pointing 
+
+#Filename specifying field centres
+FIELDCENTRES	nro/nro.centres
+
+#Filename specifying observing sequence
+OBSERVATION_SEQUENCE	cycle6/c6_Z087_47s.sequence
+
+#Filename specifying detector parameters
+DETECTOR	cycle6/cycle6_Z087.detector
+THROUGHPUT	cycle6/cycle6_Z087.throughput
+
+#Modifiers
+WEATHER_PROFILE	WFIRST6-72.weather

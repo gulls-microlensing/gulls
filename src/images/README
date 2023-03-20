@@ -1,0 +1,5 @@
+Contents:
+
+- precompute_psf.cpp : generate a gulls PSF from a text file
+-- can extract the text file psf from a fits file
+- txt2fits.cpp : convert txt grid to a fits file

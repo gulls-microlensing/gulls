@@ -1,0 +1,67 @@
+HEADERS
+
+aperature.h - makes some square aperatures (no corners), a circular one, and also a function to expand aperature size by one pixel. Non working guassian aperature?
+
+binaryMag.h - finding magnification for binary lens? more of an actual header.
+
+cd.h - not entirely sure, something to do with complex numbers. what does cd stand for?
+
+constants.h - list of relevant constants, some numerical some astronomical
+
+coords.h - class for transforming galactic and equitorial coordinates. will be useful at some point
+
+croin.h - not sure, might have something to do with a reference frame transform? if a function dependent on  projected separations 
+
+dcdw.h - something to do with caustic topology. Not sure again, but croin.h depends on it. 
+
+ephem.h - class for calculating ephem of solar system bodies
+
+fisherinversion.h - true header of a function
+
+fsData.h - gph is an approximation, not sure which though. Some threshold needs to be met to apply it though. Poxel? Polar coordinate grid  pixel, what ever that means
+
+fs.h - finite source stuff again. contains information for a single point of a light curve? So each light curve is composed of a series of these classes? Need to look more into ray shooting maodeling of events
+
+hz.h - looks like calculations for habitability, or habitiable zone, look into Ravi kumar Kopparapu Feb 25 2012
+
+image.h - looks like Matthew's code for contructing simulated images. Will be interesting to look at. also photometry (some) photometry
+
+integerPowers.h - short cut functions for raising to small integer powers
+
+lens_base.h  - some essential lens stuff, positions of masses and images?
+
+lens_binary - extension of lens_base class, with more specifics and some polynomial stuff for solving of image locations?
+
+parallax.h - framework for figuring microlensing parallax stuff, with checks and flags
+
+pm.h - definitely not proper motion stuff, but looks like polynomial stuff
+
+psf.h - easy enough, just psf stuff that meshes well with image.h. Generates and and does some other fancy stuff
+
+random.h - random number generation functions
+
+rbf.h - radial basis functions, derivatives and integrals. all rbf's are symettric about origin or center is all
+
+singleLens.h - simple single lens model
+
+split.h - function for splitting text, perl style
+
+src_base.h - class for source stars, also has some stuff to do with limb-darkening
+
+src_cld.h - source class with circular limb darkening 
+
+starlist.h - just a strucutre/class for storing lists of stars, not sure what 'free' means
+
+VBBinaryLensingLibrary.h - yup
+
+witt
+
+
+
+
+
+area.f - looks like fortran code for computing the area of images during lensing event. 
+
+astroFns.c - library of common astronomy functions, e.g. calculating LST, sun coordinates, etc. Not worth reading through at this point, but good to know about.
+
+backupGenerator.cpp - 'A slower, but potentially more robust lightcurve generator for use when the main generator fails'. src_cld is circularly limb darkened source class, in /headers/. 

@@ -1,0 +1,23 @@
+#Observing sequence for the 10 field survey
+#
+#WFIRST W149 sequence
+
+#Key:
+#Nstack +ve, Texp +ve  (Image being taken by this instrument)
+#Nstack -ve, Texp +ve  (Image being taken by other instrument)
+#Nstack -ve, Texp -ve  (No image is being taken, but something else is taking 
+#	     	        time e.g. a slew or readout)
+
+#Additional time is inserted between images of stacks by exigere for readout 
+#and dithering. 
+#The readout time for this can be set in the .observatory observatory files.
+#All other readout, slewing, filter changes etc must be specified here.
+
+#Field	Nstack	Texp	Sum     Description
+
+#F087 Set
+#Field	Nstack	Texp	Sum     Description
+
+#W149/W169 set
+0	1	50	2495	W149 exposure
+0	-1	10000	2410	Other fields

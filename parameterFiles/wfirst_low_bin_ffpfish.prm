@@ -1,0 +1,86 @@
+#parameters for wfirst only free floating planets rates
+#TTD:
+#change sources, lens, fields lists
+#weather? could maybe just multiple results by 6
+#number of subruns
+#planets, what range do we want? Mars to 10M_J? Maybe lower
+#do we want to keep parallax on?
+#need newest wfirst orbit, from Matthew
+
+RUN_NAME=wfirst_low_bin_ffpfish
+OUTPUT_DIR=/tmp/johnson.7080/
+FINAL_DIR=/home/stingray/johnson.7080/gulls/gulls_sj/data/
+#FINAL_DIR=/home/johnson.7080/gulls_sj/data/
+#path relative to GULLS_BASE_DIR
+EXECUTABLE=sgullsffpfish.x
+
+OBSERVATORY_DIR=observatories/
+OBSERVATORY_LIST=wfirst_ffp.list
+
+WEATHER_PROFILE_DIR=weather/
+
+STARFIELD_DIR=starfields/
+STARFIELD_LIST=nro.starlist
+
+SOURCE_DIR=sources/
+SOURCE_LIST=nro.sources
+SOURCE_COLOURS=0
+
+LENS_DIR=lenses/
+LENS_LIST=nro.lenses
+LENS_COLOURS=0
+
+
+PLANET_DIR=planets/exffp/
+PLANET_ROOT=exffp.planets.
+
+#???
+RATES_FILE=rates/bH.pmcorrected.rates
+
+#does nothing??
+PRINCIPLE_OBSERVATORY=0
+OUTPUT_LC=0.0001
+OUTPUT_IMAGES=0
+PRETTY_PICS=0
+PRETTY_PICS_DIMENSIONS=50
+OUTPUT_ONERR=0
+OUTPUT_ONDET=1
+OUTPUT_ONALL=0
+
+REPEAT_SEQUENCE=0
+IDEAL_PHOTOMETRY=-1
+PARALLAX=1
+LENS_LIGHT=0
+
+OBS_GROUPS=(0,1)
+#(0)(1)
+#ALL
+OBS_GROUP_NAMES=wfirst
+#,w149,z087
+#,all
+
+SET_RANDOM_SEED_TO_CLOCK=1
+RANDOM_SEED=1001
+
+#let's do this for six seasons, so need to update this, checked the below dates being repurposed from earlier
+SIMULATION_ZERO_TIME=2460717.000000
+SIMULATION_LENGTH=0.2136983
+NUM_SIM_DAYS=78
+#SIMULATION_ZERO_TIME=2460425.500000
+#SIMULATION_LENGTH=5.50803
+#NUM_SIM_DAYS=2010
+
+
+#check this
+SUBRUNSIZE=5000
+#20190408, ran through 20, now need to up to 40 out of 100(steps of 20 produce ~1000 jobs, unity needs to keep below 3000)
+NSUBRUNS=20
+
+MAXTIME=14000.000000
+
+NFILTERS=5
+AMIN=1.0000001
+#does this matter? How does it play in?
+U0MAX=1.0
+LARGEPSFMAG=19.0
+MIN_CHISQUARED=60

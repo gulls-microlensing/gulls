@@ -1,0 +1,37 @@
+#Instrument: WFIRST AFTA ImC
+#Band: W149
+
+#Based on WFIRST_WFI_Reference_Information_20160404.pptx
+#Not true yet...Thermal from FSWG Assessment of the Telescope Operating Temperature  Version 1 •¡¹ February 21, 2016 •¡¹ DRAFT
+
+BIAS		1000		Bias level in counts per pixel
+READOUT		12.12		Read out noise in counts per pixel (Spec)
+THERMAL		1.663		Thermal flux in counts per pixel per sec (284K)
+DARKCURRENT	0.1		Dark current in counts per pixel per sec (Spec)
+
+PIXELSCALE	0.11		Pixel size in arcsec
+PSFFWHM		0.2		PSF FWHM in arcsec
+PSFFILE		psfs/Cycle5_SCA09_W149_M2V_psf.psf
+PSFSCALE	0.0122222222	Spacing between samples of the numerical PSF
+KERNSIZE	84		PSF Kernel size
+SUBPIX		9		Number of sub pixel points used to place stars
+
+SYSTEMATIC      0.001           Systematic photometry error
+BITDEPTH	679000		Number of bits per pixel
+FULLWELL	679000		Number of electrons a pixel can hold
+SYSTEMATIC      0.001           Systematic photometry error
+GAIN		1               Inverse gain
+BLEEDING	0		No charge bleeding
+BLEEDACROSS	0		Nothing crosses columns
+
+DIAMETER	2.36		Telescope diameter in metres
+BLOCKAGE	0.3		Fractional linear blockage
+
+ZEROMAG		27.5046		Magnitude at which zeropoint is defined
+ZEROFLUX	1		Photons per second from areference source
+
+BACKGROUND	999             Background magnitude in mags per sq arcsec
+APERTURE	0.2		Aperture radius (not diameter) in arcsec CHECK
+
+PIXELSIZE	18		Pixel size in microns
+CRFLUX		0		Cosmic ray flux in hits m^-2 s^-1 CHECK

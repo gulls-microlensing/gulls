@@ -1,0 +1,37 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <strings.h>
+#include <ctype.h>
+#include <math.h>
+#ifdef __APPLE__
+    #include <mach/error.h>
+#else
+    #include <error.h>
+#endif
+#include <string.h>
+#include <assert.h>
+#include <getopt.h>
+#include <time.h>
+
+
+#include "strfns.h"
+
+#include "readParamfile.h"
+#include "buildEvent.h"
+#include "constdefs.h"
+#include "random.h"
+#include "info.h"
+#include "buildWorld.h"
+#include "timeSequencer.h"
+#include "astroFns.h"
+#include <gsl/gsl_matrix.h>
+#include "lightcurveGenerator.h"
+#include "photometry.h"
+#include "lightcurveFitter.h"
+#include "definitions.h"
+#include "readStarfields.h"
+#include "outputLightcurve.h"
+#include "readSLList.h"
+#include "readPlanets.h"
+#include "detectionCuts.h"
+#include "getPlanetvals.h"

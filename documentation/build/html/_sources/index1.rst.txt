@@ -1,0 +1,36 @@
+
+Welcome to gulls documentation!
+====================================
+
+The gulls simulator is a powerfull tool for generating gravitational microlensing events. gulls simulates large numbers of individual microlensing events involving source and lens stars that are drawn from star catalogs produced by a population synthesis Galactic model. 
+For a complete background on gulls simulator please read (Penny et al. 2013) and (Penny et al. 2019).
+
+.. raw:: html
+
+   <hr>
+
+
+Table of Content
+================
+
+.. toctree::
+   :maxdepth: 1
+   :caption: General:
+
+   basic_quickstart
+   basic_troubleshooting
+   
+.. toctree::
+   :maxdepth: 1
+   :caption: Installing gulls
+   Installation
+   
+.. toctree::
+   :maxdepth: 1
+   :caption: Running gulls
+   run_overview
+   run_simulations
+   run_input
+   run_output
+
+   

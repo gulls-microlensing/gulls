@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="C++">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Running gulls &mdash; GULLS &#39;1.0.0&#39; documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Input files" href="run_input.html" />
+    <link rel="prev" title="Overview" href="run_overview.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            GULLS
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">General:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="basic_quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_troubleshooting.html">Troubleshooting</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing gulls:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install_gulls.html">Install</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running gulls:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="run_overview.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Running gulls</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#building-the-simulator">Building the Simulator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-a-simulation">Running a Simulation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="run_input.html">Input files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="run_input.html#parameter-file">Parameter File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="run_output.html">Output files</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">GULLS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Running gulls</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/run_simulations.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="running-gulls">
+<h1>Running gulls<a class="headerlink" href="#running-gulls" title="Permalink to this heading"></a></h1>
+<p>After configuring your environment and meeting all prerequisites, follow these steps to run simulations with the GULLS Simulator.</p>
+<section id="building-the-simulator">
+<h2>Building the Simulator<a class="headerlink" href="#building-the-simulator" title="Permalink to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Open the Makefile</strong>:
+Navigate to the GULLS source directory and open the <code class="docutils literal notranslate"><span class="pre">Makefile</span></code>:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> /path/to/gulls/src/
+open Makefile
+</pre></div>
+</div>
+</li>
+<li><p><strong>Configure the Makefile</strong>:
+Edit the Makefile to set the <code class="docutils literal notranslate"><span class="pre">BASEDIR</span></code> and compiler flags such as <code class="docutils literal notranslate"><span class="pre">FFLAGS</span></code>, <code class="docutils literal notranslate"><span class="pre">CFLAGS</span></code>, and <code class="docutils literal notranslate"><span class="pre">LINKERFLAGS</span></code> to match your system's configuration.</p></li>
+<li><p><strong>Select an Executable</strong>:
+Based on your simulation needs, choose an executable from the list defined in the Makefile. For instance, to simulate single lens microlensing events, you would focus on <code class="docutils literal notranslate"><span class="pre">gullsSingle</span></code>.</p></li>
+<li><p><strong>Build the Executable</strong>:
+Compile the chosen executable by running:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>make gullsSingle
+</pre></div>
+</div>
+<p>Clean up any intermediate files if necessary:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>make clean
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<section id="running-a-simulation">
+<h2>Running a Simulation<a class="headerlink" href="#running-a-simulation" title="Permalink to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Change to the Bin Directory</strong>:
+Once the build process completes, navigate to the bin directory:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> /path/to/gulls/bin
+</pre></div>
+</div>
+</li>
+<li><p><strong>Execute the Simulator</strong>:
+Launch the GULLS simulator by running the built executable. For example:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>./gullsSingle.x
+</pre></div>
+</div>
+<p>You'll be prompted with usage guidelines. Follow these to run your simulation effectively.</p>
+</li>
+<li><p><strong>Simulation Input</strong>:
+Prepare your input parameter file (e.g., <code class="docutils literal notranslate"><span class="pre">singlelens.prm</span></code>) and specify it when running the simulator. Adjust the flags according to your needs:</p>
+<ul class="simple">
+<li><p><strong>-i</strong>: Path to the input parameter file.</p></li>
+<li><p><strong>-s</strong>: Simulation instance number, usually set to 0 for initial runs.</p></li>
+<li><p><strong>-f</strong>: Field number for the observation, if applicable.</p></li>
+<li><p><strong>-d</strong>: Debug mode, can be repeated for increased verbosity.</p></li>
+</ul>
+<p>Example command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>./gullsSingle.x -i PATH/singlelens.prm -s <span class="m">0</span> -f <span class="m">83</span> -d
+</pre></div>
+</div>
+<p>This command initiates the simulation with specified parameters and outputs data to the <code class="docutils literal notranslate"><span class="pre">OUTPUT_DIR</span></code> configured in your parameter file.</p>
+</li>
+</ol>
+<p>Congratulations! You've successfully run a simulation with the GULLS Simulator. Explore the output in your specified directory, and adjust parameters for further simulations as needed.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="run_overview.html" class="btn btn-neutral float-left" title="Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="run_input.html" class="btn btn-neutral float-right" title="Input files" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Farzaneh Zohrabi.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="C++">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Input files &mdash; GULLS &#39;1.0.0&#39; documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Output files" href="run_output.html" />
+    <link rel="prev" title="Running gulls" href="run_simulations.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            GULLS
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">General:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="basic_quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_troubleshooting.html">Troubleshooting</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing gulls:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install_gulls.html">Install</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running gulls:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="run_overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="run_simulations.html">Running gulls</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Input files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#configuration-parameters">Configuration Parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#observatories"><em>Observatories</em></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#detector">Detector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#field-centers">Field centers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#observing-sequence">Observing sequence</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#weather">Weather</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#star-catalogs"><em>Star catalogs</em></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#source-catalog"><em>Source catalog</em></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lens-catalog"><em>Lens catalog</em></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#starfield-catalog"><em>Starfield catalog</em></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#planets"><em>Planets</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parameter-file"><em>Parameter File</em></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="run_output.html">Output files</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">GULLS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Input files</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/run_input.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="input-files">
+<h1>Input files<a class="headerlink" href="#input-files" title="Permalink to this heading"></a></h1>
+<hr><section id="configuration-parameters">
+<span id="run-input-parameters"></span><h2>Configuration Parameters<a class="headerlink" href="#configuration-parameters" title="Permalink to this heading"></a></h2>
+<p>The gulls simulator requires a comprehensive set of configuration parameters to accurately simulate the desired scenarios. The configuration is facilitated through a YAML file format, offering flexibility and ease of use for specifying simulation parameters.</p>
+<div class="admonition-configuration-parameters-overview admonition">
+<p class="admonition-title">Configuration Parameters Overview</p>
+<p>The configuration file is divided into several sections, each corresponding to different components of the simulation environment:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#run-input-parameters-observatories"><span class="std std-ref">Observation</span></a></p></li>
+<li><p>Star Catalogs</p></li>
+<li><p>Planets</p></li>
+</ul>
+</div>
+<p>For an in-depth explanation of these parameters and how they influence the simulation, consult the documentation provided in the following sections. Further details on specific simulation mechanics, including reference frames, PSF radial dependency, and platform jitter, can be found in the gulls technical documentation and relevant scientific papers.</p>
+<hr><section id="observatories">
+<span id="run-input-parameters-observatories"></span><h3><em>Observatories</em><a class="headerlink" href="#observatories" title="Permalink to this heading"></a></h3>
+<p>The gulls simulator employs a detailed configuration for observatories, tailored to simulate observations accurately. Below is an example configuration for a sample observatory.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1">#INSTRUMENT - WFIRST</span>
+<span class="c1">#FILTER - W169</span>
+
+<span class="c1">#Observatory data</span>
+
+<span class="c1">#Observatory name</span>
+NAME        NRO_W
+
+LATITUDE    <span class="m">99</span>.99
+LONGITUDE   <span class="m">99</span>.99
+SPACE       <span class="m">1</span>  <span class="c1"># Allowed values: 0 (ground-based), 1 (space-based)</span>
+ORBIT       <span class="m">5</span>  <span class="c1"># Allowed values: integers representing orbit types</span>
+
+<span class="c1">#Altitude above MSL</span>
+ALTITUDE    <span class="m">99</span>.99
+
+<span class="c1">#Telescope data</span>
+PRIMARY     <span class="m">2</span>.4
+BLOCKAGE    <span class="m">0</span>.3
+
+<span class="c1">#Available filters</span>
+FILTER      <span class="m">0</span>  <span class="c1"># Allowed values: integers corresponding to specific filters</span>
+
+<span class="c1">#Camera data</span>
+PIXELSIZE   <span class="m">0</span>.11
+NPIX_X      <span class="m">550000</span>
+NPIX_Y      <span class="m">550000</span>
+
+READ_OHEAD  <span class="m">5</span>.0
+NFIELDS     <span class="m">1</span>
+
+REFERENCE_TEXP      <span class="m">85</span>
+REFERENCE_NSTACK    <span class="m">1</span>
+PHOTOMETRY          -1
+
+EXTCOEFF    <span class="m">0</span>
+SKY_BACKGROUND <span class="m">999</span>
+
+<span class="c1">#Pointing</span>
+
+<span class="c1">#Filename specifying field centres</span>
+FIELDCENTRES nro/nro.centres
+
+<span class="c1">#Filename specifying observing sequence</span>
+OBSERVATION_SEQUENCE cycle7/c7_Z087_47s.sequence
+
+<span class="c1">#Filename specifying detector parameters</span>
+DETECTOR    cycle7/cycle6_Z087.detector
+THROUGHPUT  cycle7/cycle6_Z087.throughput
+
+<span class="c1">#Modifiers</span>
+WEATHER_PROFILE WFIRST6-72.weather
+</pre></div>
+</div>
+<p><strong>Note on Configuration Parameters:</strong></p>
+<p>This configuration exemplifies setting up an observatory within the gulls simulator, demonstrating how various aspects of the observatory and observational instruments are defined. Users are encouraged to modify these parameters based on their specific simulation requirements, ensuring the setup accurately reflects the intended observational scenario.</p>
+<ul class="simple">
+<li><p><strong>SPACE</strong>: <span class="guilabel">Allowed values</span></p></li>
+</ul>
+<blockquote>
+<div><p>Indicates whether the observatory is ground-based or space-based. It accepts <cite>0</cite> for ground-based observatories and <cite>1</cite> for space-based platforms.</p>
+</div></blockquote>
+<ul class="simple">
+<li><p><strong>ORBIT</strong>: <span class="guilabel">Allowed values</span></p></li>
+</ul>
+<p>Represents the specific orbit type for space-based observatories. It accepts integer values, with each integer signifying a different orbit classification.
+.. code-block:: text</p>
+<blockquote>
+<div><p>case 0: earth
+case 1: Geosynchronous
+case 2: L2
+case 3: Mars
+case 4: Jupiter
+case 5: JWST</p>
+</div></blockquote>
+<ul class="simple">
+<li><p><strong>FILTER</strong>: Corresponds to the specific filter used during the observation. Integer values are used to denote to a specific filter's column number in the star catalogs.</p></li>
+</ul>
+<p><strong>Location and Pointing</strong>:</p>
+<p>Observatory location, defined by LATITUDE and LONGITUDE, alongside the SPACE and ORBIT parameters, sets the observational platform's position. POINTING parameters, including FIELDCENTRES and OBSERVATION_SEQUENCE, DETECTOR, THROUGHPUT, and WEATHER_PROFILE are other configration sub-parameters.</p>
+<p>### Dependency Files
+.. raw:: html</p>
+<blockquote>
+<div><p>&lt;hr&gt;</p>
+</div></blockquote>
+</section>
+<section id="detector">
+<span id="run-input-parameters-detector"></span><h3>Detector<a class="headerlink" href="#detector" title="Permalink to this heading"></a></h3>
+<p>The detector configuration plays a critical role in accurately simulating observational data. Below is a detailed breakdown of the detector settings for a sample instrument. These settings are specified in the associated detector file and reflect key characteristics such as bias, readout noise, thermal flux, and pixel scale.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># Instrument and Band information</span>
+Instrument: WFIRST
+Band: W149
+
+<span class="c1"># Detector settings based on WFIRST reference information</span>
+BIAS:            <span class="m">1000</span>          <span class="c1"># Bias level in counts per pixel</span>
+READOUT:         <span class="m">12</span>.12        <span class="c1"># Read out noise in counts per pixel (Spec)</span>
+THERMAL:         <span class="m">0</span>.030        <span class="c1"># Thermal flux in counts per pixel per sec (284K)</span>
+DARKCURRENT:     <span class="m">0</span>.1          <span class="c1"># Dark current in counts per pixel per sec (Spec)</span>
+
+PIXELSCALE:      <span class="m">0</span>.11         <span class="c1"># Pixel size in arcsec</span>
+PSFFWHM:         <span class="m">0</span>.2          <span class="c1"># PSF FWHM in arcsec</span>
+PSFFILE:         psfs/Cycle5_SCA09_Z087_M2V_psf.psf
+PSFSCALE:        <span class="m">0</span>.0122222222 <span class="c1"># Spacing between samples of the numerical PSF</span>
+KERNSIZE:        <span class="m">84</span>           <span class="c1"># PSF Kernel size</span>
+SUBPIX:          <span class="m">9</span>            <span class="c1"># Number of sub-pixel points used to place stars</span>
+
+SYSTEMATIC:      <span class="m">0</span>.001        <span class="c1"># Systematic photometry error</span>
+BITDEPTH:        <span class="m">679000</span>       <span class="c1"># Number of bits per pixel</span>
+FULLWELL:        <span class="m">679000</span>       <span class="c1"># Number of electrons a pixel can hold</span>
+GAIN:            <span class="m">1</span>            <span class="c1"># Inverse gain</span>
+BLEEDING:        <span class="m">0</span>            <span class="c1"># No charge bleeding</span>
+BLEEDACROSS:     <span class="m">0</span>            <span class="c1"># Nothing crosses columns</span>
+
+DIAMETER:        <span class="m">2</span>.36         <span class="c1"># Telescope diameter in metres</span>
+BLOCKAGE:        <span class="m">0</span>.3          <span class="c1"># Fractional linear blockage</span>
+
+ZEROMAG:         <span class="m">26</span>.3866      <span class="c1"># Magnitude at which zeropoint is defined</span>
+ZEROFLUX:        <span class="m">1</span>            <span class="c1"># Photons per second from a reference source</span>
+
+BACKGROUND:      <span class="m">999</span>          <span class="c1"># Background magnitude in mags per sq arcsec</span>
+APERTURE:        <span class="m">0</span>.2          <span class="c1"># Aperture radius (not diameter) in arcsec CHECK</span>
+
+PIXELSIZE:       <span class="m">18</span>           <span class="c1"># Pixel size in microns</span>
+CRFLUX:          <span class="m">0</span>            <span class="c1"># Cosmic ray flux in hits m^-2 s^-1 CHECK</span>
+</pre></div>
+</div>
+<p>### Note:</p>
+<ul class="simple">
+<li><p>The configuration parameters provided in the detector file are instrumental in defining the optical and electronic characteristics of the simulated observation. They directly influence the quality and accuracy of the simulated data.</p></li>
+<li><p>It is imperative to ensure that the values provided in the <cite>PSFFILE</cite>, <cite>BACKGROUND</cite>, and other parameters are aligned with the specific requirements of the simulation scenario being modeled.</p></li>
+</ul>
+<hr></section>
+<section id="field-centers">
+<span id="run-input-parameters-center"></span><h3>Field centers<a class="headerlink" href="#field-centers" title="Permalink to this heading"></a></h3>
+<p>Depending on how many fields telescope has is planning to observe the center of each field is defined in each lines, here is an example for &quot;nro.centres&quot;:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="m">1</span>.1  -1.7
+</pre></div>
+</div>
+<hr></section>
+<section id="observing-sequence">
+<span id="run-input-parameters-sequence"></span><h3>Observing sequence<a class="headerlink" href="#observing-sequence" title="Permalink to this heading"></a></h3>
+<p>The gulls simulator relies on specific sequence files to detail the observing schedule, including exposure times, stack numbers, and descriptions. The followwing <cite>.sequence</cite> file, for instance, outlines the observing sequence for the 7 field in 2 filters.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># Observing sequence for the 7 field survey</span>
+
+
+<span class="c1"># Key:</span>
+<span class="c1"># Nstack +ve, Texp +ve  (Image being taken by this instrument)</span>
+<span class="c1"># Nstack -ve, Texp +ve  (Image being taken by other instrument)</span>
+<span class="c1"># Nstack -ve, Texp -ve  (No image is being taken, but something else is taking</span>
+<span class="c1">#                        time e.g. a slew or readout)</span>
+
+<span class="c1"># Additional time is inserted between images of stacks by exigere for readout and dithering.</span>
+<span class="c1"># The readout time for this can be set in the .observatory observatory files.</span>
+<span class="c1"># All other readout, slewing, filter changes etc must be specified here.</span>
+
+<span class="c1"># Field  Nstack  Texp    Sum     Description</span>
+
+<span class="c1"># F087 Set</span>
+<span class="m">0</span>       -1      <span class="m">286</span>.0   <span class="m">366</span>     F087 exposure
+<span class="m">0</span>       -1      -2297.88 <span class="m">76</span>     Other fields
+
+<span class="c1"># W149/W169 set</span>
+BEGIN_REPEAT    <span class="m">44</span>
+<span class="m">0</span>       <span class="m">1</span>       <span class="m">46</span>.8    <span class="m">2495</span>    W149 exposure
+<span class="m">0</span>       -1      -862.68  <span class="m">2410</span>    Other fields
+END_REPEAT
+</pre></div>
+</div>
+<p>### Notes:</p>
+<ul class="simple">
+<li><p><strong>Sequence File Customization</strong>: The <cite>.sequence</cite> file demonstrates how to configure detailed observing sequences. Adjustments may be required to align with specific simulation goals, available instruments, and observational constraints.</p></li>
+</ul>
+<hr></section>
+<section id="weather">
+<span id="run-input-parameters-weather"></span><h3>Weather<a class="headerlink" href="#weather" title="Permalink to this heading"></a></h3>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>Weather:
+  Profile: WFIRST6-72.weather
+</pre></div>
+</div>
+<p>Weather conditions play a crucial role in observational simulations. The <strong>Weather</strong> section allows you to specify if the telescope observes based on the weather. Each Line is a quart of day.
+.. code-block:: shell</p>
+<blockquote>
+<div><p>0 0
+0.25 0
+0.5 0
+0.75 1
+1 1</p>
+</div></blockquote>
+<p><strong>Weather</strong>: <span class="guilabel">Allowed values</span>
+It accepts <cite>0</cite> for NOT OBSERVING and <cite>1</cite> for OBSERVING.</p>
+<hr></section>
+</section>
+<section id="star-catalogs">
+<span id="run-input-stars"></span><h2><em>Star catalogs</em><a class="headerlink" href="#star-catalogs" title="Permalink to this heading"></a></h2>
+<p>gulls requires three catagory of star catalogs to draw from:</p>
+<ul class="simple">
+<li><p>Source catalog</p></li>
+<li><p>Lense catalog</p></li>
+<li><p>Background starfield catalogs</p></li>
+</ul>
+<hr><section id="source-catalog">
+<h3><em>Source catalog</em><a class="headerlink" href="#source-catalog" title="Permalink to this heading"></a></h3>
+<p>Source stars can be drawn from source catalogs generated by synthetic population models. Depending on users simulation goals, source stars can have a magnitude limit. For instance, in the case of W146 for the Roman Space Telescope, source's magnitude limit can go up to <strong>27 $ge$ H vega</strong>. There should be $sim$ $10^5$ stars in the observing field that gulls work properly.</p>
+<hr></section>
+<section id="lens-catalog">
+<h3><em>Lens catalog</em><a class="headerlink" href="#lens-catalog" title="Permalink to this heading"></a></h3>
+<p>Lens stars can be drawn from lens catalogs  generated by synthetic population models. Lens stars don't have any magnitude limit since mass is the main factor in microlensing events. There should be $sim$ $10^4$ stars in the field that gulls work properly. A solid angle of $10^-4$ $deg^2$ is suggested.</p>
+<hr></section>
+<section id="starfield-catalog">
+<h3><em>Starfield catalog</em><a class="headerlink" href="#starfield-catalog" title="Permalink to this heading"></a></h3>
+<p>Starfield catalogs include non-microlensing stars generated by <strong>BESANCON MODEL OF STELLAR POPULATION SYNTHESIS</strong>. Starfields are usually in four categories:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>Bright</strong> stars <strong>H mag $leq$ 15</strong></p></li>
+<li><p><strong>Moderate 1</strong> stars <strong>15 $le$ H mag $leq$ 20</strong></p></li>
+<li><p><strong>Moderate 2</strong> stars <strong>20 $le$ H mag $leq$ 25</strong></p></li>
+<li><p><strong>Faint</strong> stars <strong>25 $le$ H mag</strong></p></li>
+</ul>
+</div></blockquote>
+<hr></section>
+</section>
+<section id="planets">
+<span id="run-input-planets"></span><h2><em>Planets</em><a class="headerlink" href="#planets" title="Permalink to this heading"></a></h2>
+<p>Planet files carry the event parameters such as <strong>mass, Semi major axis (a), inclination (i), and eccentricity (e)</strong>. You can use planet file to generate binary lens events.</p>
+<blockquote>
+<div><div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Planet files dictate the quantity of events that gulls simulates, including scenarios where no planet injection occurs within the simulation.</p>
+</div>
+</div></blockquote>
+<hr></section>
+<section id="parameter-file">
+<span id="run-input-files"></span><h2><em>Parameter File</em><a class="headerlink" href="#parameter-file" title="Permalink to this heading"></a></h2>
+<p>The gulls Simulator relies on parameter files to configure simulations accurately. The <cite>.prm</cite> file serves as a crucial input, containing essential settings that define how your simulation operates. This document provides guidance on configuring your <cite>.prm</cite> effectively.</p>
+<ol class="arabic">
+<li><p><strong>Opening the Parameter File</strong>:</p>
+<p>Begin by locating and opening your <cite>.prm</cite> file in a text editor. This file dictates key simulation parameters and paths.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>open singlelens.prm
+</pre></div>
+</div>
+</li>
+<li><p><strong>Setting Basic Information</strong>:</p>
+<p>The parameter file requires you to specify several foundational settings:</p>
+<ul class="simple">
+<li><p><strong>RUN_NAME</strong>: A unique identifier for your simulation run.</p></li>
+<li><p><strong>OUTPUT_DIR</strong>: Directory where simulation outputs will be stored.</p></li>
+<li><p><strong>FINAL_DIR</strong>: Directory for storing final simulation results.</p></li>
+<li><p><strong>EXECUTABLE</strong>: The specific gulls executable to be used for this simulation.</p></li>
+</ul>
+<p>Example configuration:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nv">RUN_NAME</span><span class="o">=</span> singlelens
+<span class="nv">OUTPUT_DIR</span><span class="o">=</span>/PATH/TO/OUTPUT_DIRECTORY/gulls_test/
+<span class="nv">FINAL_DIR</span><span class="o">=</span>/PATH/TO/FINAL_DIRECTORY/gulls_test/
+<span class="nv">EXECUTABLE</span><span class="o">=</span> gullsSingle.x
+</pre></div>
+</div>
+</li>
+<li><p><strong>Specifying Simulation Components</strong>:</p>
+<p>Include paths to directories and lists for various simulation components:</p>
+<ul class="simple">
+<li><p>Observatories, weather conditions, starfields, sources, lenses, and planet parameters are specified through directory paths and list names.</p></li>
+</ul>
+<p>Example paths:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>OBSERVATORY_DIR=observatories/
+OBSERVATORY_LIST=observatory.list
+WEATHER_PROFILE_DIR=weather/
+STARFIELD_DIR=starfields/
+STARFIELD_LIST=cycle6.starlist
+SOURCE_DIR=sources/
+SOURCE_LIST=cycle6.sources
+LENS_DIR=lenses/
+LENS_LIST=cycle6.lenses
+PLANET_DIR=planets/uniform/
+PLANET_ROOT=uniform.planets.
+RATES_FILE=rates/bH.pmcorrected.rates
+PRINCIPLE_OBSERVATORY=0
+</pre></div>
+</div>
+</li>
+<li><p><strong>Optimizing Output for Analysis</strong>:</p>
+<p>To enhance the analysis of simulation results, consider enabling additional output options:</p>
+<ul class="simple">
+<li><p><strong>PRETTY_PICS</strong>: Generates detailed graphical representations.</p></li>
+<li><p><strong>OUTPUT_LC</strong>: Controls the frequency of lightcurve outputs.</p></li>
+<li><p><strong>OUTPUT_ONALL</strong>: Controls the frequency of all outputs, even if there is no detection.</p></li>
+<li><p><strong>OUTPUT_DET</strong>: Controls the frequency of microlensing detection outputs</p></li>
+<li><p><strong>OUTPUT_IMAGES</strong>: Saves images at key simulation points.</p></li>
+</ul>
+<p>Diagnostic settings:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>PRETTY_PICS=1
+PRETTY_PICS_DIMENSIONS=128
+OUTPUT_LC=1
+OUTPUT_IMAGES=1
+OUTPUT_DET= 1
+OUTPUT_ONALL=1
+</pre></div>
+</div>
+</li>
+<li><p><strong>Advanced Configuration Options</strong>:</p>
+<p>For specialized simulations, you might adjust the following:</p>
+<ul class="simple">
+<li><p><strong>IDEAL_PHOTOMETRY</strong>, <strong>PARALLAX</strong>, and <strong>LENS_LIGHT</strong> for specific observational effects.</p></li>
+<li><p><strong>RANDOM_SEED</strong> and timing settings to influence the stochastic elements of the simulation.</p></li>
+</ul>
+<p>Example advanced settings:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>IDEAL_PHOTOMETRY=-1
+PARALLAX=1
+LENS_LIGHT=1
+SET_RANDOM_SEED_TO_CLOCK=1
+RANDOM_SEED=1001
+SIMULATION_ZERO_TIME=2458234.000000
+SIMULATION_LENGTH=5.50803
+SUBRUNSIZE=1000
+NSUBRUNS=40
+MAXTIME=14000.000000
+NFILTERS=6
+AMIN=1.0000001
+LARGEPSFMAG=19.0
+MIN_CHISQUARED=60
+U0MAX=1.0
+</pre></div>
+</div>
+</li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The correct configuration of the <cite>.prm</cite> file is vital for the successful execution of gulls simulations. Ensure all paths and settings accurately reflect your simulation goals and system setup.</p>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="run_simulations.html" class="btn btn-neutral float-left" title="Running gulls" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="run_output.html" class="btn btn-neutral float-right" title="Output files" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Farzaneh Zohrabi.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

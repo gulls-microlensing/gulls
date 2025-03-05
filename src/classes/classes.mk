@@ -26,3 +26,4 @@ parallax = parallax.o $(ephem) $(coords)
 fisherinversion = fisherinversion.o
 sgroots77 = cmplx_roots_sg_77.o
 sgroots90 = cmplx_roots_sg.o
+VBMicrolensing = VBMicrolensingLibrary.o

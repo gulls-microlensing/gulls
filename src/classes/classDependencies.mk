@@ -35,7 +35,7 @@ parallax.o : parallax.cpp $(parallax_h) $(coords_h)
 fisherinversion.o : fisherinversion.cpp $(fisherinversion_h)
 cmplx_roots_sg_77.o : cmplx_roots_sg_77.f
 cmplx_roots_sg.o : cmplx_roots_sg.f90
-#VBBinaryLensingLibrary.o : VBBinaryLensingLibrary.cpp VBBinaryLensingLibrary.h
+VBMicrolensingLibrary.o : VBMicrolensingLibrary.cpp $(VBMicrolensing_h)
 
 clean:
 	rm -f *.o

@@ -106,7 +106,13 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
           xsCoM = tt*cosa - uu*sina + VBM_origin; //coordinate shift to center of mass
           xsCenter = tt*cosa - uu*sina + Mao_origin;// coordinate shif to primary lens
           ysCenter = tt*sina + uu*cosa;
-          if(Paramfile->verbosity>=4)
+          Event->xs[idx] = xsCoM;
+          Event->ys[idx] = ysCenter;
+          Event->xl1[idx] = VBM_origin;
+          Event->yl1[idx] = 0.0 ;
+          Event->xl2[idx] = VBM_origin + a;
+          Event->yl2[idx] = 0.0;
+	  if(Paramfile->verbosity>=4)
 	    {
 		 magfunc_(&m1, &a, &xsCenter, &ysCenter, &rs, &Gamma, &amp, &eps,
                        &errflag);

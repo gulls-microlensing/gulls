@@ -108,10 +108,11 @@ int parallax::compute_NEshifts()
 	  for(int k=0;k<int(x.size());k++)
 	    {
 	      x[k] += xp[k];
-	      sslocation[i][0] += (*orbit)[j].xecl;
-	      sslocation[i][1] += (*orbit)[j].yecl;
-	      sslocation[i][2] += (*orbit)[j].zecl;
-	    }
+		}
+	  sslocation[i][0] += (*orbit)[j].xecl;
+	  sslocation[i][1] += (*orbit)[j].yecl;
+	  sslocation[i][2] += (*orbit)[j].zecl;
+	    
 
 	  //figure out how to print out the x,y,z coordinates in the ecliptic plane here
 	}

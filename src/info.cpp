@@ -95,6 +95,7 @@ void writeHeader(struct filekeywords* Paramfile, struct event *Event, struct slc
   //microlensing paramters - 11+1 = 26
   ofile << "u0lens1" << " " << "alpha" << " ";
   ofile << "t0lens1" << " ";
+  ofile << "tref" << " ";
   ofile << "tcroin" << " ";
   ofile << "ucroin" << " " << "rcroin" << " ";
   ofile << "tE_ref" << " " << "tE_helio" << " " << "rE" << " " << "thetaE" << " " 
@@ -225,6 +226,7 @@ void writeEventParams(struct filekeywords* Paramfile, struct event *Event, struc
   //microlensing paramters - 11+1 = 26
   ofile << Event->u0 << " " << Event->alpha << " ";
   ofile << Event->t0 << " ";
+  ofile << Paramfile->tref << " ";
   ofile << Event->tcroin << " ";
   ofile << Event->ucroin << " " << Event->rcroin << " ";
   double murel_l = Lenses->data[ln][MUL]-Sources->data[sn][MUL];

@@ -75,8 +75,8 @@ void dmududr_witt(double u, double rs, double* dmudu, double* dmudr, double delt
 {
   //for |u|>10rs, uses the Hexadecapole approximation, for u<10 rs, does a numerical derivative of the Witt & Mao magnification
 
-  static const double ld2=1.0;
-  static const double ld4=1.0;
+  static constexpr double ld2=1.0;
+  static constexpr double ld4=1.0;
 
   double logu = log10(abs(u));
   double logrs = log10(rs);
@@ -101,9 +101,9 @@ void dmududr_witt(double u, double rs, double* dmudu, double* dmudr, double delt
   if(logu-logrs>0.5 && logu-2.0*logrs/3.0>1)
     {
       //Use the PSPL derivative for dmudu
-      static const double cc = -1.94299; //         +/- 0.002516     (0.1295%)
-      //static const double kk = 2.82854; //          +/- 0.004476     (0.1582%)
-      static const double logkk = 0.451562325;
+      static constexpr double cc = -1.94299; //         +/- 0.002516     (0.1295%)
+      //static constexpr double kk = 2.82854; //          +/- 0.004476     (0.1582%)
+      static constexpr double logkk = 0.451562325;
 
       *dmudr = pow(10,logrs + cc + (logu<logkk?-3:-5.85)*(logu-logkk));
     }

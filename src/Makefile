@@ -2,8 +2,9 @@
 #Options
 
 OPT = -O2
+#OPT = -g
 
-BASEDIR = /home/fzohrabi/gulls/src
+BASEDIR = /home/penny/gulls_mp/src
 FFLAGS	= $(OPT) -Wall 
 #CFLAGS = -Wall -ansi $(OPT)  -I/home/penny/apps/VBMicrolensing/VBMicrolensing/lib/ -I/usr/local/include/ -lstdc++
 CFLAGS	= -Wall -ansi -O2  -I/home/fzohrabi/include/ -lstdc++

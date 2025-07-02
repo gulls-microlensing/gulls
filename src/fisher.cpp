@@ -1,5 +1,12 @@
 #include <sstream>
 #include <sys/stat.h>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <cmath>
+#include <vector>
+#include <gsl/gsl_deriv.h>
+
 #include "lightcurveGenerator.h"
 #include "backupGenerator.h"
 #include "astroFns.h"
@@ -9,265 +16,147 @@
 #include "lens_binary.h"
 #include "cd.h"
 
-#include<fstream>
-#include<iomanip>
-#include<gsl/gsl_matrix.h>
-#include<gsl/gsl_linalg.h>
+#define DEBUGVAR 0
 
-#define DEBUGVAR 1
+// Context struct for GSL derivative wrapper
+struct DerivContext {
+    int param;
+    int idx;
+    filekeywords* Paramfile;
+    event* Event;
+    obsfilekeywords* World;
+};
 
-extern "C"
-{
-  void magfunc_(double *m1, double *a, double *xsCenter,  double *ysCenter, double *rs, double *Gamma, double *amp, double *eps, int *errflag);
-}
+// GSL derivative wrapper using context struct
+static double deriv_wrapper(double x, void* p) {
+    DerivContext* ctx = static_cast<DerivContext*>(p);
 
-void fisherMatrix(struct filekeywords* Paramfile, struct event *Event, struct obsfilekeywords World[], struct slcat *Sources, struct slcat *Lenses)
-{
-  double m1, a;
-  double q;
-  double xsCoM, xsCenter, ysCenter, rs, Gamma;
-  double amp,  eps=1.0e-3;
-  double alpha, cosa, sina,Mao_origin , VBM_origin;
-  double t0, tE, u0;
-  double tt,uu;
-  double logq=0, logs=0, logtE=0;
-  double pllx=Paramfile->pllxMultiplyer;
-  //vector<parallax> parlx(Paramfile->numobservatories);
-  int idx,obsidx;
-  int useVBB=1;
-  VBMicrolensing VBM;
-  double lim_gamma=Paramfile->LD_GAMMA;
-  double lcgen=Paramfile->LC_GEN;
-  int filter;
-  int errflag;
-  
-  double piEN=0, piEE=0, piE;
+    filekeywords* Paramfile = ctx->Paramfile;
+    event* Event = ctx->Event;
+    obsfilekeywords* World = ctx->World;
+    int param = ctx->param;
+    int idx = ctx->idx;
 
-  if(DEBUGVAR) cout << "Calculating fisher matrix for event number " << Event->id << endl;
-  if(DEBUGVAR) cout << "LC_GEN: " << lcgen << endl;
+    double logq = log10(Event->params[QQ]);
+    double logs = log10(Event->params[SS]);
+    double logtE = log10(Event->tE_r);
+    double piEN = Event->piEN;
+    double piEE = Event->piEE;
 
-  int Nparams=9;
-  if(pllx==0) Nparams=7;
-  int Nobsparams = 2*Paramfile->numobservatories;
-  int Ntotparams = Nparams + Nobsparams;
-  // 0 = t0  1 = tE  2 = u0  3 = alpha  4 = s  5 = q  6 = rs  7 = piEN 8 = piEE 9 = F0  10 = fs
-  double* step = new double[Ntotparams];
-  //double* dA = new double[2*MAX_NUM_EPOCH];
-  double* fs = new double[Paramfile->numobservatories];
-  int dshift;
-  double dmult;
-  double z1,z2;
+    double t0 = Event->t0, tE = pow(10, logtE), u0 = Event->u0, alpha = Event->alpha * TO_RAD;
+    double rs = Event->rs;
 
-  int pshift;
-  src_cld src;
-  lens_binary lens;
-  finiteSource finsrc;
-  src_cld altsrc;
-  lens_binary altlens;
-  finiteSource altfs;
-
-  VBM.a1 = lim_gamma;              /*  Linear limb-darkening coefficient.*/
-
-  double defstep=1.0e-4;
-
-  step[0] = defstep; step[1] = defstep; step[2] = defstep; step[3] = defstep;
-  step[4] = defstep; step[5] = defstep; step[6] = defstep;
-  if(pllx!=0)
-    {
-      step[7] = defstep;
-      step[8] = defstep;
-    }
-  for(obsidx=0;obsidx<Paramfile->numobservatories;obsidx++)
-    {
-      step[Nparams+2*obsidx] = defstep;
-      step[Nparams+2*obsidx+1] = defstep;
-      //parlx.push_back(Event->pllx[obsidx]);
-      //parlx[obsidx].set_lb(Event->l, Event->b);
-      //parlx[obsidx].setup_reference_frame(Paramfile->simulation_zerotime+Event->pllx[obsidx].tref,&World[0].orbit);
-      //parlx[obsidx].set_orbit(&World[obsidx].orbit);
-      //parlx[obsidx].provide_observables_NE(Event->piEN, Event->piEE, Event->tE_r);
-
-      //parlx[obsidx].load_epochs(&World[obsidx].jd);
-      //parlx[obsidx].compute_NEshifts();
-      //parlx[obsidx].compute_tushifts();
+    switch (param) {
+        case 0: t0 += x; break;
+        case 1: logtE += x; tE = pow(10, logtE); break;
+        case 2: u0 += x; break;
+        case 3: alpha += x; break;
+        case 4: logs += x; break;
+        case 5: logq += x; break;
+        case 6: rs = pow(10, log10(Event->rs) + x); break;
+        case 7: piEN += x; break;
+        case 8: piEE += x; break;
     }
 
-  Event->dF.resize(Ntotparams*Event->nepochs);
-  //first initialize the derivatives to zero so that we can accumulate the sum
-  for(int param=0; param<Ntotparams; param++)
-    {
-      int pshift = param*Event->nepochs;
-      for(idx=0; idx<Event->nepochs; idx++) Event->dF[pshift+idx]=0;
-    }
+    double q = pow(10, logq);
+    double a = pow(10, logs);
+    double m1 = 1.0 / (1.0 + pow(10, logq));
+    double cosa = cos(alpha), sina = sin(alpha);
+    double origin = (1.0 - m1) * (-a);
 
+    int obsidx = Event->obsidx[idx];
+    int shiftedidx = idx - Event->nepochsvec[obsidx];
 
-  int shiftedidx;
-
-  //Calculate derivatives numerically for the non-linear parameters
-  for(int param=0;param<Nparams;param++)
-    {
-      pshift = param*Event->nepochs;
-
-      if(DEBUGVAR) cout << "Parameter: " << param << endl;
-      for(int delta=-1;delta<=+1;delta+=2)
-        {
-
-          dshift = Event->nepochs*(delta+1)/2;
-          dmult = 0.5*delta/step[param];
-          //work out the event parameters in the fortran parametrization
-
-          //mass of the first lens m1+m2=1
-          logq = log10(Event->params[QQ]) + (param==5?delta*step[5]:0);
-          logs = log10(Event->params[SS]) + (param==4?delta*step[4]:0);
-          logtE = log10(Event->tE_r) + (param==1?delta*step[1]:0);
-          q = pow(10,logq);
-          m1 = 1.0/(1 + pow(10,logq));
-          a = pow(10,logs);     //separation
-          z1 = -m1*a;
-          z2 = (1-m1)*a;
-          rs = pow(10,log10(Event->rs) + (param==6?delta*step[6]:0));
-          alpha = Event->alpha*TO_RAD + (param==3?delta*step[3]:0);
-          Gamma = Event->gamma; /* limb-darkening profile */
-
-          if(pllx)
-            {
-              piEN = Event->piEN + (param==7?delta*step[7]:0);
-              piEE = Event->piEE + (param==8?delta*step[8]:0);
-              piE = qAdd(piEN,piEE);
-            }
-
-
-          cosa = cos(alpha); sina = sin(alpha);
-
-
-          Mao_origin = -m1*a; //Translate from L1 origin to m1z2+m2z1=0 origin
-          VBM_origin = (1-m1)*(-a); //Translate from L1 origin to center of mass origin
-
-
-
-          t0 = Event->t0 + (param==0?delta*step[0]:0);
-          tE = pow(10,logtE);
-          u0 = Event->u0 + (param==2?delta*step[2]:0);
-          //if(abs(Event->u0)<1.0e-5) u0 = Event->u0 + (param==2?delta*step[2]:0);
-          //else u0 = pow(10,log10(Event->u0) + (param==2?delta*step[2]:0));
-
-          //only adjust parallax parameters if necessary
-          if(pllx && (param==7 || param==8 || param == 1))
-            {
-              for(obsidx=0;obsidx<Paramfile->numobservatories;obsidx++)
-                {
-		  Event->pllx[obsidx].provide_observables_NE(piEN,piEE,tE);
-		  Event->pllx[obsidx].compute_tushifts();
-                  //parlx[obsidx].set_tE_r(tE);
-                  //parlx[obsidx].set_piENE(piEN,piEE);
-                  //parlx[obsidx].fit_reinit();
-                }
-            }
-
-
-          for(obsidx=0;obsidx<Paramfile->numobservatories;obsidx++)
-            {
-              //fs[obsidx] = pow(10, log10(Event->fs[obsidx]) + (param==Nparams+2*obsidx+1?delta*step[Nparams+2*obsidx+1]:0));
-              fs[obsidx] = Event->fs[obsidx];
-            }
-
-          Event->deterror=0;
-          errflag=0;
-
-          //Calculate the lightcurve
-          for(idx=0;idx<Event->nepochs;idx++)
-            {
-              obsidx = Event->obsidx[idx];
-	      shiftedidx = idx-Event->nepochsvec[obsidx];
-
-              tt = (Event->epoch[idx] - t0) / tE;
-              uu = u0;
-
-              if(pllx)
-                {
-                  //tt += parlx[obsidx].tshift(idx-idxshift[obsidx]);
-                  //uu += parlx[obsidx].ushift(idx-idxshift[obsidx]);
-                  //tt += Event->pllx[obsidx].tshift(Event->jdepoch[idx]);
-                  //uu += Event->pllx[obsidx].ushift(Event->jdepoch[idx]);
-				  tt += Event->pllx[obsidx].tshift[shiftedidx];
-                  uu += Event->pllx[obsidx].ushift[shiftedidx];
-                }
-              xsCoM = tt*cosa - uu*sina + VBM_origin; //coordinate shift to center of mass
-              xsCenter = tt*cosa - uu*sina + Mao_origin;
-              ysCenter = tt*sina + uu*cosa;
-
-              if(lcgen==0)
-				{
-				  magfunc_(&m1, &a, &xsCenter, &ysCenter, &rs, &Gamma, &amp,
-						   &eps,&errflag);
-				} else if (lcgen==1)
-				{
-				  if(Paramfile->verbosity>=3)
-					cout << setprecision(16) << a << " " << q << " " << xsCoM << " " << ysCenter << " " << rs << setprecision(6) << endl; 
-				  amp = VBM.BinaryMag2(a, q, xsCoM, ysCenter,rs);
-				}
-              //if(param==5 || param==4 || param==6)
-              //        amp = altfs.fsmag(cd(xsCenter,ysCenter), errflag);
-              //else
-              //        amp = finsrc.fsmag(cd(xsCenter,ysCenter), errflag);           
-			  
-              if( errflag != 0)
-                {
-                  cerr << "\nerror caught from magfunc_  errval: "
-                       << Event->lcerror << " (fisher)" << endl;
-                  errorHandler(errflag);
-                  Event->deterror=errflag;
-                  break;
-                }
-
-              filter = World[obsidx].filter;
-
-              //store the results - remember F0=1 by definition
-              //              dA[dshift+idx] = 1 + fs[obsidx]*(amp-1);
-              //dF = dA/dp = fs[obsidx]*amp
-              //dF[pshift+idx] += dmult*(1 + fs[obsidx]*(amp-1));
-              Event->dF[pshift+idx] += dmult*fs[obsidx]*amp;
-
-            } //end for idx
-        } //end for delta
-      //reset parallax parameters back to nominal values if necessary
-      if(pllx && (param==7 || param==8 || param == 1))
-        {
-          for(obsidx=0;obsidx<Paramfile->numobservatories;obsidx++)
-            {
-	      Event->pllx[obsidx].provide_observables_NE(piEN,piEE,tE);
-	      Event->pllx[obsidx].compute_tushifts();
-              //parlx[obsidx].set_tE_r(Event->tE_r);
-              //parlx[obsidx].set_piENE(Event->piEN,Event->piEE);
-              //parlx[obsidx].fit_reinit();
-            }
+    if (Paramfile->pllxMultiplyer && (param == 7 || param == 8 || param == 1)) {
+        for (int i = 0; i < Paramfile->numobservatories; i++) {
+            Event->pllx[i].provide_observables_NE(piEN, piEE, tE);
+            Event->pllx[i].compute_tushifts();
         }
-      //compute dF/dparam
-
-      //for(idx=0;idx<Event->nepochs;idx++)
-      //        {
-      //          dF[pshift+idx] = 0.5 * (dA[MAX_NUM_EPOCH + idx] - dA[idx]) 
-      //            / (step[param]);
-      //        }
-    } //end for parameter
-
-  //For the linear flux parameters we can work analytically
-  //Do this numerically for the non-linear parameters
-  int F0idx, fsidx;
-
-  //Now calculate dF/dF0 and dF/dfs
-  for(idx=0;idx<Event->nepochs;idx++)
-    {
-      obsidx = Event->obsidx[idx];
-      F0idx = (Nparams+obsidx*2)*Event->nepochs+idx;
-      fsidx = F0idx + Event->nepochs;
-      //Because Atrue=fs*mu+1-fs
-      Event->dF[F0idx]=Event->Atrue[idx];
-      Event->dF[fsidx]=(Event->Atrue[idx]-1)/fs[obsidx];
     }
-  delete[] step;
-  delete[] fs;
 
+    double tt = (Event->epoch[idx] - t0) / tE;
+    double uu = u0;
+    if (Paramfile->pllxMultiplyer) {
+        tt += Event->pllx[obsidx].tshift[shiftedidx];
+        uu += Event->pllx[obsidx].ushift[shiftedidx];
+    }
+
+    double xs = tt * cosa - uu * sina + origin;
+    double ys = tt * sina + uu * cosa;
+    double lim_gamma=Paramfile->LD_GAMMA;
+    Event->vbm->a1=lim_gamma;
+
+    return Event->vbm->BinaryMag2(a, q, xs, ys, rs);
 }
 
+void fisherMatrix(filekeywords* Paramfile, event* Event,
+                  obsfilekeywords World[], slcat* Sources, slcat* Lenses) {
+
+    if (DEBUGVAR) {
+        std::cout << "Calculating Fisher matrix for event " << Event->id << std::endl;
+    }
+
+    const int Nparams = (Paramfile->pllxMultiplyer == 0) ? 7 : 9;
+    const int Nobsparams = 2 * Paramfile->numobservatories;
+    const int Ntotparams = Nparams + Nobsparams;
+
+    std::vector<double> step(Ntotparams);
+    for (int i = 0; i < Nparams; ++i) {
+        double base = (i < Event->params.size()) ? std::max(fabs(Event->params[i]), 1.0) : 1.0;
+        if (i == 6) step[i] = 1e-2 * base;
+        else if (i == 7 || i == 8) step[i] = 1e-1 * base + 1e-5;
+        else if (i == 3) { step[i] = (1e-4 * base) * TO_RAD; } // alpha is stored in degrees; multiply by TO_RAD so δalpha is in radians 
+	else step[i] = 1e-4 * base;
+    }
+
+    Event->dF.clear();
+    Event->dF.resize(Ntotparams * Event->nepochs, 0.0);
+
+    for (int param = 0; param < Nparams; ++param) {
+        DerivContext ctx{param, 0, Paramfile, Event, World};
+        gsl_function F;
+        F.function = &deriv_wrapper;
+        F.params   = &ctx;
+
+	for (int idx = 0; idx < Event->nepochs; ++idx) {
+		ctx.idx = idx;
+		double result = 0.0, abserr = 0.0;
+		gsl_deriv_central(&F, 0.0, step[param], &result, &abserr);
+		int obsidx = Event->obsidx[idx];
+		double fs = Event->fs[obsidx];
+		double snr = fabs(result) / (abserr + 1e-12);
+		bool suppress = std::isnan(result) || std::isnan(abserr) ||
+                            ((param == 6) ? (snr < 1.0) : (snr < 3.0));
+		bool in_anomaly_window = fabs(Event->epoch[idx] - Event->t0) < 0.2 * Event->tE_r; //should we keep this for Earth mass planets?
+		int index = param * Event->nepochs + idx;
+		if (suppress && !in_anomaly_window) {
+			double interp = 0.0;
+			int count = 0;
+			for (int offset = 1; offset <= 3; ++offset) {
+				for (int j = -1; j <= 1; j += 2) {
+					int neighbor = idx + j * offset;
+					if (neighbor >= 0 && neighbor < Event->nepochs) {
+						double val = Event->dF[param * Event->nepochs + neighbor];
+						if (!std::isnan(val)) {
+							interp += val;
+							++count;
+						}
+					}
+				}
+			}
+			Event->dF[index] = (count > 0) ? (interp / count) : result * fs;
+		} else {
+			Event->dF[index] = result * fs;
+		}
+	}
+    }
+
+    for (int idx = 0; idx < Event->nepochs; ++idx) {
+        int obsidx = Event->obsidx[idx];
+        int base = (Nparams + obsidx * 2) * Event->nepochs + idx;
+        Event->dF[base] = Event->Atrue[idx];
+        Event->dF[base + Event->nepochs] = (Event->Atrue[idx] - 1.0) / Event->fs[obsidx];
+    }
+
+}
 

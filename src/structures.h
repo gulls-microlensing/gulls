@@ -354,6 +354,8 @@ struct event{
   vector<bool> nosat;      /*Is point unsaturated? */
   vector<double> backmag;
   vector<double> dF;
+  vector<double> dF_debug;
+  vector<double> dF_diff;
   vector<double> xs; //source position
   vector<double> ys;
   vector<double> xl1; //lens 1 position
@@ -364,9 +366,9 @@ struct event{
   vector<double> data; //generic data to be output
   vector<string> dataheader;
   vector<starlist> sl;
-  vector<double> Ampold;
-  vector<double> AmpVBM;
-  vector<double> Ampdif;
+  vector<double> vbm_rootaccuracy;
+  vector<double> vbm_squarecheck;
+  vector<double> vbm_therr;
 };
 #define EVENTSTRUCT
 #endif

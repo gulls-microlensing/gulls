@@ -149,10 +149,6 @@ int main(int argc, char *argv[]){                   /* BEGIN MAIN */
   logfile_ptr.open(log_filename);
 
 
-  VBM.Tol=1.0e-4;
-  VBM.RelTol=1.0e-6;
-
-
   if (!outfile_ptr)
     {
       sprintf(str,"Unable to open output file: %s",output_filename);
@@ -183,8 +179,20 @@ int main(int argc, char *argv[]){                   /* BEGIN MAIN */
   cout << "Loading VBMicrolening ESPL table " << spftmp << endl;
   VBM.LoadESPLTable(spftmp); // Load the pre-calculated table (you only have to do this once)
 // The ESPL.dat file is located inside the data folder; copy it to your directory.
+  std::cout
+         << "After LoadESPLTable(): ESPL loaded? "
+         << (VBM.isESPLLoaded() ? "yes" : "no")
+         << ", ESPLin[0][0]="
+         << VBM.getESPLinEntry(0, 0)
+         << std::endl;  
+  // bail out if ESPL isn’t loaded
+  if (!VBM.isESPLLoaded()) {
+      std::cerr << "FATAL: ESPL table failed to load—exiting.\n";
+      std::exit(EXIT_FAILURE);
+  }
+  VBM.Tol=1.0e-4;
+  VBM.RelTol=1.0e-6;
   Event.vbm = &VBM;
- 
   /* Initialise and warmup random number generator */
   idum = &var;        
   Paramfile.seed = &var;
@@ -328,8 +336,7 @@ int main(int argc, char *argv[]){                   /* BEGIN MAIN */
       /* Generate lightcurve */
       if(Paramfile.verbosity) {printf("lightcurveGenerator\n"); fflush(stdout);}
       clock_gettime(CLOCK_REALTIME,&tstart);
-      lightcurveGenerator(&Paramfile, &Event, World, &Sources, &Lenses,
-						  logfile_ptr);
+      lightcurveGenerator(&Paramfile, &Event, World, &Sources, &Lenses,logfile_ptr);
       clock_gettime(CLOCK_REALTIME,&tend);
       nsec = tend.tv_nsec - tstart.tv_nsec;
       tgeneration += double((tend.tv_sec - tstart.tv_sec) - (nsec<0?1:0))

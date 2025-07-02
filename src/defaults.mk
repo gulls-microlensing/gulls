@@ -11,7 +11,7 @@ GSLFLAGS = -lgsl -lgslcblas
 WFLAGS = -Wall -Wno-deprecated-declarations -Wno-gnu-static-float-init
 #WFLAGS = -Wnon-virtual-dtor -Wreorder -Wstrict-aliasing -Wstrict-aliasing=2 -Wno-pragmas -Wunknown-pragmas -Wunused -Wtrigraphs -Wswitch-enum -Wswitch-default -Wswitch -Wreturn-type -Wsequence-point -Wparentheses -Wmissing-include-dirs -Wmissing-braces -Wimplicit -Wimplicit-int -Winit-self -Wnonnull -Wformat -Wcomment -Wfatal-errors -Wchar-subscripts -Wno-import
 #CPPFLAGS = $(WFLAGS) -I/Users/penny/apps/VBMicrolensing/VBMicrolensing/lib/ -I$(BASEDIR)/headers/  -std=c++98 -ansi $(OPT) #-O0 -g -fsanitize=address
-CPPFLAGS = $(WFLAGS) -O2 -I/home/fzohrabi/cfitsio-4.3.0/ -I/home/fzohrabi/include/ -I$(BASEDIR)/headers/ -lm -std=c++11 -ansi -pedantic -fPIC  -Wextra -DNDEBUG
+CPPFLAGS = $(WFLAGS) -O2 -I/home/fzohrabi/cfitsio-4.3.0/ -I/home/fzohrabi/include/ -I$(BASEDIR)/headers/ -lm -lstdc++ -ansi -pedantic -fPIC  -Wextra -DNDEBUG -std=c++11
 #CPPFLAGS = $(WFLAGS) -g -I$(BASEDIR)/headers/  -I/usr/include/cfitsio -ansi
 CXXFLAGS = $(CPPFLAGS)
 FFLAGS	= $(OPT) -I$(BASEDIR)/headers/ #-L$(BASEDIR)/classes/

@@ -142,6 +142,21 @@ public:
 
 	static char ESPLtablefile[1024];
 	static void SetESPLtablefile(char *instring) { strcpy(ESPLtablefile, instring); }
+
+
+        /// Returns true if LoadESPLTable() succeeded (i.e. ESPLoff was flipped to false).
+        bool isESPLLoaded() const {
+            return (ESPLoff == false);
+        }
+
+        /// Returns the single ESPLin[r][z] value. Caller must supply 0 ≤ r < __rsize and 0 ≤ z < __zsize.
+        double getESPLinEntry(int r, int z) const {
+            if (r < 0 || r >= __rsize || z < 0 || z >= __zsize) {
+                return 0.0;   // or assert/fail-fast
+            }
+            return ESPLin[r][z];
+        }
+
 	double Tol,RelTol,a1,a2,t0_par;
 	double mass_radius_exponent, mass_luminosity_exponent;
 	int satellite,parallaxsystem,t0_par_fixed,nsat;

@@ -17,7 +17,6 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
   char extension[4];
   char lcdatafname[1000];
   double t;
-  
   //double u0_ps,t0_ps,tE_ps,t2_ps,u_ps,psmag,psamp;
   //double u0_fs,t0_fs,tE_fs,t2_fs,u_fs,fsmag,fsamp;
 
@@ -84,7 +83,8 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
         {
           lcdatafile_ptr = fopen(lcdatafname,"w");
           fileOpen=1;
-	  fprintf(lcdatafile_ptr, "time mag_old_lcgen mag_vbm dif_over_mag\n");
+	  fprintf(lcdatafile_ptr, "time Atrue rootaccuracy squarecheck therr \n");
+	  //fprintf(lcdatafile_ptr, "time mag_old_lcgen mag_vbm dif_over_mag\n");
         }
      }
 
@@ -210,8 +210,61 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
     }
 
 
+  int ndF = int(Event->dF.size()) / Event->nepochs;
+  // ─────────────── header ───────────────
+  {
+    static const char* baseCols[] = {
+      "Simulation_time", "measured_relative_flux", "measured_relative_flux_error",
+      "true_relative_flux",  "true_relative_flux_error",    "observatory_code",
+      "saturation_flag",     "best_single_lens_fit",        "parallax_shift_t",
+      "parallax_shift_u",    "BJD",                         "source_x",
+      "source_y",            "lens1_x",                     "lens1_y",
+      "lens2_x",             "lens2_y",                     "parallax_shift_x",
+      "parallax_shift_y",    "parallax_shift_z"
+    };
+    int nBase = sizeof(baseCols) / sizeof(baseCols[0]);
+    for(int i = 0; i < nBase; ++i) {
+      fprintf(lcfile_ptr, "%s ", baseCols[i]);
+    }
+    if (ndF > 0) {
+      string dF_nopllx = string("dF_t0 dF_tE dF_u0 dF_alpha dF_s dF_q dF_rs");
+      string dF_pllx   = string(" dF_piEN dF_piEE");
+      vector<string> parstrings;
+      int nfixpar = 7 + (Paramfile->pllxMultiplyer ? 2 : 0);
+      if (Paramfile->pllxMultiplyer)
+        split(dF_nopllx + dF_pllx, parstrings);
+      else
+        split(dF_nopllx, parstrings);
+      
+      stringstream ss;
+      for(size_t obsgroup = 0; obsgroup < Event->obsgroups.size(); ++obsgroup) {
+        int nobs    = int(Event->obsgroups[obsgroup].size());
+        int nparams = nfixpar + 2*nobs;
+
+        for(int idx = 0; idx < nparams; ++idx) {
+          ss.str("");  ss.clear();
+          ss << "ObsGroup_" << obsgroup << "_";
+
+          if (idx < nfixpar) {
+            ss << parstrings[idx];
+          } else {
+            int grpidx = (idx - nfixpar) / 2;
+            int obsidx = Event->obsgroups[obsgroup][grpidx];
+
+            if (((idx - nfixpar) % 2) == 0)
+              ss << "dF_Fbase" << obsidx;
+            else
+              ss << "dF_fs"     << obsidx;
+          }  
+     
+     	  fprintf(lcfile_ptr, "%s ", ss.str().c_str());
+        }
+      }
+    }
+    // finish the header line
+    fprintf(lcfile_ptr, "\n");
+  }
   //output the lightcurve
-  int ndF = int(Event->dF.size())/Event->nepochs;
   int shiftedidx;
 
   if(lcfile_ptr!=NULL && fileOpen==1)
@@ -248,6 +301,14 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
 		{
 		  fprintf(lcfile_ptr,"%.6g ",Event->dF[i+j*Event->nepochs]);
 		}
+	      //for(int j=0;j<ndF;j++)
+                //{
+                  //fprintf(lcfile_ptr,"%.6g ",Event->dF_debug[i+j*Event->nepochs]);
+               // }
+	      //for(int j=0;j<ndF;j++)
+               // {
+                 // fprintf(lcfile_ptr,"%.6g ",Event->dF_diff[i+j*Event->nepochs]);
+               // }
 	    }
 	  fprintf(lcfile_ptr,"\n");
 	}
@@ -263,8 +324,8 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
             {
 		t=Event->epoch[i];
 		obsidx=Event->obsidx[i];
-          	fprintf(lcdatafile_ptr, "%.11g %.12g %.12g %g\n ",
-                  Event->epoch[i], Event->Ampold[i], Event->AmpVBM[i], Event->Ampdif[i]);//0, 1, 2, 3
+          	fprintf(lcdatafile_ptr, "%.11g %.11g %.12g %.12g %.12g\n ",
+                  Event->epoch[i], Event->Atrue[i], Event->vbm_rootaccuracy[i], Event->vbm_squarecheck[i], Event->vbm_therr[i]);//0, 1, 2, 3,4
 	    }
 	    fclose(lcdatafile_ptr);
 	}}

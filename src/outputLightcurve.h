@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "strfns.h"
 #include "structures.h"
-
+#include "split.h"
 #include "info.h"
 #include "mathFns.h"
 #include "constdefs.h"

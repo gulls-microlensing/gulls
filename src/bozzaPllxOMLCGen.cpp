@@ -23,15 +23,12 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
   double xsCenter, ysCenter, rs, Gamma=0.4;
   double amp, eps=1.0e-3;
   double alpha, cosa, sina;
-  int useVBB=1;
-  VBMicrolensing VBM;
   
   vector<int> obsoffset(Paramfile->numobservatories,0);
 
   Event->Amax=-1;
   Event->umin=1e50;
-  double ampdark, ampvbm, dif_over_amp;
-  double lim_gamma=Paramfile->LD_GAMMA;
+  double lim_gamma=Event->gamma;
   double lcgen=Paramfile->LC_GEN;
   int idx,obsidx;
 
@@ -68,7 +65,8 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
   rs = Event->rs;	            /* source size */
   alpha = Event->alpha*TO_RAD;	    /* slope of the trajectory */
   Gamma = Event->gamma;	            /* limb-darkening profile */
-  VBM.a1 = lim_gamma;              /*  Linear limb-darkening coefficient.*/
+  Event->vbm->a1 = lim_gamma;             /*  Linear limb-darkening coefficient.*/
+ 
 
 
   cosa = cos(alpha); sina = sin(alpha);
@@ -84,9 +82,12 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
     {
       return;
     }
-  Event->Ampold.resize(Event->nepochs);
-  Event->AmpVBM.resize(Event->nepochs);
-  Event->Ampdif.resize(Event->nepochs);
+  if(Paramfile->verbosity>=4)
+    {
+            Event->vbm_rootaccuracy.resize(Event->nepochs);
+            Event->vbm_squarecheck.resize(Event->nepochs);
+            Event->vbm_therr.resize(Event->nepochs);
+    }  
   vector<int> idxshift;
   for(obsidx=0;obsidx<Paramfile->numobservatories;obsidx++)
     idxshift.push_back(Event->nepochsvec[obsidx]);
@@ -152,20 +153,13 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
 	    cout << setprecision(16) << s << " " << q << " " << xsrot
 		 << " " << ysrot << " " << rs << setprecision(6)
 		 << endl;
-	  amp = VBM.BinaryMag2(s,q,xsrot,ysrot,rs);
+	  
+	  amp = Event->vbm->BinaryMag2(s,q,xsrot,ysrot,rs);
           if(Paramfile->verbosity>=4)
             {
-                 //amp_Dark = VBM.BinaryMagDark(s,q,xsrot,ysrot,rs);
-                 ampdark = amp;
-		 if(Paramfile->verbosity>=3)
-		   cout << setprecision(16) << s << " " << q << " " << xsrot
-			<< " " << ysrot << " " << rs << setprecision(6)
-			<< endl;
-		 ampvbm = VBM.BinaryMag2(s,q,xsrot,ysrot,rs);
-                 dif_over_amp = (ampdark - ampvbm)/ampdark;
-                 Event->Ampold[idx] = ampdark;
-                 Event->AmpVBM[idx] = ampvbm;
-                 Event->Ampdif[idx] = dif_over_amp;
+                 Event->vbm_rootaccuracy[idx] = Event->vbm->rootaccuracy;
+                 Event->vbm_squarecheck[idx] = Event->vbm->squarecheck;
+                 Event->vbm_therr[idx] = Event->vbm->therr;
              }
 	  //xsCenter-=xcom; amp = pacAmp(qAdd(xsCenter,ysCenter));//for testing
 	}

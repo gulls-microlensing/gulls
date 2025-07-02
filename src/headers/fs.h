@@ -230,7 +230,7 @@ class finiteSource
 
   inline int nRays(int nPixels)
   {
-    static const double rmsCalibration=0.3;
+    static constexpr double rmsCalibration=0.3;
     //the number of rays to a side of a pixel
     //    return int(sqrt(pixArea/(src->area))/sqrt(fsthresh));
     return int(ceil( (rmsCalibration/fsthresh) * sqrt(src->area/(nPixels*pixArea)) ));

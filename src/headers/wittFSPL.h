@@ -22,9 +22,9 @@ struct wfspl_parameters {double zs; double rs; double Kx; double Ky;};
 struct innerParams {src_cld* src; double zs; double costheta;}; 
 struct outerParams {src_cld* src; double zs;}; 
 
-static const double gphOffX[13]={0.0, 0.5,0.0,-0.5,0.0, 1.0,0.0,-1.0,0.0, oosqrt2,-oosqrt2,-oosqrt2,oosqrt2};
+static constexpr double gphOffX[13]={0.0, 0.5,0.0,-0.5,0.0, 1.0,0.0,-1.0,0.0, oosqrt2,-oosqrt2,-oosqrt2,oosqrt2};
 
-static const double gphOffY[13]={0.0, 0.0,0.5,0.0,-0.5, 0.0,1.0,0.0,-1.0, oosqrt2,oosqrt2,-oosqrt2,-oosqrt2};
+static constexpr double gphOffY[13]={0.0, 0.0,0.5,0.0,-0.5, 0.0,1.0,0.0,-1.0, oosqrt2,oosqrt2,-oosqrt2,-oosqrt2};
 
 double wittFSMagnification(double zsc, double rs);
 

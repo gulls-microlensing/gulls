@@ -45,8 +45,8 @@ class parallax{
   static const int PLLXINITIALIZED=32768;   static const int LINITIALIZED=15;
   static const int allready=POSITION+ORBIT+REFFRAME+PROVIDED+EPOCHS
 	+NESHIFTS+TUSHIFTS;
-  static const double daysinyr = 365.25;
-  static const double auday_to_kms = 1731.456837;
+  static constexpr double daysinyr = 365.25;
+  static constexpr double auday_to_kms = 1731.456837;
 
   //Coordinate transformations object
   coords c;

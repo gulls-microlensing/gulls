@@ -18,7 +18,7 @@ class orbitalElements
  private:
 
   //numerical accuracy required for solution of Kepler's equation
-  static const double tol = 1.0e-6*3.1415926535897932384626433/180.0; 
+  static constexpr double tol = 1.0e-6*3.1415926535897932384626433/180.0; 
 
   //orbital elements and their time derivatives (in per year)
   //present value, value at epoch, rate of change
@@ -64,20 +64,20 @@ class orbitalElements
 
  public:
 
-  static const double J2000 = 2451545.0;
-  static const double cosob = 0.9174821392;
-  static const double sinob = 0.397776978;
-  static const double AUday2kms=1731.45684;
-  static const double day2s = 86400.0;
-  static const double aum = 1.49597871e11; //AU in m
-  static const double aukm = 1.49597871e8; //AU in km
-  static const double sindngp=0.455983776;
-  static const double cosdngp=0.889988087;
-  static const double sinangp=-0.222560701;
-  static const double cosangp=0.974918834;
-  static const double rangp=3.36603292;
-  static const double ra0=4.936838322;
-  static const double ll0=0.574736922;
+  static constexpr double J2000 = 2451545.0;
+  static constexpr double cosob = 0.9174821392;
+  static constexpr double sinob = 0.397776978;
+  static constexpr double AUday2kms=1731.45684;
+  static constexpr double day2s = 86400.0;
+  static constexpr double aum = 1.49597871e11; //AU in m
+  static constexpr double aukm = 1.49597871e8; //AU in km
+  static constexpr double sindngp=0.455983776;
+  static constexpr double cosdngp=0.889988087;
+  static constexpr double sinangp=-0.222560701;
+  static constexpr double cosangp=0.974918834;
+  static constexpr double rangp=3.36603292;
+  static constexpr double ra0=4.936838322;
+  static constexpr double ll0=0.574736922;
  
   double xh, yh, zh; //heliocentric coordinates in the plane of orbit
   double xecl, yecl, zecl; //coordinates in the J2000 ecliptic plane

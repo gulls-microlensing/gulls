@@ -34,14 +34,14 @@ static const int br=8;
 
 //gph offsets
 //order centre, half plus, full plus, full cross
-static const double gphOffsetX[13]={0.0, 0.5,0.0,-0.5,0.0, 1.0,0.0,-1.0,0.0, oosqrt2,-oosqrt2,-oosqrt2,oosqrt2};
-static const double gphOffsetY[13]={0.0, 0.0,0.5,0.0,-0.5, 0.0,1.0,0.0,-1.0, oosqrt2,oosqrt2,-oosqrt2,-oosqrt2};
+static constexpr double gphOffsetX[13]={0.0, 0.5,0.0,-0.5,0.0, 1.0,0.0,-1.0,0.0, oosqrt2,-oosqrt2,-oosqrt2,oosqrt2};
+static constexpr double gphOffsetY[13]={0.0, 0.0,0.5,0.0,-0.5, 0.0,1.0,0.0,-1.0, oosqrt2,oosqrt2,-oosqrt2,-oosqrt2};
 
 //error flags
 static const int wrongNumberOfImages=1;
 
 //thresholds
-static const double magEps=1.0e-7;
+static constexpr double magEps=1.0e-7;
 
 //fs constants
 

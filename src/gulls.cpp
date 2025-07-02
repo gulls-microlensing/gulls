@@ -179,16 +179,13 @@ int main(int argc, char *argv[]){                   /* BEGIN MAIN */
   cout << "Loading VBMicrolening ESPL table " << spftmp << endl;
   VBM.LoadESPLTable(spftmp); // Load the pre-calculated table (you only have to do this once)
 // The ESPL.dat file is located inside the data folder; copy it to your directory.
-  std::cout
-         << "After LoadESPLTable(): ESPL loaded? "
-         << (VBM.isESPLLoaded() ? "yes" : "no")
-         << ", ESPLin[0][0]="
-         << VBM.getESPLinEntry(0, 0)
-         << std::endl;  
+  cout << "After LoadESPLTable(): ESPL loaded? "
+       << (!VBM.ESPLoff ? "yes" : "no")
+       << endl;  
   // bail out if ESPL isn’t loaded
-  if (!VBM.isESPLLoaded()) {
-      std::cerr << "FATAL: ESPL table failed to load—exiting.\n";
-      std::exit(EXIT_FAILURE);
+  if (VBM.ESPLoff) {
+      cerr << "FATAL: ESPL table failed to load—exiting.\n";
+      exit(EXIT_FAILURE);
   }
   VBM.Tol=1.0e-4;
   VBM.RelTol=1.0e-6;

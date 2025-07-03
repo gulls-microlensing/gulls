@@ -19,7 +19,7 @@ void getPlanetvals(struct event* Event, struct obsfilekeywords World[], struct f
   Event->paramsHeader[SS] = string("s");
   Event->paramsHeader[TT] = string("period"); 
 
-  Paramfile->paramterization=0;
+  Paramfile->parameterization=0;
   
   //extract the input data
   for(int i=0;i<NPLANETINPUT;i++)

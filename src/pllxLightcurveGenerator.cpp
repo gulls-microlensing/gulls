@@ -45,13 +45,6 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
      {
       return;
      }
-    // Resize arrays to match number of epochs
-    if(Paramfile->verbosity>=4)
-    	{
-            Event->vbm_rootaccuracy.resize(Event->nepochs);
-            Event->vbm_squarecheck.resize(Event->nepochs);
-            Event->vbm_therr.resize(Event->nepochs);
-    	}
     vector<int> idxshift;
     int shiftedidx;
     for(obsidx=0;obsidx<Paramfile->numobservatories;obsidx++)
@@ -87,15 +80,12 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
             Event->yl2[idx] = 0.0;
 	    Event->vbm->a1 = lim_gamma;
 	    amp = Event->vbm->BinaryMag2(a, q, xsCoM, ysCenter, rs);
+	    Event->vbm_rootaccuracy[idx] = Event->vbm->rootaccuracy;
+	    Event->vbm_squarecheck[idx] = Event->vbm->squarecheck;
+	    Event->vbm_therr[idx] = Event->vbm->therr;
+
 	 }
         Event->Atrue[idx] = amp;
-
-        if (Paramfile->verbosity >= 4) {
-             // Save VBM diagnostics
-             Event->vbm_rootaccuracy[idx] = Event->vbm->rootaccuracy;
-             Event->vbm_squarecheck[idx] = Event->vbm->squarecheck;
-             Event->vbm_therr[idx] = Event->vbm->therr;
-            }
         
 
         // Keep track of highest magnification

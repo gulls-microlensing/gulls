@@ -187,8 +187,8 @@ int main(int argc, char *argv[]){                   /* BEGIN MAIN */
       cerr << "FATAL: ESPL table failed to load—exiting.\n";
       exit(EXIT_FAILURE);
   }
-  VBM.Tol=1.0e-4;
-  VBM.RelTol=1.0e-6;
+  VBM.Tol=Paramfile.vbm_tol;
+  VBM.RelTol=Paramfile.vbm_reltol;
   Event.vbm = &VBM;
   /* Initialise and warmup random number generator */
   idum = &var;        

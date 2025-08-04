@@ -250,11 +250,13 @@ double my_f(const gsl_vector *v, void *params)
       piEE = gsl_vector_get(v, 4);
       piE = qAdd(piEE,piEN);
 
-      if(piEN!=EventL->pllx[obsidx].piEN || piEN!=EventL->pllx[obsidx].piEN || tE!=EventL->pllx[obsidx].tE_r)
+      //
+      //	{
+      for(grpidx=0;grpidx<int(EventL->obsgroups[obsgroup].size());grpidx++)
 	{
-	  for(grpidx=0;grpidx<int(EventL->obsgroups[obsgroup].size());grpidx++)
+	  obsidx=EventL->obsgroups[obsgroup][grpidx];
+	  if(piEN!=EventL->pllx[obsidx].piEN || piEN!=EventL->pllx[obsidx].piEN || tE!=EventL->pllx[obsidx].tE_r)
 	    {
-	      obsidx=EventL->obsgroups[obsgroup][grpidx];
 	      //cout << "provide_observables " << obsgroup << " " << grpidx << " " << obsidx << " " << endl;
 	      //EventL->PSPL[obsgroup].pllx[obsidx].provide_observables_NE(piEN, piEE, tE);
 	      //EventL->PSPL[obsgroup].pllx[obsidx].compute_tushifts();

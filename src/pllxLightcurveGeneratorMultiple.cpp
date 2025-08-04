@@ -27,7 +27,6 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
   double amp, eps=1.0e-3;
   double alpha, cosa, sina,VBM_origin,Mao_origin ;
   int useVBB=1;
-  VBMicrolensing VBM;
   vector<int> obsoffset(Paramfile->numobservatories,0);
   Event->Amax=-1;
   Event->umin=1e50;
@@ -40,12 +39,14 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
   double lcgen=Paramfile->LC_GEN;
   if(DEBUGVAR) cout << "LC_GEN: " << lcgen << endl;
 
+  Event->vbm->SetMethod(VBMicrolensing::Method::Multipoly);
+
   m1 = 1.0/(1 + Event->params[QQ]); /* mass of the first lens m1+m2=1 */
   a = Event->params[SS];            /* separation */
   rs = Event->rs;                   /* source size */
   alpha = Event->alpha*TO_RAD;      /* slope of the trajectory */
   Gamma = Event->gamma;             /* limb-darkening profile */
-  VBM.a1 = lim_gamma;              /*  Linear limb-darkening coefficient.*/
+  Event->vbm->a1 = lim_gamma;              /*  Linear limb-darkening coefficient.*/
   q = Event->params[QQ];
   cosa = cos(alpha); sina = sin(alpha);
 
@@ -53,15 +54,22 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
   Mao_origin = -m1*a; //Translate from L1 origin to m1z2+m2z1=0 origin
   VBM_origin = (1-m1)*(-a); //Translate from L1 origin to center of mass origin
 
+  fstream fstr;
+  fstr.open("test.txt",fstream::out);
+  
+  
   int nn=4;
-  double pr[] = {
-				 0.0,0.0,1.0,
-				 1.0,-0.7,1.0e-4,
-				 2.0,0.7,1.0e-4,
-				 0.6,-0.6,1.0e-6
+  
+  double pr[] = {     //parameters
+    0.0, 0.0, 1.0,    // First lens: x1_1, x1_2, m1
+    1.0, -0.7, 1e-4,  // Second lens: x2_2, x2_2, m2
+    2.0, 0.7, 1e-4,   // Third lens: x3_re, x3_im, m3
+    0.6, -0.6, 1e-6   // Fourth lens: x4_re, x4_im, m4
   };
 
-  VBM.SetLensGeometry(nn,pr);
+
+  if(Paramfile->verbosity>2) cout << "Set geometry" << endl;
+  Event->vbm->SetLensGeometry(nn,pr);
   
 
 
@@ -73,9 +81,6 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
     {
       return;
     }
-  Event->Ampold.resize(Event->nepochs);
-  Event->AmpVBM.resize(Event->nepochs);
-  Event->Ampdif.resize(Event->nepochs);
 
   vector<int> idxshift;
   int shiftedidx;
@@ -116,29 +121,15 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
           xsCoM = tt*cosa - uu*sina + VBM_origin; //coordinate shift to center of mass
           xsCenter = tt*cosa - uu*sina + Mao_origin;// coordinate shif to primary lens
           ysCenter = tt*sina + uu*cosa;
-          if(Paramfile->verbosity>=4)
-	    {
-		 magfunc_(&m1, &a, &xsCenter, &ysCenter, &rs, &Gamma, &amp, &eps,
-                       &errflag);
-		 ampoldlc = amp;
-		 ampvbm = VBM.MultiMag(xsCoM, ysCenter,rs);
-		 dif_over_amp = (ampoldlc - ampvbm)/ampoldlc;
-		 Event->Ampold[idx] = ampoldlc;
-		 Event->AmpVBM[idx] = ampvbm;
-		 Event->Ampdif[idx] = dif_over_amp;
-             }
-           if (lcgen==0)
-	     {
-	       magfunc_(&m1, &a, &xsCenter, &ysCenter, &rs, &Gamma, &amp, &eps,
-			&errflag);
-	     }
-           else if (lcgen==1)
-	     {
-	       if(Paramfile->verbosity>=3)
-		 cout << setprecision(16) << a << " " << q << " " << xsCoM << " " << ysCenter << " " << rs << setprecision(6) << endl; 
-	       amp = VBM.BinaryMag2(a, q, xsCoM, ysCenter,rs);
-
-	     }
+	  if(Paramfile->verbosity>3) cout << hexfloat << Event->epoch[idx] << " " << Event->t0 << " " << Event->tE_r << " " << tt << " " << xsCoM << " " << ysCenter << " " << rs << endl;
+	  if(Paramfile->verbosity>3) fstr << hexfloat << Event->epoch[idx] << " " << Event->t0 << " " << Event->tE_r << " " << tt << " " << xsCoM << " " << ysCenter << " " << rs << endl;
+	  amp = Event->vbm->MultiMag2(xsCoM, ysCenter,rs);
+	  if(Paramfile->verbosity>3) cout << "Event->vbm->MultiMag2(xsCoM, ysCenter,rs); done" << endl;
+	  Event->vbm_rootaccuracy[idx] = Event->vbm->rootaccuracy;
+	  Event->vbm_squarecheck[idx] = Event->vbm->squarecheck;
+	  Event->vbm_therr[idx] = Event->vbm->therr;
+	  
+	  if(Paramfile->verbosity>3) cout << amp << endl;
         }
 
       Event->Atrue[idx] = amp;
@@ -166,10 +157,6 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
   
     }
 
-  //if there has been an error - try the backup generator
-  if(Event->lcerror)
-    {
-      Event->lcerror=0;
-      backupGenerator(Paramfile, Event, World, Sources, Lenses, logfile_ptr);
-    }
+  fstr.close();
+
 }

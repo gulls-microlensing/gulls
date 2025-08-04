@@ -32,9 +32,11 @@ void readParamfile(char *v_file, struct filekeywords *Paramfile){
   char str22[20];
   char str23[20];
   char str24[20];
+  char str25[20];
+  char str26[20];
 
   //S List of the keywords in the parameter files. Now requiring a path to the 'paths file' and the file name
-  const char *keywords[42] = {"OBSERVATORY_DIR", "OBSERVATORY_LIST",             //0,1
+  const char *keywords[44] = {"OBSERVATORY_DIR", "OBSERVATORY_LIST",             //0,1
 							  "SET_RANDOM_SEED_TO_CLOCK", "RANDOM_SEED",         //2,3
 							  "SIMULATION_ZERO_TIME", "WEATHER_PROFILE_DIR",     //4,5
 							  "RUN_NAME", "OUTPUT_DIR", "PRINCIPLE_OBSERVATORY", //6,7,8
@@ -48,7 +50,8 @@ void readParamfile(char *v_file, struct filekeywords *Paramfile){
 							  "PARALLAX","LENS_LIGHT","REPEAT_SEQUENCE",         //30,31,32  
 							  "OBS_GROUPS","NUM_SIM_DAYS","U0MAX",               //33,34,35
 							  "BASE_DIR","USE_FIELDS","ERROR_SCALING",           //36, 37, 38,
-							  "SUBRUNSIZE", "LC_GEN", "LD_GAMMA"};               //39, 40, 41
+							  "SUBRUNSIZE", "LC_GEN", "LD_GAMMA",               //39, 40, 41
+							  "VBM_RELTOL", "VBM_ABSTOL"};                      //42, 43
 
 
 
@@ -259,14 +262,18 @@ void readParamfile(char *v_file, struct filekeywords *Paramfile){
   if(read_config_var(v_file, keywords[33], Paramfile->obsgroupstr))
     {
       strcpy(Paramfile->obsgroupstr,"(ALL)");
+      cerr << "Setting " << keywords[33] << " to (ALL) by default" << endl;
     }
   if(read_config_var(v_file, keywords[34], str19)) //NUM_SIM_DAYS
     {
       strcpy(str19,"2010");
+      cerr << "Setting " << keywords[34] << " to 2010 by default" << endl;
+      
     }
   if(read_config_var(v_file, keywords[35], str20)) //U0MAX
     {
       strcpy(str20,"3");
+      cerr << "Setting " << keywords[35] << " to 3 by default" << endl;
     }
 
  if(read_config_var(v_file, keywords[38], str21)) //ERROR_SCALING
@@ -283,7 +290,18 @@ void readParamfile(char *v_file, struct filekeywords *Paramfile){
     }
   if(read_config_var(v_file, keywords[41], str24)) //LD_GAMMA
     {
-      strcpy(str20,"0.00");
+      strcpy(str24,"0.00");
+      cerr << "Setting " << keywords[41] << " to 0.00 by default" << endl;
+    }
+  if(read_config_var(v_file, keywords[42], str25)) //VBM_RELTOL
+    {
+      strcpy(str25,"1.0e-6");
+      cerr << "Setting " << keywords[42] << " to 1.0e-6 by default" << endl;
+    }
+  if(read_config_var(v_file, keywords[43], str26)) //VBM_TOL
+    {
+      strcpy(str26,"1.0e-4");
+      cerr << "Setting " << keywords[43] << " to 1.0e-4 by default" << endl;
     } 
   /*char *keywords[27] = {"OBSERVATORY_DIR", "OBSERVATORY_LIST", 
 			"SET_RANDOM_SEED_TO_CLOCK", "RANDOM_SEED", 
@@ -332,6 +350,8 @@ void readParamfile(char *v_file, struct filekeywords *Paramfile){
   Paramfile->SUBRUNSIZE = atoi(str22);
   Paramfile->LC_GEN = atoi(str23);
   Paramfile->LD_GAMMA = atof(str24);
+  Paramfile->vbm_reltol = atof(str25);
+  Paramfile->vbm_tol = atof(str26);
   string string11 = string(str11);
   size_t pos;
   pos = string11.find_first_of(",xX:");

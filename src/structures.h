@@ -158,6 +158,8 @@ struct filekeywords{
   double LC_GEN; // choose between 0 (old lc generator) and 1 (Bozza lc generator)
   double LD_GAMMA; //limb darkening coefficient used in lc-gen
 // A switch for appending uniform error scalings to find DeltaChi2 and n3sig cuts
+  double vbm_tol, vbm_reltol;
+  
   int error_scaling;
   int parameterization; //0=standard, 1=croin
   double tref; //Reference time for parallax

@@ -67,6 +67,7 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
 
   if(Paramfile->verbosity>=4)
     {
+      cout << "Writing extra lightcurve file" << endl;
       if(Paramfile->choosefield<0)
         {
           sprintf(lcdatafname, "%s%s_%d_%d.%s.lcdata", Paramfile->outputdir,
@@ -86,6 +87,7 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
 	  fprintf(lcdatafile_ptr, "time Atrue rootaccuracy squarecheck therr \n");
 	  //fprintf(lcdatafile_ptr, "time mag_old_lcgen mag_vbm dif_over_mag\n");
         }
+      cout << "Header written" << endl;
      }
 
 
@@ -317,6 +319,7 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
     }
   if(Paramfile->verbosity>=4)
     {
+      cout << "Writing extra lightcurve data" << endl;
       //output the lightcurve data
       if(lcdatafile_ptr!=NULL && fileOpen==1)
         {
@@ -328,7 +331,10 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
                   Event->epoch[i], Event->Atrue[i], Event->vbm_rootaccuracy[i], Event->vbm_squarecheck[i], Event->vbm_therr[i]);//0, 1, 2, 3,4
 	    }
 	    fclose(lcdatafile_ptr);
-	}}
+	}
+
+      cout << "Writing extra lightcurve data done" << endl;
+    }
 }
 
 void outputImages(struct event *Event, struct obsfilekeywords World[], struct slcat* Sources, struct filekeywords* Paramfile)

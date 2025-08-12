@@ -134,8 +134,8 @@ class parallax{
 
   int provide_murel_h_ad(double mua_h_, double mud_h_, double piE_, double thetaE_);
   int provide_murel_h_lb(double mul_h_, double mub_h_, double piE_, double thetaE_);
-  int provide_observables_NE(double piEN_, double piEE_, double tE_r);
-  int provide_observables_llrp(double piEll_, double piErp_, double tE_r);
+  int provide_observables_NE(double piEN_, double piEE_, double tE_r_, double thetaE_=1.0);
+  int provide_observables_llrp(double piEll_, double piErp_, double tE_r_, double thetaE_=1.0);
 
   //void initialize();
   //void fit_reinit();

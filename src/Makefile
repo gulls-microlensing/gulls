@@ -2,7 +2,8 @@
 #Options
 
 #OPT = -O2
-OPT = -O0 -g -fsanitize=address -fno-omit-frame-pointer
+OPT = -O0 -g
+#-fsanitize=address -fno-omit-frame-pointer
 
 BASEDIR = /home/penny/gulls_mp/src
 FFLAGS	= $(OPT) -Wall 

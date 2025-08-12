@@ -26,7 +26,7 @@ void getPlanetvals(struct event* Event, struct obsfilekeywords World[], struct f
     }
 
   //Calculate the derived planet properties
-  Event->params[QQ] = Event->params[PMASS] / Lenses->data[ln][MASS];
+  Event->params[QQ] = Event->params[PMASS] / Lenses->data[ln][Lenses->MASS];
 
   double x,y;
   x = Event->params[AA] * cos(Event->params[PHASE]*TO_RAD);
@@ -36,7 +36,7 @@ void getPlanetvals(struct event* Event, struct obsfilekeywords World[], struct f
   Event->params[SS] = sqrt(x*x + y*y) / Event->rE;
 
   Event->params[TT] = sqrt(cube(Event->params[AA]) 
-			   / (Event->params[PMASS] + Lenses->data[ln][MASS]));
+			   / (Event->params[PMASS] + Lenses->data[ln][Lenses->MASS]));
 
   //setupParallax(Event->t0, Paramfile, World, Event, Sources, Lenses);
   Paramfile->tref=Event->t0;

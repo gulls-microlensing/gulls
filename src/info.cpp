@@ -71,25 +71,16 @@ void writeHeader(struct filekeywords* Paramfile, struct event *Event, struct slc
   //source data - +6+1 = 8
   ofile << "SourceID" << " ";
   for(int i=0;i<Sources->datakey.size();i++)
-	{
-	  ofile << "Source_" << Sources->datakey[i] << " ";
-	}
-  //for(int i=0;i<sOutputCols;i++)
-  //  {
-  //    ofile << Sources->data[Event->source][sOutputColumns[i]] << " ";
-  //  }
+    {
+      ofile << "Source_" << Sources->datakey[i] << " ";
+    }
 
   //lens data - +10+1 = 15
   ofile << "LensID" << " ";
   for(int i=0;i<Lenses->datakey.size();i++)
-	{
-	  ofile << "Lens_" << Lenses->datakey[i] << " ";
-	}
-  //for(int i=0;i<lOutputCols;i++)
-  //  {
-  //    ofile << Lenses->data[Event->lens][lOutputColumns[i]] << " ";
-  //  }
-  //ofile << "| ";
+    {
+      ofile << "Lens_" << Lenses->datakey[i] << " ";
+    }
 
   
   //microlensing paramters - 11+1 = 26
@@ -229,15 +220,16 @@ void writeEventParams(struct filekeywords* Paramfile, struct event *Event, struc
   ofile << Paramfile->tref << " ";
   ofile << Event->tcroin << " ";
   ofile << Event->ucroin << " " << Event->rcroin << " ";
-  double murel_l = Lenses->data[ln][MUL]-Sources->data[sn][MUL];
-  double murel_b = Lenses->data[ln][MUB]-Sources->data[sn][MUB];
+  double murel_l = Lenses->data[ln][Lenses->MUL]-Sources->data[sn][Sources->MUL];
+  double murel_b = Lenses->data[ln][Lenses->MUB]-Sources->data[sn][Sources->MUB];
   double murel_ref = Event->thE/Event->tE_r * DAYINYR;
 
-
+  //cout << "2muh,mur,teh,ter,muref,muhelio " << Event->pllx[0].murel_h << " " << Event->pllx[0].murel_r << " " << Event->tE_h << " " << Event->tE_r << " " << murel_ref << " " << Event->pllx[0].murel_h << endl;
+  
   ofile << Event->tE_r << " " << Event->tE_h << " " << Event->rE << " " << Event->thE << " " 
 		<< Event->rs << " " << Event->piE << " " << Event->piEN << " " << Event->piEE << " "
 		<< Event->murel*Event->pllx[0].mua_h << " " << Event->murel*Event->pllx[0].mud_h << " " << Event->murel*Event->pllx[0].mul_h << " " << Event->murel*Event->pllx[0].mub_h << " " << Event->murel*Event->pllx[0].mulam_h << " " << Event->murel*Event->pllx[0].mubet_h << " " << Event->pllx[0].murel_h << " "
-		<< murel_ref*Event->pllx[0].mua_r << " " <<  murel_ref*Event->pllx[0].mud_r << " " << murel_ref*Event->pllx[0].mul_r << " " << murel_ref*Event->pllx[0].mub_r << " " << murel_ref*Event->pllx[0].mulam_r << " " << murel_ref*Event->pllx[0].mubet_r << " " << murel_ref*Event->pllx[0].murel_r << " "
+		<< murel_ref*Event->pllx[0].mua_r << " " <<  murel_ref*Event->pllx[0].mud_r << " " << murel_ref*Event->pllx[0].mul_r << " " << murel_ref*Event->pllx[0].mub_r << " " << murel_ref*Event->pllx[0].mulam_r << " " << murel_ref*Event->pllx[0].mubet_r << " " << Event->pllx[0].murel_r << " "
 		<< Event->pllx[0].vtilde_h << " " << Event->pllx[0].vtilde_r << " " << Event->pllx[0].v_ref << " "
 		<< Event->pllx[0].vtilde_N_h << " " << Event->pllx[0].vtilde_E_h << " " <<  Event->pllx[0].vtilde_N_r << " " << Event->pllx[0].vtilde_E_r << " " << Event->pllx[0].v_ref_N << " " << Event->pllx[0].v_ref_E << " "
 		<< Event->pllx[0].piEll << " " << Event->pllx[0].piErp << " "

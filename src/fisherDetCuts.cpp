@@ -21,7 +21,7 @@ void detectionCuts(struct filekeywords* Paramfile, struct event *Event, struct o
 
   double pllx=Paramfile->pllxMultiplyer;
 
-  string params_nopllx=string("t0 tE u0 alpha s q rs");
+  string params_nopllx=string("t0 log_tE u0 alpha log_s log_q log_rho");
   string params_pllx=string(" piEN piEE");
   vector<string> params_obs;
   split(string("Fbase fs"),params_obs);
@@ -171,7 +171,7 @@ void detectionCuts(struct filekeywords* Paramfile, struct event *Event, struct o
 		  if(!Event->outputthis) fmfname=string("");
 		  
 		  ss.str(string(""));
-		  ss << "t0\tlog(tE)\tu0\talpha\tlog(s)\tlog(q)\tlog(rs)\t";
+		  ss << "t0\tlog(tE)\tu0\talpha\tlog(s)\tlog(q)\tlog(rho)\t";
 		  if(pllx) ss << "piEN\tpiEE\t";
 		  ss << "{F0\tfs}";
 		  header = ss.str();

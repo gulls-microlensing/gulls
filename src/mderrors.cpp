@@ -66,12 +66,12 @@ vector<double> mderrors(gsl_matrix* cov, int npar, int obs1, int obs2, double al
   // 6,8,... = F0     
   // 7,9,... = fs
 
-  double M = Lenses->data[Event->lens][MASS] * (ffp ? Event->params[QQ] : 1);
+  double M = Lenses->data[Event->lens][Lenses->MASS] * (ffp ? Event->params[QQ] : 1);
   double piEN = Event->piEN;
   double piEE = Event->piEE;
   double piE = Event->piE;
   double rho = Event->rs;
-  double pirel = 1.0/Lenses->data[Event->lens][DIST] - 1.0/Sources->data[Event->source][DIST];
+  double pirel = 1.0/Lenses->data[Event->lens][Lenses->DIST] - 1.0/Sources->data[Event->source][Sources->DIST];
 
   //cout << M << " " << piEN << " " << piEE << " " << piE << " " << rho << " " << pirel << endl;
   //cout << obs1 << " " << obs2 << endl;

@@ -68,8 +68,9 @@ static double deriv_wrapper(double x, void* p) {
     int shiftedidx = idx - Event->nepochsvec[obsidx];
 
     if (Paramfile->pllxMultiplyer && (param == 7 || param == 8 || param == 1)) {
-        for (int i = 0; i < Paramfile->numobservatories; i++) {
-            Event->pllx[i].provide_observables_NE(piEN, piEE, tE);
+        for (int i = 0; i < Paramfile->numobservatories; i++)
+	  {
+	    Event->pllx[i].provide_observables_NE(piEN, piEE, tE, Event->thE);
             Event->pllx[i].compute_tushifts();
         }
     }

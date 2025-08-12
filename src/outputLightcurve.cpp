@@ -115,16 +115,11 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
   //Source data
   strcpy(data,"#Sourcedata: ");
   sprintf(tmp,"%d ",sn); strcat(data,tmp);
-  //for(int i=0;i<sOutputCols;i++)
-  //  {
-  //    sprintf(tmp,"%g ", Sources->data[sn][sOutputColumns[i]]);
-  //    strcat(data,tmp);
-  //}
   for(int i=0;i<Sources->data[sn].size();i++)
-	{
-	  sprintf(tmp,"%g ", Sources->data[sn][i]);
+    {
+      sprintf(tmp,"%g ", Sources->data[sn][i]);
       strcat(data,tmp);
-	}
+    }
   fprintf(lcfile_ptr,"%s\n",data);
 
   //Observatory magnitudes
@@ -150,16 +145,11 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
   //Lens data
   strcpy(data,"#Lensdata: ");
   sprintf(tmp,"%d ",ln); strcat(data,tmp);
-  //for(int i=0;i<lOutputCols;i++)
-  //  {
-  //    sprintf(tmp,"%g ", Lenses->data[ln][lOutputColumns[i]]);
-  //    strcat(data,tmp);
-  //  }
   for(int i=0;i<Lenses->data[ln].size();i++)
-	{
-	  sprintf(tmp,"%g ", Lenses->data[ln][i]);
+    {
+      sprintf(tmp,"%g ", Lenses->data[ln][i]);
       strcat(data,tmp);
-	}
+    }
   fprintf(lcfile_ptr,"%s\n",data);
 
   //Observatory magnitudes

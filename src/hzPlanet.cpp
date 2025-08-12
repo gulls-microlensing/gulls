@@ -16,10 +16,10 @@ void getPlanetvals(struct event* Event, struct obsfilekeywords World[], struct f
     }
 
   //Semimajor axis is currently holding the a/aHZ position - swap them...
-  Event->params[AA] = Event->params[AA] * sqrt(pow(10.0,-0.4*(Lenses->data[ln][MBOL]-4.75)));
+  Event->params[AA] = Event->params[AA] * sqrt(pow(10.0,-0.4*(Lenses->data[ln][Lenses->MBOL]-4.75)));
 
   //Calculate the derived planet properties
-  Event->params[QQ] = Event->params[PMASS] / Lenses->data[ln][MASS];
+  Event->params[QQ] = Event->params[PMASS] / Lenses->data[ln][Lenses->MASS];
 
   double sqrt1pq = sqrt(1+Event->params[QQ]);
 
@@ -39,7 +39,7 @@ void getPlanetvals(struct event* Event, struct obsfilekeywords World[], struct f
   Event->params[SS] = sqrt(x*x + y*y) / Event->rE;
 
   Event->params[TT] = sqrt(cube(Event->params[AA]) 
-			   / (Event->params[PMASS] + Lenses->data[ln][MASS]));
+			   / (Event->params[PMASS] + Lenses->data[ln][Lenses->MASS]));
 
   if(Event->u0max<0.01)
     {

@@ -1,5 +1,6 @@
 #include<vector>
 #include<string>
+#include<unordered_map>
 
 #include "definitions.h"
 #include "image.h"
@@ -164,6 +165,9 @@ struct filekeywords{
   int parameterization; //0=standard, 1=croin
   double tref; //Reference time for parallax
 
+  int multiple_sources;
+  int multiple_lenses;
+
   long* seed;
 
   double alltime;
@@ -281,6 +285,7 @@ struct fittedparams{
 struct event{
 
   int source, lens;
+  vector<int> scompanions, lcompanions;
   int field;
   int id;
   //microlensing paramters
@@ -386,9 +391,41 @@ struct slcat
   double dl;
   double db;
   vector<string> datakey;
+  unordered_map<string, int> datadict;
   vector<vector<double> > data;
   vector<string> magkey;
+  unordered_map<string, int> magdict;
   vector<vector<double> > mags;
+
+  //The meanings of each of the input and output columns
+  //Commenting out those that aren't used
+  int MUL = 0;
+  int MUB = 1;
+  int VR = 2;
+  int UU = 3;
+  int VV = 4;
+  int WW = 5;
+  //int MV = 6;
+  //int CL = 7;
+  //int TYP = 8;
+  int TEFF = 9;
+  int LOGG = 10;
+  //int AGE = 11;
+  int MASS = 12;
+  int MBOL = 13;
+  int RADIUS = 14;
+  //int FEH = 15;
+  int LL = 16;
+  int BB = 17;
+  int RA = 18;
+  int DEC = 19;
+  int DIST = 20;
+  int XX = 21;
+  int YY = 22;
+  int ZZ = 23;
+  //int AV = 24;
+  //int HEFE = 25;
+
   //         J     R-H     I-H     J-H           mul     mub        Vr    UU      VV      WW      Mv  CL Typ  Teff  logg Age Mass Mbol Radius [Fe/H]  l(deg)      b(deg)   RA2000.0     DEC2000.0       Dist   x(kpc)  y(kpc)  z(kpc)  Av [alpha/Fe]
 
   slcat()

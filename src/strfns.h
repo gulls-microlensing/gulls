@@ -2,6 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include<string>
+
 #ifndef NOERROR
 	#define NOERROR 0
 #endif
@@ -12,8 +14,9 @@
 	#define KEY_ERR -2
 #endif
 
+using namespace std;
 
 char *pad(char *s, int size);
 char *fmtline(char *str, int size, const char *msg);
-int read_config_var( char *, const char * , char [] );
+int read_config_var( const char *, const char * , char [] );
 int strip_whitespace(char* input);

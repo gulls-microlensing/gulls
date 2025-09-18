@@ -3,7 +3,9 @@ CC = icpx
 F77 = ifx
 FC = ifx
 
-OPT = -O2
+#OPT = -g
+OPT = -O0 -g
+#-fsanitize=address -fno-omit-frame-pointer
 
 VPATH = headers:classes:headers/fs:classes/fs:
 
@@ -11,7 +13,7 @@ GSLFLAGS = -lgsl -lgslcblas
 WFLAGS = -Wall -Wno-deprecated-declarations -Wno-gnu-static-float-init
 #WFLAGS = -Wnon-virtual-dtor -Wreorder -Wstrict-aliasing -Wstrict-aliasing=2 -Wno-pragmas -Wunknown-pragmas -Wunused -Wtrigraphs -Wswitch-enum -Wswitch-default -Wswitch -Wreturn-type -Wsequence-point -Wparentheses -Wmissing-include-dirs -Wmissing-braces -Wimplicit -Wimplicit-int -Winit-self -Wnonnull -Wformat -Wcomment -Wfatal-errors -Wchar-subscripts -Wno-import
 #CPPFLAGS = $(WFLAGS) -I/Users/penny/apps/VBMicrolensing/VBMicrolensing/lib/ -I$(BASEDIR)/headers/  -std=c++98 -ansi $(OPT) #-O0 -g -fsanitize=address
-CPPFLAGS = $(WFLAGS) -O2 -I/home/penny/apps/cfitsio-4.3.0/ -I/home/penny/include/ -I$(BASEDIR)/headers/ -lm -lstdc++ -ansi -fPIC  -Wextra -DNDEBUG -std=c++11
+CPPFLAGS = $(WFLAGS) $(OPT) -I/home/penny/apps/cfitsio-4.3.0/ -I/home/penny/include/ -I$(BASEDIR)/headers/ -lm -lstdc++ -ansi -fPIC  -Wextra -DNDEBUG -std=c++11
 #CPPFLAGS = $(WFLAGS) -g -I$(BASEDIR)/headers/  -I/usr/include/cfitsio -ansi
 CXXFLAGS = $(CPPFLAGS)
 FFLAGS	= $(OPT) -I$(BASEDIR)/headers/ #-L$(BASEDIR)/classes/

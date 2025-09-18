@@ -5,7 +5,7 @@
 #include "structures.h"
 //#include "findBlending.h"
 
-void buildEvent(struct event *Event, struct obsfilekeywords World[], vector<vector<vector<double> > >* starfield, vector<double>* starfielddata, struct filekeywords *Paramfile, struct slcat *Sources, struct slcat *Lenses, int sdx, char* instance_, long *idum);
+void buildEvent(struct event *Event, struct obsfilekeywords World[], vector<vector<vector<double> > >* starfield, vector<double>* starfielddata, struct filekeywords *Paramfile, struct slcat *Sources, struct slcat *Lenses, int sdx, string instance, long *idum);
 void addstars(struct event *Event, struct obsfilekeywords World[], 
 	      vector<vector<vector<double> > >* sf, 	      
 	      vector<double>* sfdata, 

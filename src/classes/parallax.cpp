@@ -281,7 +281,9 @@ int parallax::provide_murel_h_ad(double mua_h_, double mud_h_, double piE_, doub
 
   //cout << "Timescale in the reference frame (this is what's measured from the lightcurve)" << endl;
   tE_r = 1.0/qAdd(wr[0],wr[1]);
-  murel_r = thetaE/tE_r * daysinyr;
+  murel_r = thetaE/(tE_r / daysinyr);
+
+  //cout << "muh,mur,teh,ter " << murel_h << " " << murel_r << " " << tE_h << " " << tE_r << endl;
 
   //cout << "unit vector in ecliptic coordinates is in the same direction as proper motion" << endl;
   mulam_r = wr[0]*tE_r;
@@ -314,7 +316,7 @@ int parallax::provide_murel_h_lb(double mul_h_, double mub_h_, double piE_, doub
   return status;
 }
 
-int parallax::provide_observables_NE(double piEN_, double piEE_, double tE_r_)
+int parallax::provide_observables_NE(double piEN_, double piEE_, double tE_r_, double thetaE_)
 {
   if(debug) cout << __FUNCTION__ << endl;
   testinit(string(__FUNCTION__),status,PROVIDED);
@@ -346,7 +348,7 @@ int parallax::provide_observables_NE(double piEN_, double piEE_, double tE_r_)
   c.muad2lb(a,d,mua_r,mud_r,&mul_r,&mub_r);
 
   //cout << "We don't know thetaE, so let's just set mu_rel as if theta_E were 1.0 mas" << endl;
-  murel_r = 1.0/tE_r * daysinyr;
+  murel_r = thetaE_/tE_r * daysinyr;
 
   //cout << "Compute the vecocity of the observer in the reference frame in ecliptic coordinates (in Einstein radii per day)" << endl;
   wr[0] = mulam_r/tE_r;
@@ -380,14 +382,14 @@ int parallax::provide_observables_NE(double piEN_, double piEE_, double tE_r_)
   
   //cout << "What's its magnitude" << endl;
 
-  tE_h = 1.0/qAdd(wh[0],wh[1]); //This assumes thetaE is 1.0 mas
-  murel_h = 1.0/tE_h * daysinyr; //This assumes thetaE is 1.0 mas
+  tE_h = thetaE_/qAdd(wh[0],wh[1]); //This assumes thetaE is 1.0 mas if thetaE is not provided 
+  murel_h = thetaE_/tE_h * daysinyr; //This assumes thetaE is 1.0 mas if thetaE is not provided
   status |= PROVIDED;
   return status;
 }
 
 
-int parallax::provide_observables_llrp(double piEll_, double piErp_, double tE_r_)
+int parallax::provide_observables_llrp(double piEll_, double piErp_, double tE_r_, double thetaE_)
 {
   if(debug) cout << __FUNCTION__ << endl;
   testinit(string(__FUNCTION__),status,PROVIDED);
@@ -395,7 +397,7 @@ int parallax::provide_observables_llrp(double piEll_, double piErp_, double tE_r
   double piEN_ = piEll*cos(phi_llN) - piErp*sin(phi_llN);
   double piEE_ = piEll*sin(phi_llN) + piErp*cos(phi_llN);
 
-  provide_observables_NE(piEN_, piEE_, tE_r_);
+  provide_observables_NE(piEN_, piEE_, tE_r_,thetaE_);
   return status;
 }
 

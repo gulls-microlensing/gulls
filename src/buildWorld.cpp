@@ -23,11 +23,7 @@ of the event for each observatory.
 
 using namespace std;
 
-void loadFieldCentres(struct obsfilekeywords World[], struct filekeywords *Paramfile, int obsidx);
 void buildWorldErr(int err, int line, const char msg[]);
-void computeFieldVerticies(struct obsfilekeywords World[], int obsidx, ofstream& logfile_ptr);
-void showVerticies(struct obsfilekeywords World[], int obsidx, ofstream& logfile_ptr);
-void surveyArea(struct obsfilekeywords World[],int obsidx,ofstream& logfile_ptr);
 int inboundary(double x, double y, double X[], double Y[], int ndata);
 void loadObsSequence(struct obsfilekeywords* World, struct filekeywords *Paramfile);
 void applyObsSequence(struct obsfilekeywords World[], struct filekeywords *Paramfile);
@@ -53,35 +49,34 @@ void buildWorld(struct filekeywords *Paramfile, struct obsfilekeywords World[], 
   
   void findSunRiseSetTimes(struct filekeywords *Paramfile, struct obsfilekeywords World[], int numobservatories);
   void applyWeather(struct obsfilekeywords World[], struct filekeywords *Paramfile, long *idum);
-  void buildFields(struct obsfilekeywords World[], struct filekeywords *Paramfile, ofstream& logfile_ptr);
   void collectingArea(struct obsfilekeywords World[], int numobservatories);
-  char listfile[1000];
+  string listfile;
   FILE* obslistfile_ptr; 
   char str[100];
   char tmp[100];
-  char obsfile[1000];
+  string obsfile;
   int obsctr = 0;
   int allspace=1;
   int i;
 
-  strcpy(listfile,Paramfile->obslist);
+  listfile = Paramfile->obslist;
 
   /* Open up listfile containing observatories */
-  if(strlen(listfile))       
+  if(listfile.length())       
     { 	
-      obslistfile_ptr = fopen(listfile, "r");
+      obslistfile_ptr = fopen(listfile.c_str(), "r");
       if (obslistfile_ptr == NULL)
-		{
-		  sprintf(str,"Unable to open file: %s",Paramfile->obslist);
-		  fmtline(str,WIDTH,"FAILED");
-		  exit(1);
-		}
-      sprintf(str,"Observatory list file: %s",Paramfile->obslist);
+	{
+	  sprintf(str,"Unable to open file: %s",Paramfile->obslist.c_str());
+	  fmtline(str,WIDTH,"FAILED");
+	  exit(1);
+	}
+      sprintf(str,"Observatory list file: %s",Paramfile->obslist.c_str());
       fmtline(str,WIDTH,"READY");
     }
   else
     {
-      sprintf(str,"Unable to find file: %s",Paramfile->obslist);
+      sprintf(str,"Unable to find file: %s",Paramfile->obslist.c_str());
       fmtline(str,WIDTH,"FAILED");
       exit(1);
     }
@@ -114,10 +109,10 @@ void buildWorld(struct filekeywords *Paramfile, struct obsfilekeywords World[], 
   ifstream obslist;
   obslist.open(listfile);
   if(!obslist)
-	{
-	  cerr << "Could not open observatory list file " << listfile << endl;
-	  exit(1);
-	}
+    {
+      cerr << "Could not open observatory list file " << listfile << endl;
+      exit(1);
+    }
 
   obsctr=0;
 
@@ -132,149 +127,147 @@ void buildWorld(struct filekeywords *Paramfile, struct obsfilekeywords World[], 
       line = line.substr(0,line.find_first_of("#"));
       
       split(line,sdata);
-	  modifications.push_back(sdata);
+      modifications.push_back(sdata);
 
-	  //Form of the file is one line per observatory,
-	  //first word is the observatory file and subsequent
-	  //words are modifications with keyword and value
-	  //separated by an equals sign. Modifications can
-	  //be to the observatory file keywords or the
-	  //detector file keywords (and can modify the
-	  //detector file too)
+      //Form of the file is one line per observatory,
+      //first word is the observatory file and subsequent
+      //words are modifications with keyword and value
+      //separated by an equals sign. Modifications can
+      //be to the observatory file keywords or the
+      //detector file keywords (and can modify the
+      //detector file too)
 
-	  if(sdata.size()>=1)
-		{
+      if(sdata.size()>=1)
+	{
 
-		  sprintf(obsfile,"%s%s",Paramfile->obsdir,sdata[0].c_str());
-		  //obsfile[strlen(obsfile)-1]='\0';
+	  obsfile = Paramfile->obsdir + sdata[0];
+	  //obsfile[strlen(obsfile)-1]='\0';
 		  
-		  //strcpy(obsfile,sdata[0].c_str());
-		  if(Paramfile->verbosity>0)  cout << "readObservatoryfile " << obsfile << endl;
-		  readObservatoryfile(obsfile,World,obsctr);
-		  if(Paramfile->verbosity>0)  {printf("Observatoryfile read\n"); fflush(stdout);}
+	  //strcpy(obsfile,sdata[0].c_str());
+	  if(Paramfile->verbosity>0)  cout << "readObservatoryfile " << obsfile << endl;
+	  readObservatoryfile(obsfile,World,obsctr);
+	  if(Paramfile->verbosity>0)  {printf("Observatoryfile read\n"); fflush(stdout);}
 
-		  sprintf(str,"%s",obsfile); 
-		  fmtline(str,2*WIDTH,"PARSED"); 
-		  World[obsctr].Aseen=0;
-		  World[obsctr].Aoccured=0;
-		  World[obsctr].Nseen=0;
-		  World[obsctr].Noccured=0;
+	  sprintf(str,"%s",obsfile.c_str()); 
+	  fmtline(str,2*WIDTH,"PARSED"); 
+	  World[obsctr].Aseen=0;
+	  World[obsctr].Aoccured=0;
+	  World[obsctr].Nseen=0;
+	  World[obsctr].Noccured=0;
 
-		  //Now modify the file if it has any. First a copy of the readObservatoryFile function to see where things can be copied over
-		  const char *keywords[24] = {"NAME","LATITUDE","LONGITUDE","ALTITUDE","READ_OHEAD","NFIELDS","WEATHER_PROFILE","FIELDCENTRES","NPIX_X","NPIX_Y","PIXELSIZE","PRIMARY","BLOCKAGE","SPACE","FILTER","OBSERVATION_SEQUENCE","DETECTOR","THROUGHPUT","REFERENCE_TEXP","REFERENCE_NSTACK","ORBIT","PHOTOMETRY","EXTCOEFF","SKY_BACKGROUND"};
+	  //Now modify the file if it has any. First a copy of the readObservatoryFile function to see where things can be copied over
+	  const char *keywords[24] = {"NAME","LATITUDE","LONGITUDE","ALTITUDE","READ_OHEAD","NFIELDS","WEATHER_PROFILE","FIELDCENTRES","NPIX_X","NPIX_Y","PIXELSIZE","PRIMARY","BLOCKAGE","SPACE","FILTER","OBSERVATION_SEQUENCE","DETECTOR","THROUGHPUT","REFERENCE_TEXP","REFERENCE_NSTACK","ORBIT","PHOTOMETRY","EXTCOEFF","SKY_BACKGROUND"};
 
-		  int nkey=24; /* Number of keywords defined in array "keywords" */
+	  int nkey=24; /* Number of keywords defined in array "keywords" */
 
-		  int jdx;
+	  int jdx;
 	  
-		  // Read the Keyword values in as strings 
-		  /*for(jdx=0;jdx<nkey;jdx++)
-			{
-			  if(read_config_var(v_file, keywords[jdx] , String[jdx])!=0)
-				{
-				  cerr << "Error reading observatory file (" << v_file << ")" << endl;
-				  bwspecerror(1,keywords[jdx]); 
-				  if(jdx!=22) exit(1);
-				}
-				}*/
+	  // Read the Keyword values in as strings 
+	  /*for(jdx=0;jdx<nkey;jdx++)
+	    {
+	    if(read_config_var(v_file, keywords[jdx] , String[jdx])!=0)
+	    {
+	    cerr << "Error reading observatory file (" << v_file << ")" << endl;
+	    bwspecerror(1,keywords[jdx]); 
+	    if(jdx!=22) exit(1);
+	    }
+	    }*/
 
-		  //Have to convert some to doubles in the observatory structure - this is copied and modified from the readObservatoryFile
-		  //function, and could be made more efficient/less error prone with a map
+	  //Have to convert some to doubles in the observatory structure - this is copied and modified from the readObservatoryFile
+	  //function, and could be made more efficient/less error prone with a map
 
 
-		  //Loop over modifications - if there is a match, it will replace the value taken from the observatory file
-		  for(int modidx=1;modidx<sdata.size();modidx++)
-			{
-			  split(sdata[modidx],kwdata,string(1,'='));
-			  for(int kwidx=0;kwidx<nkey;kwidx++)
-				{
+	  //Loop over modifications - if there is a match, it will replace the value taken from the observatory file
+	  for(int modidx=1;modidx<sdata.size();modidx++)
+	    {
+	      split(sdata[modidx],kwdata,string(1,'='));
+	      for(int kwidx=0;kwidx<nkey;kwidx++)
+		{
       
-				  if(strncmp(keywords[kwidx], kwdata[0].c_str(),strlen(keywords[kwidx])) == 0 )
-					{
-					  switch(kwidx)
-						{
-						case 0:
-						  strcpy(World[obsctr].name,kwdata[1].c_str()); break;//"NAME"
-						case 1:
-						  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].latitude) ==0) {bwspecerror(2,keywords[1]); exit(1);};
-						  break; //"LATITUDE"
-						case 2:
-						  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].longitude) ==0) {bwspecerror(2,keywords[2]); exit(1);};
-						  break; //"LONGITUDE"
-						case 3:
-						  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].altitude) ==0) {bwspecerror(2,keywords[3]); exit(1);};
-						  break; //"ALTITUDE"
-						case 4:
-						  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].readohead) ==0) {bwspecerror(2,keywords[4]); exit(1);};
-						  break; //"READ_OHEAD"
-						case 5:
-						  if(sscanf(kwdata[1].c_str(),"%d",&World[obsctr].nfields) ==0) {bwspecerror(2,keywords[5]); exit(1);};
-						  break; //"NFIELDS"
-						case 6:
-						  strcpy(World[obsctr].weatherProfile,kwdata[1].c_str());
-						  break; //"WEATHER_PROFILE"
-						case 7:
-						  strcpy(World[obsctr].fieldCentreFile,kwdata[1].c_str());
-						  break;//"FIELDCENTRES"
+		  if(strncmp(keywords[kwidx], kwdata[0].c_str(),strlen(keywords[kwidx])) == 0 )
+		    {
+		      switch(kwidx)
+			{
+			case 0:
+			  World[obsctr].name = kwdata[1];
+			  break;//"NAME"
+			case 1:
+			  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].latitude) ==0) {bwspecerror(2,keywords[1]); exit(1);};
+			  break; //"LATITUDE"
+			case 2:
+			  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].longitude) ==0) {bwspecerror(2,keywords[2]); exit(1);};
+			  break; //"LONGITUDE"
+			case 3:
+			  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].altitude) ==0) {bwspecerror(2,keywords[3]); exit(1);};
+			  break; //"ALTITUDE"
+			case 4:
+			  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].readohead) ==0) {bwspecerror(2,keywords[4]); exit(1);};
+			  break; //"READ_OHEAD"
+			case 5:
+			  if(sscanf(kwdata[1].c_str(),"%d",&World[obsctr].nfields) ==0) {bwspecerror(2,keywords[5]); exit(1);};
+			  break; //"NFIELDS"
+			case 6:
+			  World[obsctr].weatherProfile = kwdata[1];
+			  break; //"WEATHER_PROFILE"
 
-						  //"NPIX_X","NPIX_Y","PIXELSIZE","PRIMARY","BLOCKAGE","SPACE","FILTER","OBSERVATION_SEQUENCE","DETECTOR"
-						case 8:
-						  if(sscanf(kwdata[1].c_str(),"%d",&World[obsctr].npixx) ==0) {bwspecerror(2,keywords[8]); exit(1);};
-						  break; //"NPIX_X"
-						case 9:
-						  if(sscanf(kwdata[1].c_str(),"%d",&World[obsctr].npixy) ==0) {bwspecerror(2,keywords[9]); exit(1);};
-						  break; //"NPIX_Y"
-						case 10:
-						  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].pixelsize) ==0) {bwspecerror(2,keywords[10]); exit(1);};
-						  break;//"PIXELSIZE"
-						case 11:
-						  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].primary) ==0) {bwspecerror(2,keywords[11]); exit(1);};
-						  break; //"PRIMARY"
-						case 12:
-						  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].blockage) ==0) {bwspecerror(2,keywords[12]); exit(1);};
-						  break; //"BLOCKAGE"
-						case 13:
-						  if(sscanf(kwdata[1].c_str(),"%d",&World[obsctr].space) ==0) {bwspecerror(2,keywords[13]); exit(1);};
-						  break; //"SPACE"
-						case 14:
-						  if(sscanf(kwdata[1].c_str(),"%d",&World[obsctr].filter)==0) {bwspecerror(2,keywords[14]); exit(1);};
-						  break; //"FILTER"
-						case 15:
-						  strcpy(World[obsctr].observationSequence,kwdata[1].c_str()); 
-						  break; //"OBSERVATION_SEQUENCE"
-						case 16:
-						  strcpy(World[obsctr].detector,kwdata[1].c_str());
-						  break; //"DETECTOR"
-						case 17:
-						  strcpy(World[obsctr].throughput,kwdata[1].c_str());
-						  break; //"THROUGHPUT"
-						case 18:
-						  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].reftexp) ==0) {bwspecerror(2,keywords[18]); exit(1);};
-						  break; //"REFERENCE_TEXP"
-						case 19:
-						  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].refnstack) ==0) {bwspecerror(2,keywords[19]); exit(1);};
-						  break; //"REFERENCE_NSTACK"
-						case 20:
-						  strcpy(World[obsctr].orbitcode,kwdata[1].c_str());
-						  break; //ORBIT
-						case 21:
-						  if(sscanf(kwdata[1].c_str(),"%d",&World[obsctr].photcode)==0) {bwspecerror(2,keywords[21]); exit(1);};
-						  break; //"PHOTOMETRY"
-						case 22:
-						  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].extcoeff) ==0) {bwspecerror(2,keywords[22]); exit(1);};
-						  break; //"EXTCOEFF"
-						case 23:
-						  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].skybackground) ==0) {bwspecerror(2,keywords[23]);};
-						  break; //"SKY_BACKGROUND"
-						} //end switch kwidx
+			  //"NPIX_X","NPIX_Y","PIXELSIZE","PRIMARY","BLOCKAGE","SPACE","FILTER","OBSERVATION_SEQUENCE","DETECTOR"
+			case 8:
+			  if(sscanf(kwdata[1].c_str(),"%d",&World[obsctr].npixx) ==0) {bwspecerror(2,keywords[8]); exit(1);};
+			  break; //"NPIX_X"
+			case 9:
+			  if(sscanf(kwdata[1].c_str(),"%d",&World[obsctr].npixy) ==0) {bwspecerror(2,keywords[9]); exit(1);};
+			  break; //"NPIX_Y"
+			case 10:
+			  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].pixelsize) ==0) {bwspecerror(2,keywords[10]); exit(1);};
+			  break;//"PIXELSIZE"
+			case 11:
+			  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].primary) ==0) {bwspecerror(2,keywords[11]); exit(1);};
+			  break; //"PRIMARY"
+			case 12:
+			  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].blockage) ==0) {bwspecerror(2,keywords[12]); exit(1);};
+			  break; //"BLOCKAGE"
+			case 13:
+			  if(sscanf(kwdata[1].c_str(),"%d",&World[obsctr].space) ==0) {bwspecerror(2,keywords[13]); exit(1);};
+			  break; //"SPACE"
+			case 14:
+			  if(sscanf(kwdata[1].c_str(),"%d",&World[obsctr].filter)==0) {bwspecerror(2,keywords[14]); exit(1);};
+			  break; //"FILTER"
+			case 15:
+			  World[obsctr].observationSequence = kwdata[1]; 
+			  break; //"OBSERVATION_SEQUENCE"
+			case 16:
+			  World[obsctr].detector = kwdata[1];
+			  break; //"DETECTOR"
+			case 17:
+			  World[obsctr].throughput = kwdata[1];
+			  break; //"THROUGHPUT"
+			case 18:
+			  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].reftexp) ==0) {bwspecerror(2,keywords[18]); exit(1);};
+			  break; //"REFERENCE_TEXP"
+			case 19:
+			  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].refnstack) ==0) {bwspecerror(2,keywords[19]); exit(1);};
+			  break; //"REFERENCE_NSTACK"
+			case 20:
+			  World[obsctr].orbitcode = kwdata[1];
+			  break; //ORBIT
+			case 21:
+			  if(sscanf(kwdata[1].c_str(),"%d",&World[obsctr].photcode)==0) {bwspecerror(2,keywords[21]); exit(1);};
+			  break; //"PHOTOMETRY"
+			case 22:
+			  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].extcoeff) ==0) {bwspecerror(2,keywords[22]); exit(1);};
+			  break; //"EXTCOEFF"
+			case 23:
+			  if(sscanf(kwdata[1].c_str(),"%lf",&World[obsctr].skybackground) ==0) {bwspecerror(2,keywords[23]);};
+			  break; //"SKY_BACKGROUND"
+			} //end switch kwidx
 
-					} //end if keyword matches 
-				} //end loop over keywords
-			} //end loop over modifications
+		    } //end if keyword matches 
+		} //end loop over keywords
+	    } //end loop over modifications
 		  
-		  obsctr++;
-		} //end if sdata.size>=1
-	} //end loop over observatory list
+	  obsctr++;
+	} //end if sdata.size>=1
+    } //end loop over observatory list
   
   
   Paramfile->numobservatories = obsctr;
@@ -305,15 +298,15 @@ void buildWorld(struct filekeywords *Paramfile, struct obsfilekeywords World[], 
       int onx, inx;
       logfile_ptr << "Observing sequence\n";
       for(onx=0;onx<Paramfile->numobservatories;onx++)
-		{
-		  logfile_ptr << "\nObservatory " << onx << " " << World[onx].name << " :\n";
-		  for(inx=0;inx<World[onx].sequence_length;inx++)
-			{
-			  logfile_ptr << World[onx].sequence[inx].field << " " 
-						  << World[onx].sequence[inx].nstack << " "
-						  << World[onx].sequence[inx].texp << endl;
-			}
-		}
+	{
+	  logfile_ptr << "\nObservatory " << onx << " " << World[onx].name << " :\n";
+	  for(inx=0;inx<World[onx].sequence_length;inx++)
+	    {
+	      logfile_ptr << World[onx].sequence[inx].field << " " 
+			  << World[onx].sequence[inx].nstack << " "
+			  << World[onx].sequence[inx].texp << endl;
+	    }
+	}
     }
 
   /* For each observatory compute instrument cadence and populate time
@@ -325,10 +318,6 @@ void buildWorld(struct filekeywords *Paramfile, struct obsfilekeywords World[], 
   if(Paramfile->verbosity>0)  {printf("applyWeather\n"); fflush(stdout);}
   applyWeather(World,Paramfile, idum);
  
-  /*For each observatory, load field centres, compute field vertices */
-  if(Paramfile->verbosity>0)  {printf("buildFields\n"); fflush(stdout);}
-  buildFields(World,Paramfile,logfile_ptr);
-
   if(Paramfile->verbosity>0)  {printf("setEpochProperties\n"); fflush(stdout);}
   setEpochProperties(World, Paramfile);
 
@@ -370,25 +359,6 @@ void collectingArea(struct obsfilekeywords World[], int numobservatories)
     }
 
 }
-
-/*! Compute field verticies using the set of field centres for each observatory */
-void buildFields(struct obsfilekeywords World[], struct filekeywords *Paramfile, ofstream& logfile_ptr)
-{ 
-  int obsidx;
-  
-  for(obsidx = 0;obsidx<Paramfile->numobservatories;obsidx++)
-    {
-
-      loadFieldCentres(World,Paramfile,obsidx);
-      computeFieldVerticies(World,obsidx,logfile_ptr);
-      
-      showVerticies(World, obsidx, logfile_ptr); 
-    
-      surveyArea(World,obsidx,logfile_ptr);
-
-    }
-}
-
 
 /*! Find the sunrise and sunset times for each observatory for the simulation */
 void findSunRiseSetTimes(struct filekeywords *Paramfile, struct obsfilekeywords World[], int numobservatories)
@@ -649,14 +619,15 @@ void setEpochProperties(struct obsfilekeywords World[], struct filekeywords *Par
   int field;
   double lmlsun;
 
-  char throughput[1000];
+  string throughput;
 
   for(obsidx=0;obsidx<Paramfile->numobservatories;obsidx++)
     {
       //setup zodi
-      strcpy(throughput,Paramfile->obsdir);
-      strcat(throughput,World[obsidx].throughput);
-      World[obsidx].zodi.set_bandpass(string(throughput));
+      throughput = Paramfile->obsdir + World[obsidx].throughput;
+      World[obsidx].zodi.set_bandpass(throughput);
+
+      if(Paramfile->verbosity>2) cout << "setEpochProperties obsidx=" << obsidx << " nepochs=" << World[obsidx].nepochs << endl; 
 
       for(idx=0;idx<World[obsidx].nepochs;idx++)
 	{
@@ -672,8 +643,7 @@ void setEpochProperties(struct obsfilekeywords World[], struct filekeywords *Par
 	  World[obsidx].beta.push_back(0);
 
 	  //field position in ecliptic coordinates
-	  gal2eclip(World[obsidx].fieldCentres[0][field], World[obsidx].fieldCentres[1][field], &World[obsidx].lambda[idx], &World[obsidx].beta[idx]);
- 
+	  gal2eclip(Paramfile->avgl, Paramfile->avgb, &World[obsidx].lambda[idx], &World[obsidx].beta[idx]);
 	  
 	  lmlsun=World[obsidx].lambda[idx]-World[obsidx].lambdasun[idx];	  
 	  while(lmlsun<0) lmlsun+=360;
@@ -691,7 +661,7 @@ void setEpochProperties(struct obsfilekeywords World[], struct filekeywords *Par
 //  computed in computeCadence 
 void applyWeather(struct obsfilekeywords World[], struct filekeywords *Paramfile, long *idum)
 {
-  void loadWeatherProfile(char profileName[], vector<double>* WeatherProfile, struct filekeywords *Paramfile);
+  void loadWeatherProfile(string profileName, vector<double>* WeatherProfile, struct filekeywords *Paramfile);
   int getWeather(double PrClearnight, long *idum);
   void dayofyear(int day, int month, int year, int *doy);
   
@@ -706,7 +676,7 @@ void applyWeather(struct obsfilekeywords World[], struct filekeywords *Paramfile
     {
       //printf("for each epoch; nepochs =  %d\n",World[obsidx].nepochs);
       if(Paramfile->verbosity>0) {printf("loadWeatherProfile %s\n",
-			  World[obsidx].weatherProfile); fflush(stdout);}
+			  World[obsidx].weatherProfile.c_str()); fflush(stdout);}
       loadWeatherProfile(World[obsidx].weatherProfile, 
 			 &World[obsidx].weatherSequence, Paramfile);
       if(Paramfile->verbosity>0) {printf("profileLoaded\n"); fflush(stdout);}
@@ -740,12 +710,11 @@ int getWeather(double PrClearnight, long *idum)
 }
 
 // Read in weather profile
-void loadWeatherProfile(char profileName[], vector<double>* WeatherProfile, struct filekeywords *Paramfile)
+void loadWeatherProfile(string profileName, vector<double>* WeatherProfile, struct filekeywords *Paramfile)
 {
   FILE *infile_ptr;
-  char filename[1000];
-  strcpy(filename,Paramfile->weatherprofiledir);
-  strcat(filename,profileName);
+  string filename;
+  filename = Paramfile->weatherprofiledir + profileName;
 
   *WeatherProfile = vector<double>((Paramfile->NUM_SIM_DAYS+1)*4);
   
@@ -753,15 +722,15 @@ void loadWeatherProfile(char profileName[], vector<double>* WeatherProfile, stru
   
   /* printf("%s\n",filename); */
 
-  if(Paramfile->verbosity>0) {printf("loadWeather opening: %s\n",filename); fflush(stdout);}
-  infile_ptr = fopen(filename,"r");
+  if(Paramfile->verbosity>0) {printf("loadWeather opening: %s\n",filename.c_str()); fflush(stdout);}
+  infile_ptr = fopen(filename.c_str(),"r");
   int ind = 0;
   double null;
   int nindmax;
   int i, ncleardays=0;
   double tmp;
   
-  if (infile_ptr == NULL)  buildWorldErr(2, __LINE__,filename); 
+  if (infile_ptr == NULL)  buildWorldErr(2, __LINE__,filename.c_str()); 
   
   while (fscanf(infile_ptr, "%lf %lf", &null, &tmp) != EOF) 
     {
@@ -801,7 +770,7 @@ void loadWeatherProfile(char profileName[], vector<double>* WeatherProfile, stru
 /*! Read in observation sequences of all observatories */
 void loadObsSequence(struct obsfilekeywords World[], struct filekeywords *Paramfile)
 {
-  char filename[1000];
+  string filename;
   int obsidx;
 
   ifstream infile;
@@ -822,11 +791,11 @@ void loadObsSequence(struct obsfilekeywords World[], struct filekeywords *Paramf
 
   for(obsidx=0;obsidx<Paramfile->numobservatories;obsidx++)
     {
-      strcpy(filename,Paramfile->obsdir);
+      filename = Paramfile->obsdir;
       if(!Paramfile->identicalSequence)
-		strcat(filename,World[obsidx].observationSequence);
+	filename += World[obsidx].observationSequence;
       else
-		strcat(filename,World[0].observationSequence);
+	filename += World[0].observationSequence;
 
       //check if this is a repeat sequence (i.e. can we reuse the lc)
       /*World[obsidx].same_sequence=-1;
@@ -841,13 +810,16 @@ void loadObsSequence(struct obsfilekeywords World[], struct filekeywords *Paramf
 	    }
 	    }*/
       
-      if(Paramfile->verbosity>0) {printf("loadObsSequence opening: %s\n",filename); fflush(stdout);}
+      if(Paramfile->verbosity>0)
+	{
+	  printf("loadObsSequence opening: %s\n",filename.c_str()); fflush(stdout);
+	}
       infile.open(filename);
       
       if (!infile)  
-		{
-		  buildWorldErr(4, __LINE__,filename); 
-		}
+	{
+	  buildWorldErr(4, __LINE__,filename.c_str()); 
+	}
       
       ind=0;
       repeating=0;
@@ -980,107 +952,6 @@ void loadObsSequence(struct obsfilekeywords World[], struct filekeywords *Paramf
 
 }
 
-/*! Read in field centres*/
-void loadFieldCentres(struct obsfilekeywords World[], struct filekeywords *Paramfile, int obsidx)
-{
-  FILE *infile_ptr;
-  char filename[1000];
-  char str[200];
-  strcpy(filename,Paramfile->obsdir);
-  strcat(filename,World[obsidx].fieldCentreFile);
-  
-  /* printf("%d\n",Paramfile->numobservatories); */
-  /*   printf("%s\n",filename); */
-  
-  /*  printf("%s\n",filename);  */
-  /*filename[strlen(filename)-1] = '\0';*/
-
-  infile_ptr = fopen(filename,"r");
-  int ind = 0;
- 
-  if (infile_ptr == NULL)  buildWorldErr(2, __LINE__,filename); 
- 
-  while (fscanf(infile_ptr, "%lf %lf", &World[obsidx].fieldCentres[0][ind],
-		&World[obsidx].fieldCentres[1][ind]) != EOF) 
-    {
-      if(ind>=MAX_NUM_FIELDS) buildWorldErr(3, __LINE__,filename); 
-      ind++;
-    }
-  fclose(infile_ptr);
-
-  if(ind!=World[obsidx].nfields)
-    {
-      sprintf(str,"Number of field centres (%d) in",ind);
-      fmtline(str,50,"(loadFieldCentres)");
-      sprintf(str, "%s\ndoes not equal NFIELDS (%d) in config file for observatory %s (buildWorld:loadFieldCentres)",
-	      filename,World[obsidx].nfields, World[obsidx].name);
-      fmtline(str,100,"");
-      sprintf(str,"Exiting");
-      fmtline(str,50,"ERROR");
-      exit(1);
-    }
-
-}
-
-/*! Compute the field verticies for all fields for given observatory */
-void computeFieldVerticies(struct obsfilekeywords World[], int obsidx, ofstream& logfile_ptr)
-{
-  double B2[4] = {0.5,0.5,-0.5,-0.5};
-  double B1[4] = {0.5,-0.5,-0.5,0.5};
-  double RA,DEC;
-  int ind,jnd;
-  
-  double eta,xsi,beta,gamma,d,a;
-
-  for (jnd = 0; jnd<World[obsidx].nfields;jnd++)
-    {
-
-      RA = World[obsidx].fieldCentres[0][jnd]*TO_RAD;
-      DEC = World[obsidx].fieldCentres[1][jnd]*TO_RAD;
-
-      for (ind=0;ind<4;ind++)
-	{
-	  
-	  eta = B1[ind]*TO_RAD*World[obsidx].npixy
-	    * World[obsidx].pixelsize/3600.0;
-	  xsi = B2[ind]*TO_RAD
-	    * World[obsidx].npixx*World[obsidx].pixelsize/3600.0;
-
-	  beta = cos(DEC) - eta * sin(DEC);
-	  a = atan2(xsi, beta) + RA;
-	  gamma = sqrt((xsi*xsi) +(beta*beta));
-	  d = atan2(eta*cos(DEC)+sin(DEC) , gamma);
-	  
-	  World[obsidx].fieldVerticies[0][ind][jnd] = a;
-	  World[obsidx].fieldVerticies[1][ind][jnd] = d;
-
-	}
-    }
-}
-
-
-/*! Show the field verticies for all fields for given observatory */
-void showVerticies(struct obsfilekeywords World[], int obsidx, ofstream& logfile_ptr)
-{
-  int ind,jnd;
-  double l,b;
-  double ra,dec;
-
-  for(jnd=0;jnd<World[obsidx].nfields;jnd++)
-    {
-      for (ind=0;ind<4;ind++) 
-	{
-	  ra=World[obsidx].fieldVerticies[0][ind][jnd];
-	  dec=World[obsidx].fieldVerticies[1][ind][jnd];
-	  eq2gal(ra, dec,'g',&l,&b);
-	  /*  fprintf(logfile_ptr,
-	      "Observatory: %d Field %d RA: %f DEC: %f L: %f B: %f\n",
-	      obsidx,jnd,ra,dec,l,b); */
-	  /* Reversed order as fields now specified in galactic coordinates */
-	  logfile_ptr << "Observatory: " << obsidx << " Field " << jnd << " RA: " << l << " DEC: " << b << " L: " << ra << " B: " << dec << "\n";
-	}   
-    }
-}
 
 /*! Define error messages for buildWorld function */
 void buildWorldErr(int err, int line, const char msg[])
@@ -1118,134 +989,6 @@ void buildWorldErr(int err, int line, const char msg[])
     }
 }
 
-void surveyArea(struct obsfilekeywords World[],int obsidx, ofstream& logfile_ptr)
-{
-  /*Survey area needs to only measure unique area*/
-
-  double fieldVerticies[3][4*MAX_NUM_FIELDS+1]; /*x,y,angle*/
-
-  int hnd,ind,jnd,knd,i;
-  int within;
-
-  int nv;
-
-  double Fr[5];
-  double Fd[5];
-
-  double minx,maxx,miny,maxy,midx,midy;
-
-  int swapped;
-
-  double area;
-
-  double l,b;
-
-  double t[3];
-
-  nv=0;
-  minx=miny=1.0e30; maxx=maxy=-1.0e30;
-
-  /*So find field vertices not within other fields*/
-  for(knd=0;knd<World[obsidx].nfields;knd++)
-    {
-      for(ind=0;ind<4;ind++)
-	{
-	  /*printf("Vertices: %f %f\n",
-	    World[obsidx].fieldVerticies[0][ind][knd],
-	    World[obsidx].fieldVerticies[1][ind][knd]);*/
-	  within=0;
-	  for(jnd=0;jnd<World[obsidx].nfields;jnd++)
-	    {
-	      if(jnd!=knd)
-		{	        
-		  /* LOOP THROUGH EACH VERTEX */
-		  for(hnd=0;hnd<4;hnd++)
-		    {
-		      Fr[hnd] = World[obsidx].fieldVerticies[0][hnd][jnd];
-		      Fd[hnd] = World[obsidx].fieldVerticies[1][hnd][jnd];
-		    }
-		
-		  within+=inboundary(World[obsidx].fieldVerticies[0][ind][knd],
-				     World[obsidx].fieldVerticies[1][ind][knd],
-				     Fr,Fd,4);
-		}
-	    }
-
-	  if(!within)
-	    {
-	      fieldVerticies[0][nv]=World[obsidx].fieldVerticies[0][ind][knd];
-	      /*if(fieldVerticies[0][nv]>PI) fieldVerticies[0][nv]-=2.0*PI;*/
-	      if(fieldVerticies[0][nv]>maxx) maxx=fieldVerticies[0][nv];
-	      if(fieldVerticies[0][nv]<minx) minx=fieldVerticies[0][nv];
-	      fieldVerticies[1][nv]=World[obsidx].fieldVerticies[1][ind][knd];
-	      if(fieldVerticies[1][nv]>maxy) maxy=fieldVerticies[1][nv];
-	      if(fieldVerticies[1][nv]<miny) miny=fieldVerticies[1][nv];
-	      nv++;
-	    }
-	}
-    }
-
-  /*work out the angle relative to the midpoint*/
-  midx=0.5*(minx+maxx);
-  midy=0.5*(miny+maxy);
-
-  for(i=0;i<nv;i++)
-    {
-      fieldVerticies[0][i]-=midx;
-      fieldVerticies[1][i]-=midy;
-      /*args may be wrong way round*/
-      fieldVerticies[2][i]=atan2(fieldVerticies[1][i],fieldVerticies[0][i]); 
-    }
-
-  /*We have the vertices of the survey polygon*/
-  /*First sort them by angle*/
-
-  do
-    {
-      swapped=0;
-      for(i=0;i<nv-1;i++)
-	{
-	  if(fieldVerticies[2][i]>fieldVerticies[2][i+1])
-	    {
-	      t[0]=fieldVerticies[0][i]; t[1]=fieldVerticies[1][i];
-	      t[2]=fieldVerticies[2][i];
-	      fieldVerticies[0][i]=fieldVerticies[0][i+1];
-	      fieldVerticies[1][i]=fieldVerticies[1][i+1];
-	      fieldVerticies[2][i]=fieldVerticies[2][i+1];
-	      fieldVerticies[0][i+1]=t[0]; fieldVerticies[1][i+1]=t[1];
-	      fieldVerticies[2][i+1]=t[2];
-	      swapped=1;
-	    }
-	}
-    }
-  while(swapped);
-
-    /*Now in angle order we can work out the area*/
-    fieldVerticies[0][nv]=fieldVerticies[0][0];
-    fieldVerticies[1][nv]=fieldVerticies[1][0];
-    fieldVerticies[2][nv]=fieldVerticies[2][0]; /*link up the ends*/
-
-    /*calculate the area*/
-    area=0.0;
-    for(i=0;i<nv;i++)
-      {
-	eq2gal(fieldVerticies[0][i]+midx,fieldVerticies[1][i]+midy,'e',&l,&b);
-	/*printf("ext %d %f %f %f %f %f\n",
-	  i,fieldVerticies[0][i],fieldVerticies[1][i],
-	  l*TO_DEG,b*TO_DEG,fieldVerticies[2][i]);*/
-	area+=0.5*(fieldVerticies[0][i]*fieldVerticies[1][i+1]
-		   -fieldVerticies[0][i+1]*fieldVerticies[1][i]);
-	/*printf("%f %f\n",0.5*(fieldVerticies[0][i]*fieldVerticies[1][i+1]
-	  -fieldVerticies[0][i+1]*fieldVerticies[1][i]),area);*/
-      }
-
-    area=area*TO_DEG*TO_DEG;
-    /*printf("area = %f\n",area);*/
-
-    //fprintf(logfile_ptr,"Observatory: %d Survey_Area: %f\n",obsidx,area);
-  
-}
-
 double max(double x, double y)
 {
   return (x>y?x:y);
@@ -1256,7 +999,7 @@ void setupImage(struct obsfilekeywords World[], struct filekeywords *Paramfile, 
   int obsidx;
   //double flux_sat;
 
-  char detfname[1000];
+  string detfname;
 
   double imx=0.0, imy=0.0;
   double maximx=0.0, maximy=0.0; //size of the image in arcsec - we'll make it as big as is needed for all the detectors
@@ -1264,23 +1007,22 @@ void setupImage(struct obsfilekeywords World[], struct filekeywords *Paramfile, 
   
   for(obsidx = 0;obsidx<Paramfile->numobservatories;obsidx++)
     {
-      strcpy(detfname,Paramfile->obsdir);
-      strcat(detfname,World[obsidx].detector);
-      if(World[obsidx].im.load_detector(detfname,modifications[obsidx])<0) exit(1);
+      detfname = Paramfile->obsdir + World[obsidx].detector;
+      if(World[obsidx].im.load_detector(detfname.c_str(),modifications[obsidx])<0) exit(1);
 
       World[obsidx].im.aper.show_aperture();
 
-	  if(!(Paramfile->outputImages && Paramfile->prettypic))
-		{
-		  imx = (2+World[obsidx].im.aper.Naper) * World[obsidx].im.psf.pixscale;
-		  if(imx>maximx) maximx=imx;
-		}
+      if(!(Paramfile->outputImages && Paramfile->prettypic))
+	{
+	  imx = (2+World[obsidx].im.aper.Naper) * World[obsidx].im.psf.pixscale;
+	  if(imx>maximx) maximx=imx;
+	}
 	  
 
-	}
+    }
 
-    for(obsidx = 0;obsidx<Paramfile->numobservatories;obsidx++)
-	  {
+  for(obsidx = 0;obsidx<Paramfile->numobservatories;obsidx++)
+    {
 
       //setup the backgrounds
       World[obsidx].constbackground = pow(10,-0.4*(World[obsidx].im.background-20));
@@ -1288,35 +1030,35 @@ void setupImage(struct obsfilekeywords World[], struct filekeywords *Paramfile, 
 
       World[obsidx].im.pass_seed(idum);
       if(obsidx==0)
-		{   
-		  if(Paramfile->outputImages && Paramfile->prettypic)
-			{
-			  World[obsidx].im.set_image_properties(Paramfile->prettypicDimX, 
-												  Paramfile->prettypicDimY);
-			}
-		  else 
-			{
-			  //World[obsidx].im.minimal_image();
-			  int xdim = int(ceil(maximx/World[obsidx].im.psf.pixscale));
-			  World[obsidx].im.set_image_properties(xdim,xdim);
-			}
-		}
+	{   
+	  if(Paramfile->outputImages && Paramfile->prettypic)
+	    {
+	      World[obsidx].im.set_image_properties(Paramfile->prettypicDimX, 
+						    Paramfile->prettypicDimY);
+	    }
+	  else 
+	    {
+	      //World[obsidx].im.minimal_image();
+	      int xdim = int(ceil(maximx/World[obsidx].im.psf.pixscale));
+	      World[obsidx].im.set_image_properties(xdim,xdim);
+	    }
+	}
       else
-		{
-		  if(abs(World[obsidx].im.psf.pixscale-World[0].im.psf.pixscale)<1e-10
-			 && World[obsidx].im.aper.Naper==World[0].im.aper.Naper)
-			{
-			  World[obsidx].im.set_image_properties(World[0].im.Xpix,
-													World[0].im.Ypix);
-			}
-		  else
-			{
-			  World[obsidx].im.set_image_properties(int(ceil(World[0].im.Xpix*World[0].im.psf.pixscale / 
-															 World[obsidx].im.psf.pixscale)), 
-													int(ceil(World[0].im.Ypix*World[0].im.psf.pixscale /
-															 World[obsidx].im.psf.pixscale))); 
-			}
-		}
+	{
+	  if(abs(World[obsidx].im.psf.pixscale-World[0].im.psf.pixscale)<1e-10
+	     && World[obsidx].im.aper.Naper==World[0].im.aper.Naper)
+	    {
+	      World[obsidx].im.set_image_properties(World[0].im.Xpix,
+						    World[0].im.Ypix);
+	    }
+	  else
+	    {
+	      World[obsidx].im.set_image_properties(int(ceil(World[0].im.Xpix*World[0].im.psf.pixscale / 
+							     World[obsidx].im.psf.pixscale)), 
+						    int(ceil(World[0].im.Ypix*World[0].im.psf.pixscale /
+							     World[obsidx].im.psf.pixscale))); 
+	    }
+	}
     }
 
 }
@@ -1339,129 +1081,129 @@ void setupOrbit(struct obsfilekeywords World[], struct filekeywords *Paramfile)
   for(int obsidx=0;obsidx<Paramfile->numobservatories;obsidx++)
     {
       ocode = string(World[obsidx].orbitcode);
-
+      
       if(ocode.find_first_of(findstr)==string::npos)
+	{
+	  
+	  orbitcode = stoi(World[obsidx].orbitcode);
+	  //The code is a code number not a filename
+	  switch(orbitcode)
+	    {
+
+	      //case0 = earth
+
+	    case 1: //Geosynchronous
+	      if(Paramfile->verbosity>0)
+		cout << "Using Earth geosynch i=28 orbit for observatory " << obsidx << endl;
+	      World[obsidx].orbit.resize(3);
+	      World[obsidx].orbit[0].earthmoonbary();
+	      World[obsidx].orbit[1].earth();
+	      World[obsidx].orbit[2].geosynch(28);
+	      break;
+
+	    case 2: //L2
+	      if(Paramfile->verbosity>0)
+		cout << "Using L2 Lissajous orbit for observatory " << obsidx << endl;
+	      World[obsidx].orbit.resize(2);
+	      World[obsidx].orbit[0].earthl2();
+	      //World[obsidx].orbit[1].lissajousxy(); 
+	      World[obsidx].orbit[1].lissajousz(); 
+	      break;
+
+	    case 3: //Mars
+	      if(Paramfile->verbosity>0)
+		cout << "Using Mars orbit for observatory " << obsidx << endl;
+	      World[obsidx].orbit.resize(1);
+	      World[obsidx].orbit[0].mars();
+	      break;
+
+	    case 4: //Jupiter
+	      if(Paramfile->verbosity>0)
+		cout << "Using Jupiter orbit for observatory " << obsidx << endl;
+	      World[obsidx].orbit.resize(1);
+	      World[obsidx].orbit[0].jupiter();
+	      break;
+
+	    case 5: //JWST
+	      if(Paramfile->verbosity>0)
+		cout << "Using L2 JWST orbit for observatory " << obsidx << endl;
+	      World[obsidx].orbit.resize(2);
+	      World[obsidx].orbit[0].earthl2();
+	      //XXX CHECK WITH MATTHEW
+	      World[obsidx].orbit[1].jwst(); 
+	      break;
+
+	    case 0: 
+	    default: //default to Earth's orbit
+	      //check if the orbit code is less than zero
+	      //if it is, the value*(-1) will be used as the phase for a jwst orbit
+	      if (orbitcode<0)
 		{
+		  if(Paramfile->verbosity>0)
+		    cout << "Using L2 JWST orbit for observatory " << obsidx << endl;
+		  World[obsidx].orbit.resize(2);
+		  World[obsidx].orbit[0].earthl2();
+		  //XXX CHECK WIT MATTHEW
+		  World[obsidx].orbit[1].jwst(-1*orbitcode/360.);
 
-		  orbitcode = atoi(World[obsidx].orbitcode);
-		  //The code is a code number not a filename
-		  switch(orbitcode)
-			{
-
-			  //case0 = earth
-
-			case 1: //Geosynchronous
-			  if(Paramfile->verbosity>0)
-				cout << "Using Earth geosynch i=28 orbit for observatory " << obsidx << endl;
-			  World[obsidx].orbit.resize(3);
-			  World[obsidx].orbit[0].earthmoonbary();
-			  World[obsidx].orbit[1].earth();
-			  World[obsidx].orbit[2].geosynch(28);
-			  break;
-
-			case 2: //L2
-			  if(Paramfile->verbosity>0)
-				cout << "Using L2 Lissajous orbit for observatory " << obsidx << endl;
-			  World[obsidx].orbit.resize(2);
-			  World[obsidx].orbit[0].earthl2();
-			  //World[obsidx].orbit[1].lissajousxy(); 
-			  World[obsidx].orbit[1].lissajousz(); 
-			  break;
-
-			case 3: //Mars
-			  if(Paramfile->verbosity>0)
-				cout << "Using Mars orbit for observatory " << obsidx << endl;
-			  World[obsidx].orbit.resize(1);
-			  World[obsidx].orbit[0].mars();
-			  break;
-
-			case 4: //Jupiter
-			  if(Paramfile->verbosity>0)
-				cout << "Using Jupiter orbit for observatory " << obsidx << endl;
-			  World[obsidx].orbit.resize(1);
-			  World[obsidx].orbit[0].jupiter();
-			  break;
-
-			case 5: //JWST
-			  if(Paramfile->verbosity>0)
-				cout << "Using L2 JWST orbit for observatory " << obsidx << endl;
-			  World[obsidx].orbit.resize(2);
-			  World[obsidx].orbit[0].earthl2();
-			  //XXX CHECK WITH MATTHEW
-			  World[obsidx].orbit[1].jwst(); 
-			  break;
-
-			case 0: 
-			default: //default to Earth's orbit
-			  //check if the orbit code is less than zero
-			  //if it is, the value*(-1) will be used as the phase for a jwst orbit
-			  if (orbitcode<0)
-				{
-				  if(Paramfile->verbosity>0)
-					cout << "Using L2 JWST orbit for observatory " << obsidx << endl;
-				  World[obsidx].orbit.resize(2);
-				  World[obsidx].orbit[0].earthl2();
-				  //XXX CHECK WIT MATTHEW
-				  World[obsidx].orbit[1].jwst(-1*orbitcode/360.);
-
-				}
-			  else
-				{
-				  if(Paramfile->verbosity>0)
-					cout << "Using Earth orbit for observatory " << obsidx << endl;
-				  World[obsidx].orbit.resize(2);
-				  World[obsidx].orbit[0].earthmoonbary();
-				  World[obsidx].orbit[1].earth();
-				}
-			} //end switch
 		}
-      else
+	      else
 		{
-		  //A filename has been passed - assume elements are in two-line form
+		  if(Paramfile->verbosity>0)
+		    cout << "Using Earth orbit for observatory " << obsidx << endl;
+		  World[obsidx].orbit.resize(2);
+		  World[obsidx].orbit[0].earthmoonbary();
+		  World[obsidx].orbit[1].earth();
+		}
+	    } //end switch
+	}
+      else
+	{
+	  //A filename has been passed - assume elements are in two-line form
 
-		  string tmpf1=string(World[obsidx].orbitcode);
-		  string tmpfname=string(Paramfile->obsdir) + tmpf1.substr(tmpf1.find_first_of(string("./abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")));
+	  string tmpf1=string(World[obsidx].orbitcode);
+	  string tmpfname=string(Paramfile->obsdir) + tmpf1.substr(tmpf1.find_first_of(string("./abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")));
 
-		  ifstream infile(tmpfname.c_str());
-		  if(!infile)
+	  ifstream infile(tmpfname.c_str());
+	  if(!infile)
+	    {
+	      cerr << "Error: Could not open orbit file (" << tmpfname << ") (" << World[obsidx].orbitcode << ") for observatory " << obsidx << endl;
+	      exit(1);
+	    }
+
+	  while(!infile.eof())
+	    {
+	      getline(infile,line);
+	      if(line.find_first_of(ignore)==line.npos)
+		{
+		  split(line,data);
+
+		  if(data.size()==6)
+		    {
+		      if(elread==0)
 			{
-			  cerr << "Error: Could not open orbit file (" << tmpfname << ") (" << World[obsidx].orbitcode << ") for observatory " << obsidx << endl;
-			  exit(1);
+			  elements = data;
+			  elread=1;
 			}
-
-		  while(!infile.eof())
+		      else
 			{
-			  getline(infile,line);
-			  if(line.find_first_of(ignore)==line.npos)
-				{
-				  split(line,data);
-
-				  if(data.size()==6)
-					{
-					  if(elread==0)
-						{
-						  elements = data;
-						  elread=1;
-						}
-					  else
-						{
-						  orbitalElements dummy(elements,data);
-						  World[obsidx].orbit.push_back(dummy);
-						  elread=0;
-						} //end if elread
-					}
-				  else
-					{
-					  cerr << "Warning: Ignoring the following line in an orbital elements file (" << World[obsidx].orbitcode << "). Make sure there are two lines per orbit, the first with six elements, the second with their time derivatives.\nIgnoring: " << line << endl;
-					} //end if data.size=6
-				} //end if ignore
-			} //end while infile
-
-		  if(elread)
-			{
-			  cerr << "Warning: There was an odd number of lines in the orbital elements file (" << World[obsidx].orbitcode << "). Make sure there are two lines per orbit, the first with six elements, the second with their time derivatives.\n" << line << endl;
+			  orbitalElements dummy(elements,data);
+			  World[obsidx].orbit.push_back(dummy);
+			  elread=0;
 			} //end if elread
-		} //end if ocode=string
+		    }
+		  else
+		    {
+		      cerr << "Warning: Ignoring the following line in an orbital elements file (" << World[obsidx].orbitcode << "). Make sure there are two lines per orbit, the first with six elements, the second with their time derivatives.\nIgnoring: " << line << endl;
+		    } //end if data.size=6
+		} //end if ignore
+	    } //end while infile
+
+	  if(elread)
+	    {
+	      cerr << "Warning: There was an odd number of lines in the orbital elements file (" << World[obsidx].orbitcode << "). Make sure there are two lines per orbit, the first with six elements, the second with their time derivatives.\n" << line << endl;
+	    } //end if elread
+	} //end if ocode=string
     } //end for observatory
 } //end function
 

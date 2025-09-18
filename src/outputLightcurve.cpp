@@ -47,13 +47,13 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
 
   if(Paramfile->choosefield<0)
     {
-      sprintf(lcfname, "%s%s_%d_%d.%s.lc", Paramfile->outputdir,
-	      Paramfile->run_name, Event->instance, Event->id, extension);
+      sprintf(lcfname, "%s%s_%d_%d.%s.lc", Paramfile->outputdir.c_str(),
+	      Paramfile->run_name.c_str(), Event->instance, Event->id, extension);
     }
   else
     {
-      sprintf(lcfname, "%s%s_%d_%d_%d.%s.lc", Paramfile->outputdir,
-	      Paramfile->run_name, Event->instance, Paramfile->choosefield, 
+      sprintf(lcfname, "%s%s_%d_%d_%d.%s.lc", Paramfile->outputdir.c_str(),
+	      Paramfile->run_name.c_str(), Event->instance, Paramfile->choosefield, 
 	      Event->id, extension);
     }
   if(DEBUGVAR) printf("lcname: %s\n",lcfname);
@@ -70,13 +70,13 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
       cout << "Writing extra lightcurve file" << endl;
       if(Paramfile->choosefield<0)
         {
-          sprintf(lcdatafname, "%s%s_%d_%d.%s.lcdata", Paramfile->outputdir,
-              Paramfile->run_name, Event->instance, Event->id, extension);
+          sprintf(lcdatafname, "%s%s_%d_%d.%s.lcdata", Paramfile->outputdir.c_str(),
+              Paramfile->run_name.c_str(), Event->instance, Event->id, extension);
         }
       else
         {
-          sprintf(lcdatafname, "%s%s_%d_%d_%d.%s.lcdata", Paramfile->outputdir,
-              Paramfile->run_name, Event->instance, Paramfile->choosefield,
+          sprintf(lcdatafname, "%s%s_%d_%d_%d.%s.lcdata", Paramfile->outputdir.c_str(),
+              Paramfile->run_name.c_str(), Event->instance, Paramfile->choosefield,
               Event->id, extension);
         }
       if(DEBUGVAR) printf("lcdataname: %s\n",lcdatafname);
@@ -267,7 +267,7 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
 	  obsidx=Event->obsidx[i];
 	  shiftedidx = i-Event->nepochsvec[obsidx];
 	  
-	  fprintf(lcfile_ptr, "%.12g %.8g %g %.12g %g %d %d %.8g %.6g %.6g %16.7f %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g ",
+	  fprintf(lcfile_ptr, "%.12g %.8g %g %.12g %g %d %d %.8g %.6g %.6g %16.7f %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g ",
 		  Event->epoch[i], Event->Aobs[i], Event->Aerr[i], //0, 1, 2
 		  Event->Atrue[i], Event->Atrueerr[i], obsidx, //3, 4, 5
 		  (Event->nosat[i]?0:1), Event->Afit[i], //6, 7
@@ -277,8 +277,10 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
 		  Event->pllx[obsidx].tshift[shiftedidx],
 		  Event->pllx[obsidx].ushift[shiftedidx],
 		  Event->pllx[obsidx].epochs[shiftedidx],
-		  Event->xs[i], Event->ys[i], Event->xl1[i],     //11, 12, 13
-		  Event->yl1[i], Event->xl2[i], Event->yl2[i], //14, 15, 16
+		  Event->xs[i], Event->ys[i],
+		  Event->xs2[i], Event->ys2[i],
+		  Event->xl1[i], Event->yl1[i],
+		  Event->xl2[i], Event->yl2[i], //14, 15, 16
 		  //Event->pllx[obsidx].sslocation[Event->jdepoch[i]][0], //17
 		  //Event->pllx[obsidx].sslocation[Event->jdepoch[i]][1], //18
 		  //Event->pllx[obsidx].sslocation[Event->jdepoch[i]][2]); //19
@@ -364,12 +366,12 @@ void outputImages(struct event *Event, struct obsfilekeywords World[], struct sl
 
   if(Paramfile->choosefield<0)
     {
-      sprintf(tmp1,"%s%s_%d_%d",Paramfile->outputdir, Paramfile->run_name,
+      sprintf(tmp1,"%s%s_%d_%d",Paramfile->outputdir.c_str(), Paramfile->run_name.c_str(),
 	      Event->instance,  Event->id);
     }
   else
     {
-      sprintf(tmp1,"%s%s_%d_%d_%d",Paramfile->outputdir, Paramfile->run_name,
+      sprintf(tmp1,"%s%s_%d_%d_%d",Paramfile->outputdir.c_str(), Paramfile->run_name.c_str(),
 	      Event->instance, Paramfile->choosefield, Event->id);
     }
   basefname=tmp1;

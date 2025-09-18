@@ -73,7 +73,7 @@ int readSLList(int choosefield, bool src, struct filekeywords *Paramfile, struct
 	  string name;
 	  
 	  //read in the field information	  
-	  field = atoi(sdata[0].c_str());
+	  field = stoi(sdata[0]);
 	  
 	  if(field != Paramfile->choosefield) continue;
 	  
@@ -82,6 +82,12 @@ int readSLList(int choosefield, bool src, struct filekeywords *Paramfile, struct
 	  dl = atof(sdata[3].c_str());
 	  db = atof(sdata[4].c_str());
 	  name = sdata.back();
+
+	  if(src)
+	    {
+	      Paramfile->avgl = l;
+	      Paramfile->avgb = b;
+	    }
 	  
 	  sl->field = field;
 	  sl->start = nlist;

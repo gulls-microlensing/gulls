@@ -10,11 +10,18 @@
 using namespace std;
 
 
-char input_filename[1000];        /* FILE HANDLING */
-char output_filename[1000];
-char log_filename[1000];
-char eventprefix[1000];
-char instance[100];
+//char input_filename[1000];        /* FILE HANDLING */
+//char output_filename[1000];
+//char log_filename[1000];
+//char eventprefix[1000];
+//char instance[100];
+
+string input_filename;        /* FILE HANDLING */
+string output_filename;
+string log_filename;
+string eventprefix;
+string instance;
+
 FILE *infile_ptr;                  
 ofstream outfile_ptr;
 ofstream logfile_ptr;
@@ -94,11 +101,11 @@ int main(int argc, char *argv[]){                   /* BEGIN MAIN */
 	{
 	  
 	case 'i' :
-	  strcpy(input_filename,optarg);
+	  input_filename = string(optarg);
 	  break;
       
 	case 's' :
-	  strcpy(instance,optarg);
+	  instance = string(optarg);
 	  break;
 
 	case 'd' :
@@ -119,16 +126,16 @@ int main(int argc, char *argv[]){                   /* BEGIN MAIN */
 
   Paramfile.choosefield=field;
 
-  infile_ptr = fopen(input_filename,"r");
+  infile_ptr = fopen(input_filename.c_str(),"r");
   if (infile_ptr == NULL)
     {
-      sprintf(str,"Unable to open input file: %s",input_filename);
+      sprintf(str,"Unable to open input file: %s",input_filename.c_str());
       fmtline(str,WIDTH,"FAILED");
       exit(1);
     }
   else 
     {
-      sprintf(str,"Input file: %s",input_filename);
+      sprintf(str,"Input file: %s",input_filename.c_str());
       fmtline(str,WIDTH,"READY");
     }
 
@@ -136,46 +143,50 @@ int main(int argc, char *argv[]){                   /* BEGIN MAIN */
   readParamfile(input_filename, &Paramfile);
   if(field<0)
     {
-      sprintf(output_filename, "%s%s_%s.out", Paramfile.outputdir, Paramfile.run_name, instance);   /* Create simulation output filename */
-      sprintf(log_filename, "%s%s_%s.log", Paramfile.outputdir, Paramfile.run_name, instance);   /* Create simulation log filename */
+      output_filename = Paramfile.outputdir + Paramfile.run_name + string("_") + instance + string(".out"); //Create simulation output filename
+      log_filename = Paramfile.outputdir + Paramfile.run_name + string("_") + instance + string(".log"); //Create simulation log filename
+      //sprintf(output_filename, "%s%s_%s.out", Paramfile.outputdir, Paramfile.run_name, instance);
+      //sprintf(log_filename, "%s%s_%s.log", Paramfile.outputdir, Paramfile.run_name, instance);
     }
   else
     {
-      sprintf(output_filename, "%s%s_%s_%d.out", Paramfile.outputdir, Paramfile.run_name, instance,field);   /* Create simulation output filename */
-      sprintf(log_filename, "%s%s_%s_%d.log", Paramfile.outputdir, Paramfile.run_name, instance,field);   /* Create simulation log filename */
+      output_filename = Paramfile.outputdir + Paramfile.run_name + string("_") + instance + string("_") + to_string(field) + string(".out"); //Create simulation output filename
+      log_filename = Paramfile.outputdir + Paramfile.run_name + string("_") + instance + string("_") + to_string(field) + string(".log"); //Create simulation log filename
+      //sprintf(output_filename, "%s%s_%s_%d.out", Paramfile.outputdir, Paramfile.run_name, instance,field);   /* Create simulation output filename */
+      //sprintf(log_filename, "%s%s_%s_%d.log", Paramfile.outputdir, Paramfile.run_name, instance,field);   /* Create simulation log filename */
     }
 
-  outfile_ptr.open(output_filename);
-  logfile_ptr.open(log_filename);
+  outfile_ptr.open(output_filename.c_str());
+  logfile_ptr.open(log_filename.c_str());
 
 
   if (!outfile_ptr)
     {
-      sprintf(str,"Unable to open output file: %s",output_filename);
+      sprintf(str,"Unable to open output file: %s",output_filename.c_str());
       fmtline(str,2*WIDTH,"FAILED");
       exit(1);
     }
   else 
     {
-      sprintf(str,"Output file: %s",output_filename);
+      sprintf(str,"Output file: %s",output_filename.c_str());
       fmtline(str,2*WIDTH,"READY");
     }
 
   if (!logfile_ptr)
     {
-      sprintf(str,"Unable to open output file: %s",log_filename);
+      sprintf(str,"Unable to open output file: %s",log_filename.c_str());
       fmtline(str,2*WIDTH,"FAILED");
       exit(1);
     }
   else 
     {
-      sprintf(str,"Log file: %s",log_filename);
+      sprintf(str,"Log file: %s",log_filename.c_str());
       fmtline(str,2*WIDTH,"READY");
     }
 
 
   char spftmp[100];
-  sprintf(spftmp,"%ssrc/ESPL.tbl",Paramfile.basedir);
+  sprintf(spftmp,"%ssrc/ESPL.tbl",Paramfile.basedir.c_str());
   cout << "Loading VBMicrolening ESPL table " << spftmp << endl;
   VBM.LoadESPLTable(spftmp); // Load the pre-calculated table (you only have to do this once)
 // The ESPL.dat file is located inside the data folder; copy it to your directory.
@@ -194,10 +205,10 @@ int main(int argc, char *argv[]){                   /* BEGIN MAIN */
   idum = &var;        
   Paramfile.seed = &var;
 
-  if(Paramfile.setseedtoclockBIT==1)
+  if(Paramfile.setseedtoclock==1)
     {
       ftime(&mtime);
-      var = -(long(mtime.time)*1000 + mtime.millitm + 14631*atoi(instance)); 
+      var = -(long(mtime.time)*1000 + mtime.millitm + 14631*stoi(instance)); 
       sprintf(str,"Random seed: %ld",-var);
       fmtline(str,WIDTH,"CPU CLOCK");
     }
@@ -221,17 +232,8 @@ int main(int argc, char *argv[]){                   /* BEGIN MAIN */
 
   fflush(stdout);
 
-  /* This function creates the world of telescopes */
-  if(Paramfile.verbosity) {printf("buildWorld\n"); fflush(stdout);}
-  clock_gettime(CLOCK_REALTIME,&tstart);
-  buildWorld(&Paramfile, World,idum,logfile_ptr);
-  clock_gettime(CLOCK_REALTIME,&tend);
-  nsec = tend.tv_nsec - tstart.tv_nsec;
-  cout << "Buildworld: " <<  double((tend.tv_sec - tstart.tv_sec) - (nsec<0?1:0)) + double(nsec<0?nsec+1000000000:nsec)*1.0e-9 << " sec" << endl;
+  //Moved buildWorld from here to later
   
-  if(Paramfile.verbosity) {printf("world built\n"); fflush(stdout);}
-
-  fflush(stdout);
 
   clock_gettime(CLOCK_REALTIME,&tstart);
 
@@ -255,13 +257,6 @@ int main(int argc, char *argv[]){                   /* BEGIN MAIN */
       exit(1);
     }
   if(Paramfile.verbosity) {printf("Sources read\n"); fflush(stdout);}
-
-  //Output the filter names that the observatories are using as a
-  for(int obsidx=0; obsidx<Paramfile.numobservatories; obsidx++)
-	{
-	  cout << "Observatory " << obsidx << " (" << World[obsidx].name << ") filter " << World[obsidx].filter << ": " << Sources.magkey[World[obsidx].filter] << endl;
-	}
-
   
   //Read in Lenses
   if(Paramfile.verbosity) {printf("readLenses\n"); fflush(stdout);}
@@ -292,12 +287,35 @@ int main(int argc, char *argv[]){                   /* BEGIN MAIN */
       exit(1);
     }
 
+  /* This function creates the world of telescopes */
+  if(Paramfile.verbosity) {printf("buildWorld\n"); fflush(stdout);}
+  clock_gettime(CLOCK_REALTIME,&tstart);
+  buildWorld(&Paramfile, World,idum,logfile_ptr);
+  clock_gettime(CLOCK_REALTIME,&tend);
+  nsec = tend.tv_nsec - tstart.tv_nsec;
+  cout << "Buildworld: " <<  double((tend.tv_sec - tstart.tv_sec) - (nsec<0?1:0)) + double(nsec<0?nsec+1000000000:nsec)*1.0e-9 << " sec" << endl;
+  
+  if(Paramfile.verbosity) {printf("world built\n"); fflush(stdout);}
+
+  //Output the filter names that the observatories are using as a
+  for(int obsidx=0; obsidx<Paramfile.numobservatories; obsidx++)
+    {
+      cout << "Observatory " << obsidx << " (" << World[obsidx].name << ") filter " << World[obsidx].filter << ": " << Sources.magkey[World[obsidx].filter] << endl;
+    }
+
+
+  fflush(stdout);
+
+  
   clock_gettime(CLOCK_REALTIME,&tend);
   nsec = tend.tv_nsec - tstart.tv_nsec;
   tio += double((tend.tv_sec - tstart.tv_sec) - (nsec<0?1:0))
     + double(nsec<0?nsec+1000000000:nsec)*1.0e-9;
       
 
+
+
+  
   if(Paramfile.verbosity) {printf("about to start - for each galaxy model event\n");
     fflush(stdout);}
 
@@ -322,7 +340,9 @@ int main(int argc, char *argv[]){                   /* BEGIN MAIN */
       if(Paramfile.verbosity) {printf("timeSequencer\n"); fflush(stdout);}
       clock_gettime(CLOCK_REALTIME,&tstart);
       timeSequencer(World, &Event, &Paramfile, &Sources, &Lenses);
+      if(Paramfile.verbosity) {printf("getPlanetvals\n"); fflush(stdout);}
       getPlanetvals(&Event, World, &Paramfile, &Sources, &Lenses, &Planets); //Moved here to minimize parallax computations
+      if(Paramfile.verbosity) {printf("setupParallax\n"); fflush(stdout);}
       setupParallax(&Paramfile, World, &Event, &Sources, &Lenses);
       clock_gettime(CLOCK_REALTIME,&tend);
       nsec = tend.tv_nsec - tstart.tv_nsec;

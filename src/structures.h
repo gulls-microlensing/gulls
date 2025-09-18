@@ -29,7 +29,7 @@ struct obsfilekeywords{
   int nfields; /*NUMBER OF FIELDS FROM .CONFIG FILE */
   double readohead;
   int nepochs;
-  char name[100];
+  string name;
   int npixx,npixy;
   double pixelsize;
   double collectingarea,primary,blockage;
@@ -74,33 +74,27 @@ struct obsfilekeywords{
   vector<double> lambdasun; //ecliptic coordinate lambda the sun
   vector<double> zodiflux; //zodiacal background flux in units of mag20 per sq "
 
-  char* weatherProfile;
-  char* fieldCentreFile;
-  char* observationSequence;
-  char* detector;
-  char* throughput;
-  char* orbitcode; //codification of the orbit or filename
+  string weatherProfile;
+  string observationSequence;
+  string detector;
+  string throughput;
+  string orbitcode; //codification of the orbit or filename
 
 
   //double sunriseset[NUM_SIM_DAYS+4][2];
   vector<vector<double> > sunriseset;
-  /*  l,b field centres from <obsname>.config */
-  double fieldCentres[2][MAX_NUM_FIELDS];
-  /*  l,b field verticies computed by computeFieldVerticies */
-  double fieldVerticies[2][4][MAX_NUM_FIELDS];
-
 
   obsfilekeywords()
   {
     sequence = new struct obssequence[MAX_SEQUENCE_LENGTH];
     //weatherSequence = new double[4*(NUM_SIM_DAYS+1)];
 
-    weatherProfile = new char[1000];
-    fieldCentreFile = new char[1000];
-    observationSequence = new char[1000];
-    detector = new char[1000];
-    throughput = new char[1000];
-    orbitcode = new char[1000]; 
+    //weatherProfile = new char[1000];
+    //fieldCentreFile = new char[1000];
+    //observationSequence = new char[1000];
+    //detector = new char[1000];
+    //throughput = new char[1000];
+    //orbitcode = new char[1000]; 
   };
 
   ~obsfilekeywords()
@@ -108,12 +102,12 @@ struct obsfilekeywords{
     delete[] sequence;
     //delete[] weatherSequence;
 
-    delete[] weatherProfile;
-    delete[] fieldCentreFile;
-    delete[] observationSequence;
-    delete[] detector;
-    delete[] throughput;
-    delete[] orbitcode;
+    //delete[] weatherProfile;
+    //delete[] fieldCentreFile;
+    //delete[] observationSequence;
+    //delete[] detector;
+    //delete[] throughput;
+    //delete[] orbitcode;
   };
 
 };
@@ -123,18 +117,14 @@ struct obsfilekeywords{
 #ifndef PARAMFILESTRUCT
 struct filekeywords{
   
-  char setseedtoclock[2];
   long Seed;
-  int setseedtoclockBIT;
+  int setseedtoclock;
   double simulation_zerotime;
   int NUM_SIM_DAYS;
   int numobservatories;
-  char run_name[100];
-  char niterSTR[10];
+  string run_name;
   long niter;
   int principle_observatory;
-  char principle_observatorySTR[10];
-  char outputLightcurveSTR[10];
   double outputLightcurve; //probability of outputting a lightcurve
   int sourcecolours;
   int lenscolours;
@@ -173,34 +163,39 @@ struct filekeywords{
   double alltime;
   double lctime;
   double phottime;
-  
-  char *pathdir;
-  char *pathfile;
-  char *basedir;
-  char *starsdir;
-  /*char *scriptdir;
-  char *paramdir;
-  char *srcdir;
-  char *paramfiledir;
-  char *observdic;
-  char *weatherdir;*/
-  char *obsdir;
-  char *obslist;
-  char *weatherprofiledir;
-  char *random_seed;
-  char *simulation_zerotimeSTR;
-  char *starfielddir; 
-  char *starfieldlist; 
-  char *sourcedir; 
-  char *sourcelist; 
-  char *lensdir; 
-  char *lenslist; 
-  char *planetdir;
-  char *planetroot;
-  char *outputdir;
-  char *obsgroupstr;
 
-  filekeywords()
+  double lc_timeout;
+  
+  string pathdir;
+  string pathfile;
+  string basedir;
+  string starsdir;
+  /*string scriptdir;
+  string paramdir;
+  string srcdir;
+  string paramfiledir;
+  string observdic;
+  string weatherdir;*/
+  string obsdir;
+  string obslist;
+  string weatherprofiledir;
+  string random_seed;
+  string simulation_zerotimeSTR;
+  string starfielddir; 
+  string starfieldlist; 
+  string sourcedir; 
+  string sourcelist; 
+  string lensdir; 
+  string lenslist; 
+  string planetdir;
+  string planetroot;
+  string outputdir;
+  string obsgroupstr;
+
+  double avgl, avgb;
+ 
+
+  /* filekeywords()
   {
     pathdir = new char[1000];
     pathfile = new char[1000];
@@ -244,7 +239,7 @@ struct filekeywords{
     delete[] planetroot;
     delete[] outputdir;
     delete[] obsgroupstr;
-  };
+    };*/
 };
 #define PARAMFILESTRUCT
 #endif
@@ -286,6 +281,8 @@ struct event{
 
   int source, lens;
   vector<int> scompanions, lcompanions;
+  vector<double> scomp_rs, scomp_s, scomp_alpha, scomp_inc, scomp_phase;
+  vector<double> lcomp_s, lcomp_q, lcomp_alpha, lcomp_inc, lcomp_phase;
   int field;
   int id;
   //microlensing paramters
@@ -298,7 +295,7 @@ struct event{
   vector<double> params; //other, non-intrinsic parameters
   vector<string> paramsHeader;
   // Flag array for which observatory sees the event in which field
-  int isseenby[MAX_NUM_OBSERVATORIES][MAX_NUM_FIELDS]; 
+  //int isseenby[MAX_NUM_OBSERVATORIES][MAX_NUM_FIELDS]; 
   //fraction of total flux contrib by source
   double fs[MAX_NUM_OBSERVATORIES];     
   int nepochs;                            /*TOTAL NUMBER OF EPOCHS */
@@ -365,6 +362,8 @@ struct event{
   vector<double> dF_diff;
   vector<double> xs; //source position
   vector<double> ys;
+  vector<double> xs2; //source position
+  vector<double> ys2;
   vector<double> xl1; //lens 1 position
   vector<double> yl1;
   vector<double> xl2; //lens 2 position

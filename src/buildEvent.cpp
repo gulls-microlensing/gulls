@@ -22,15 +22,20 @@ void buildEvent(struct event *Event, struct obsfilekeywords World[],
 		vector<vector<vector<double> > >* starfield, 
 		vector<double>* starfielddata, 
 		struct filekeywords *Paramfile, struct slcat *Sources, 
-		struct slcat *Lenses, int sdx, char* instance_, long *idum)
+		struct slcat *Lenses, int sdx, string instance, long *idum)
 {
-  Event->instance = atoi(instance_);
+  Event->instance = atoi(instance.c_str());
   Event->id = sdx;
 
   Event->gamma = Paramfile->LD_GAMMA;
 
-  //clear the data vector
+  //clear the data vectors
   Event->data.clear();
+  Event->scomp_rs.clear();
+  Event->scomp_s.clear();
+  Event->scomp_alpha.clear();
+  Event->scomp_inc.clear();
+  Event->scomp_phase.clear();
 
   //Set up obsgroups
   if(int(Event->obsgroups.size())==0)
@@ -116,11 +121,29 @@ void addstars(struct event *Event, struct obsfilekeywords World[],
       Event->xpix[obsidx] = int(floor(x / World[obsidx].im.psf.pixscale));
       Event->ypix[obsidx] = int(floor(y / World[obsidx].im.psf.pixscale));
 
-      //add the lens star to the image
+      //add the lens star and lens and source companions to the image
       if(Paramfile->lenslight)
 	{
 	  World[obsidx].im.addstar(Event->xsub[obsidx], Event->ysub[obsidx], 
 				   Lenses->mags[Event->lens][filter]);
+	  if(Paramfile->multiple_lenses)
+	    {
+	      for(auto lc : Event->lcompanions)
+		{
+		  if(Paramfile->verbosity>2) cout << "Adding lens companion star (mag=" << Lenses->mags[lc][filter] << ")" << endl; 
+		  World[obsidx].im.addstar(Event->xsub[obsidx], Event->ysub[obsidx], 
+					   Lenses->mags[lc][filter]);
+		}
+	    }	  
+	}
+      if(Paramfile->multiple_sources)
+	{
+	  for(auto sc : Event->scompanions)
+	    {
+	      if(Paramfile->verbosity>2) cout << "Adding source companion star (mag=" << Sources->mags[sc][filter] << ")" << endl; 
+	      World[obsidx].im.addstar(Event->xsub[obsidx], Event->ysub[obsidx], 
+				   Sources->mags[sc][filter]);
+	    }
 	}
     }
 
@@ -254,15 +277,15 @@ void computeBlending(struct event *Event, struct obsfilekeywords World[], struct
 
       //Store the blending fraction
       if(World[obsidx].photcode<2) //aperture photometry
-		{
-		  Event->fs[obsidx] = (phot1[0]-phot0[0])/phot1[0];
-		  Event->baselineFlux[obsidx] = phot1[0]/World[obsidx].mintexp;
-		}
+	{
+	  Event->fs[obsidx] = (phot1[0]-phot0[0])/phot1[0];
+	  Event->baselineFlux[obsidx] = phot1[0]/World[obsidx].mintexp;
+	}
       else //weighted photometry
-		{
-		  Event->fs[obsidx] = (phot1[4]-phot0[4])/phot1[4];
-		  Event->baselineFlux[obsidx] = phot1[4]/World[obsidx].mintexp;
-		}
+	{
+	  Event->fs[obsidx] = (phot1[4]-phot0[4])/phot1[4];
+	  Event->baselineFlux[obsidx] = phot1[4]/World[obsidx].mintexp;
+	}
 
 
       //Check for saturation due to bleeding by generating an exposure
@@ -275,17 +298,17 @@ void computeBlending(struct event *Event, struct obsfilekeywords World[], struct
       World[obsidx].im.reset_detector();
 
       if(satflag==0&&tmpsatflag!=0&&Paramfile->verbosity>0)
-		{
-		  cout << "All sat flag set due to bleeding test" << endl;
-		}
+	{
+	  cout << "All sat flag set due to bleeding test" << endl;
+	}
 	  
       satflag |= tmpsatflag;
 	  
       if(!satflag) 
-		{
-		  Event->allsat=0;
-		  Event->allsatobs[obsidx]=0;
-		}    
+	{
+	  Event->allsat=0;
+	  Event->allsatobs[obsidx]=0;
+	}    
 	  
       //remember to remove the background and the source again
       World[obsidx].im.addstar(Event->xsub[obsidx], Event->ysub[obsidx], 
@@ -358,6 +381,7 @@ void drawsl(struct filekeywords* Paramfile, struct obsfilekeywords World[], stru
   if(Event->ra<0) Event->ra += 2*PI;
 
   //Handle multiplicity
+  Event->scompanions.clear();
   if(Paramfile->multiple_sources>0)
     {
       int isbinary = Sources->data[sn][Sources->datadict["Is_Binary"]];
@@ -382,7 +406,7 @@ void drawsl(struct filekeywords* Paramfile, struct obsfilekeywords World[], stru
 		    }
 		}
 	    } //end isbinary==1
-	  else
+	  else if(isbinary>=2)
 	    {
 	      if(Paramfile->verbosity>2) cout << "and is a companion." << endl;
 	      //find the primary id's position
@@ -395,12 +419,14 @@ void drawsl(struct filekeywords* Paramfile, struct obsfilekeywords World[], stru
 		      break;
 		    }
 		}
+
 	      if(primarysn==-1)
 		{
 		  cout << "Problem finding primary star for multiple star where a companion was selected as the main source (sn,ID,primary_ID): ("
 		       << sn << "," << Sources->data[sn][Sources->datadict["ID"]] << "," << Sources->data[sn][Sources->datadict["primary_ID"]] << ")" << endl;
 		  exit(1);
 		}
+
 	      for(int i=primarysn;i<Sources->data.size();i++)
 		{
 		  if(i==primarysn || Sources->data[i][Sources->datadict["primary_ID"]]==Sources->data[sn][Sources->datadict["ID"]])
@@ -410,16 +436,20 @@ void drawsl(struct filekeywords* Paramfile, struct obsfilekeywords World[], stru
 			  if(Paramfile->verbosity>1) cout << "Adding star " << i << " to source system." << endl;
 			  Event->scompanions.push_back(i);
 			  //add companion properties to the event data here?
-			}
-		    }
+
+			} //end if i!=sn
+		    } //end if i==primarysn
 		  else
 		    {
 		      break;
-		    }
-		}
+		    } //not sure I understand this break
+		} //end for over sources
 	    } //end else isbinary==1
 
-	  //add companion properties to the event data here?
+	  //vector<double> scomp_rs;
+	  //vector<double> scomp_s, scomp_alpha;
+	  //vector<double> lcomp_s, lcomp_q;
+
 	  
 	} //end isbinary>0
       else
@@ -428,8 +458,30 @@ void drawsl(struct filekeywords* Paramfile, struct obsfilekeywords World[], stru
 	}
     }
 
+  if(Paramfile->multiple_sources)
+    {
+      	  //add companion properties to the event data here?
+	  for(auto sc : Event->scompanions)
+	    {
+	      Event->scomp_rs.push_back((Sources->data[sc][Sources->RADIUS] * Rsun / Sources->data[sc][Sources->DIST]) / Event->thE);
+	      double P = pow(10,Sources->data[sc][Sources->datadict["combined_logP"]])/DAYINYR;
+	      double M1 = Sources->data[sn][Sources->datadict["Mass"]];
+	      double M2 = Sources->data[sc][Sources->datadict["Mass"]];
+	      double acomb = pow(P*P*(M1+M2),1.0/3.0);
+	      double a1 = M2/(M1+M2) * acomb;
+	      double a2 = M1/(M1+M2) * acomb;
+	      Event->scomp_s.push_back(acomb/(Event->thE * Sources->data[sn][Sources->DIST]));
+	      Event->scomp_alpha.push_back(360.0*ran2(idum));
+	      Event->scomp_phase.push_back(360.0*ran2(idum));
+	      double rnd = ran2(idum);
+	      Event->scomp_inc.push_back(180*(rnd<0.5?acos(2*rnd):-acos(2-2*rnd))/PI);
+	      
+	    }
+    }
+
   if(Paramfile->multiple_lenses)
     {
+      
     }
 
   //The random parameters
@@ -471,6 +523,9 @@ void drawsl(struct filekeywords* Paramfile, struct obsfilekeywords World[], stru
   Event->piEN = 0.0; //These will be computed if parallax is used
   Event->piEE = 0.0;
 
+
+
+  
 
   //in km s-1
   Event->vt = Event->murel * Lenses->data[ln][Lenses->DIST] * AU/1000.0 / SECINYR;
@@ -596,6 +651,7 @@ void setupParallax(struct filekeywords* Paramfile, struct obsfilekeywords World[
       //Do this for a dummy epoch now, but redo this at the end of 
       //timeSequencer
       //cout << "Observatory " << obsidx << " using " << World[obsidx].jd.size() << " epochs." << endl;
+      if(Paramfile->verbosity>3) cout << "obsidx=" << obsidx << " jdtimes.size()=" << Event->jdtimes[obsidx].size() << endl;
       Event->pllx[obsidx].load_epochs(&Event->jdtimes[obsidx]);
       Event->pllx[obsidx].compute_NEshifts();
       Event->pllx[obsidx].compute_tushifts();

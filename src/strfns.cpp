@@ -22,7 +22,7 @@ char *fmtline(char *instr, int size, const char *msg){
 }
 
 
-int read_config_var( char *values_file, const char *keyword , char value[] )
+int read_config_var( const char *values_file, const char *keyword , char value[] )
 {
   static char str[1000];
   int len;

@@ -7,7 +7,7 @@
 #include "readPlanets.h"
 #include "split.h"
 
-int readPlanets(struct filekeywords *Paramfile, vector<struct pcat> *planets, char* instance, int choosefield)
+int readPlanets(struct filekeywords *Paramfile, vector<struct pcat> *planets, string instance, int choosefield)
 {
   int ncols = NPLANETINPUT;
   int nlist=0;

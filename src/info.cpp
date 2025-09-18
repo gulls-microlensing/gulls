@@ -15,7 +15,7 @@ void printEpochs(struct obsfilekeywords World[], int obsidx)
   FILE *outfile_ptr1;
   char filename[1000];
   
-  sprintf(filename,"epochs_%s",World[obsidx].name);
+  sprintf(filename,"epochs_%s",World[obsidx].name.c_str());
 
   outfile_ptr1 = fopen(filename,"w");
   int ind;
@@ -40,22 +40,6 @@ void printEpochs(struct obsfilekeywords World[], int obsidx)
 
 }
 
-void showIsseenby(struct obsfilekeywords World[], struct event *Event, int nobs)
-{
-
-  int ind,obsidx;
-  char str[100];
-  for(obsidx = 0;obsidx<nobs;obsidx++)
-    {
-
-      for(ind = 0;ind<World[obsidx].nfields;ind++)
-	{
-	  sprintf(str,"Observatory: %d Field: %d Seen: %d",
-		  obsidx,ind,Event->isseenby[obsidx][ind]);
-	  fmtline(str,45,"(showIsseenby)");
-	}
-    }
-}
 
 void writeHeader(struct filekeywords* Paramfile, struct event *Event, struct slcat* Sources, struct slcat* Lenses, ofstream& ofile)
 {

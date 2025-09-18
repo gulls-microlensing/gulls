@@ -10,7 +10,30 @@
 #include<vector>
 #include<sstream>
 
+#include <algorithm> 
+#include <cctype>
+#include <locale>
+
 using namespace std;
+
+// Trim from the start (in place)
+inline void ltrim(string &s) {
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+        return !isspace(ch);
+    }));
+}
+
+// Trim from the end (in place)
+inline void rtrim(string &s) {
+    s.erase(find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+        return !isspace(ch);
+    }).base(), s.end());
+}
+
+inline void trim(string &s) {
+    rtrim(s);
+    ltrim(s);
+}
 
 //use getline(ifstream, string) to grab line from file
 //use split(string, vector) to split that line into parts stored in the vector

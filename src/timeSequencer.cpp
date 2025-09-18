@@ -10,8 +10,6 @@
 
 void computeAltitude(double JD, double obslong, double obslat, double eventRA, double eventDEC, int obsidx, double *Alt, double *Az);
 
-int inboundary(double x, double y, double X[], double Y[], int ndata);
-void whichFields(struct obsfilekeywords World[], struct event *Event, int nobs);
 void determineEpochs(struct obsfilekeywords World[], struct event *Event, struct filekeywords *Paramfile);
 //void computeParallax(struct obsfilekeywords World[], struct event *Event, struct filekeywords *Paramfile);
 void setupMemory(struct obsfilekeywords World[], struct event *Event, struct filekeywords *Paramfile);
@@ -30,12 +28,6 @@ void timeSequencer(struct obsfilekeywords World[], struct event *Event, struct f
   /* printf("ra: %f dec: %f\n",Event->ra,Event->dec); */  
   
 
-  /* Find which fields the event is seen by for each observatory */
-  if(DEBUGVAR) cout << "whichFields" << endl;
-  whichFields(World,Event, Paramfile->numobservatories);     
-
-  /* Show which fields the event is seen by for each observatory */
-  /* showIsseenby(World,Event, Paramfile->numobservatories); */      
 
   /* Find observatory epochs which satisfy weather, moon and altitude conditions. Load Event epoch array */
   if(DEBUGVAR) cout << "determineEpochs" << endl;
@@ -74,7 +66,7 @@ void determineEpochs(struct obsfilekeywords World[], struct event *Event, struct
   /* Loop through all observatories */
   for(obsidx=0;obsidx<Paramfile->numobservatories;obsidx++)
     {
-      thisseen=0;
+      //thisseen=0;
 
       C_EXT = World[obsidx].extcoeff;
       VSKY =  World[obsidx].skybackground; //20.0 - 2.5*log10(World[obsidx].constbackground);
@@ -84,11 +76,11 @@ void determineEpochs(struct obsfilekeywords World[], struct event *Event, struct
 	{
 	  
 
-	  if(Event->isseenby[obsidx][jnd]){
+	  //if(Event->isseenby[obsidx][jnd]){
 	    /* Observed in field jnd in observatory obsidx? */
 	    /* printf("Is seen by obs %d in field %d",obsidx,jnd); */
 	    //leaving thisseen=1?
-	    thisseen=1;
+	    //thisseen=1;
 	  
 	    /* Loop through all observatory epochs */
 	    for(ind=0;ind<World[obsidx].nepochs;ind++)
@@ -189,7 +181,7 @@ void determineEpochs(struct obsfilekeywords World[], struct event *Event, struct
 	      }  /* end loop through all observatory epochs */
 
 	    
-	  }  /* end if isseenby */
+	    //}  /* end if isseenby */
 
 	}  /* end loop through all fields for observatory obsidx */
 
@@ -215,63 +207,6 @@ void determineEpochs(struct obsfilekeywords World[], struct event *Event, struct
   Event->numobservatories = Paramfile->numobservatories;
 }
 
-void whichFields(struct obsfilekeywords World[], struct event *Event, int nobs)
-{
-  int ind,jnd;
-  double Fr[5];
-  double Fd[5];
-
-  int obsidx;
-
-  /*  LOOP THROUGH ALL OBSERVATORIES */
-  for(obsidx = 0;obsidx<nobs;obsidx++)
-    {
-
-      /*  LOOP THROUGH ALL FIELDS  */
-      for(ind = 0;ind<World[obsidx].nfields;ind++)
-	{
-	  /* LOOP THROUGH EACH VERTEX */
-	  for(jnd=0;jnd<4;jnd++)
-	    {  
-	      Fr[jnd] = World[obsidx].fieldVerticies[0][jnd][ind];
-	      Fd[jnd] = World[obsidx].fieldVerticies[1][jnd][ind];
-	    }
-	  
-	  /* add if for USE_FIELDS*/
-	  Event->isseenby[obsidx][ind] = inboundary(Event->l*TO_RAD,
-						    Event->b*TO_RAD, Fr, 
-						    Fd, 4);
-	}  /* end loop through all fields */
-    }  /* end loop through all observatories */
-}
-
-
-int inboundary(double x, double y, double X[], double Y[], int ndata)
-{
-  /* Find if point is in a given boundary */
-  int ind;
-  int As=0;
-  double A;
-  
-  X[ndata] = X[0];  
-  Y[ndata] = Y[0]; 
- 
-  for(ind=0;ind<ndata;ind++)
-    {
-    
-      A = 0.5*(x*(Y[ind] - Y[ind+1]) - y*(X[ind] - X[ind+1]) + X[ind]*Y[ind+1] 
-	       - Y[ind]*X[ind+1]);
-      /* printf("%f %f %f %f %f %d\n",X[ind], X[ind+1], Y[ind], Y[ind+1],A,dsgn(A)); */   
-      As+=dsgn(A);
-    }
-  /*  printf("ndata = %d\n",ndata); */
-  
-  /* sum of signs of areas should equal number of boundary points for point in
-     boundary */
-  if(abs(As)==ndata) return(1);
-  else return(0);   //return(1);  //FOR TESTING ONLY!!!!!!!!
-  
-}
 
 
 void computeAltitude(double JD, double obslong, double obslat, double eventRA, double eventDEC, int obsidx, double *Alt, double *Az)
@@ -296,6 +231,8 @@ void setupMemory(struct obsfilekeywords World[], struct event *Event, struct fil
   Event->nosat.resize(Event->nepochs);
   Event->xs.resize(Event->nepochs);
   Event->ys.resize(Event->nepochs);
+  Event->xs2.resize(Event->nepochs);
+  Event->ys2.resize(Event->nepochs);
   Event->xl1.resize(Event->nepochs);
   Event->yl1.resize(Event->nepochs);
   Event->xl2.resize(Event->nepochs);

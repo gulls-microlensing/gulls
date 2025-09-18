@@ -33,12 +33,11 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
     int obsidx;
     double lim_gamma=Event->gamma;
     if(Paramfile->verbosity>=3)
-	    std::cout 
-		    << "At lightcurveGenerator start, Tol=" 
-		    << Event->vbm->Tol 
-		    << ", RelTol=" 
-		    << Event->vbm->RelTol 
-		    << std::endl;
+	    cout << "At lightcurveGenerator start, Tol=" 
+		 << Event->vbm->Tol 
+		 << ", RelTol=" 
+		 << Event->vbm->RelTol 
+		 << std::endl;
      
     //if the event is saturated in each band, no need to calculate the lightcurve
     if(Event->nepochs==0 || Event->allsat)
@@ -51,22 +50,26 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
        idxshift.push_back(Event->nepochsvec[obsidx]);
 
     //Calculate the lightcurve
-    for (int idx = 0; idx < Event->nepochs; ++idx) {
+    for (int idx = 0; idx < Event->nepochs; ++idx)
+      {
         obsidx = Event->obsidx[idx];
         shiftedidx=idx-idxshift[obsidx];
         double amp = 0.0;
-        if (Paramfile->identicalSequence && obsidx > 0) {
+        if (Paramfile->identicalSequence && obsidx > 0)
+	  {
             // Lightcurve is identical from observatory to observatory
             amp = Event->Atrue[shiftedidx];
-        } else {
-
-            double tt = (Event->epoch[idx] - Event->t0) / Event->tE_r;
+	  }
+	else
+	  {
+	    double tt = (Event->epoch[idx] - Event->t0) / Event->tE_r;
             double uu = u0;
 
-            if (Paramfile->pllxMultiplyer) {
+            if (Paramfile->pllxMultiplyer)
+	      {
                 tt += Event->pllx[obsidx].tshift[shiftedidx];
                 uu += Event->pllx[obsidx].ushift[shiftedidx];
-            }
+	      }
             Event->umin=min(Event->umin,qAdd(tt,uu));
             
 	    double xsCoM = tt * cosa - uu * sina + VBM_origin;
@@ -80,13 +83,35 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
             Event->yl2[idx] = 0.0;
 	    Event->vbm->a1 = lim_gamma;
 	    amp = Event->vbm->BinaryMag2(a, q, xsCoM, ysCenter, rs);
+
 	    Event->vbm_rootaccuracy[idx] = Event->vbm->rootaccuracy;
 	    Event->vbm_squarecheck[idx] = Event->vbm->squarecheck;
 	    Event->vbm_therr[idx] = Event->vbm->therr;
+	    
+	    if(Paramfile->multiple_sources && Event->scompanions.size()>0)
+	      {
+		double xs2CoM, ys2Center;
+		double x2off = Event->scomp_s[0] * cos(Event->scomp_phase[0]*TO_RAD);
+		double y2off = Event->scomp_s[0] * sin(Event->scomp_phase[0]*TO_RAD) * cos(Event->scomp_inc[0]*TO_RAD);
+		xs2CoM = xsCoM + x2off * cos(Event->scomp_alpha[0]*TO_RAD) - y2off * sin(Event->scomp_alpha[0]*TO_RAD);
+		ys2Center = ysCenter + x2off * sin(Event->scomp_alpha[0]*TO_RAD) + y2off * sin(Event->scomp_alpha[0]*TO_RAD);
 
-	 }
-        Event->Atrue[idx] = amp;
-        
+		double amp2 = Event->vbm->BinaryMag2(a, q, xs2CoM, ys2Center, Event->scomp_rs[0]);
+		Event->xs2[idx] = xs2CoM;
+		Event->ys2[idx] = ys2Center;
+	      
+		int filt = World[obsidx].filter;
+		double magnitude1 = Sources->mags[Event->source][filt];
+		double magnitude2 = Sources->mags[Event->scompanions[0]][filt];
+		double fs2ofs1 = pow(10,-0.4*(magnitude2-magnitude1));
+		Event->Atrue[idx] = amp + fs2ofs1 * (amp2-1);
+
+	      }
+	    else
+	      {
+		Event->Atrue[idx] = amp;
+	      }
+	  }
 
         // Keep track of highest magnification
         if (amp > Event->Amax) {
@@ -101,4 +126,3 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
       backupGenerator(Paramfile, Event, World, Sources, Lenses, logfile_ptr);
     }
 }
-

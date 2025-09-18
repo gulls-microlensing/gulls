@@ -4,4 +4,4 @@
 #include "strfns.h"
 #include "structures.h"
 
-void readObservatoryfile(char v_file[], struct obsfilekeywords World[],int idx);
+void readObservatoryfile(string v_file, struct obsfilekeywords World[],int idx);

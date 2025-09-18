@@ -4,4 +4,4 @@
 #include "strfns.h"
 #include "structures.h"
 
-void readParamfile(char *v_file, struct filekeywords *Paramfile);
+void readParamfile(string v_file, struct filekeywords *Paramfile);

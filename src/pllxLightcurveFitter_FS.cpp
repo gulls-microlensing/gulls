@@ -282,11 +282,13 @@ double my_f_FS (const gsl_vector *v, void *params)
       piEE = gsl_vector_get(v, 5);
       piE = qAdd(piEE,piEN);
 
-      if(piEN!=EventL->pllx[obsidx].piEN || piEN!=EventL->pllx[obsidx].piEN || tE!=EventL->pllx[obsidx].tE_r)
+      for(grpidx=0;grpidx<int(EventL->obsgroups[obsgroup].size());grpidx++)
 	{
-	  for(grpidx=0;grpidx<int(EventL->obsgroups[obsgroup].size());grpidx++)
+	  obsidx=EventL->obsgroups[obsgroup][grpidx];
+
+	  if(piEN!=EventL->pllx[obsidx].piEN || piEN!=EventL->pllx[obsidx].piEN || tE!=EventL->pllx[obsidx].tE_r)
 	    {
-	      obsidx=EventL->obsgroups[obsgroup][grpidx];
+
 	      //EventL->FSPL[obsgroup].pllx[obsidx].provide_observables_NE(piEN, piEE, tE);
 	      //Event->pllx[obsidx].load_epochs(&World[obsidx].jd);
 	      //EventL->FSPL[obsgroup].pllx[obsidx].compute_tushifts();

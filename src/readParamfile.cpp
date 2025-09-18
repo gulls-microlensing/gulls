@@ -1,364 +1,259 @@
 #include "readParamfile.h"
+#include<unordered_map>
+#include<fstream>
+#include<iostream>
 
+#include "split.h"
 
-void readParamfile(char *v_file, struct filekeywords *Paramfile){
-  printf("Parameter file: %s\n",v_file); fflush(stdout);
+using namespace std;
+
+void readParamfile(string v_file, struct filekeywords *Paramfile){
+  cout << "Parameter file: " << v_file << endl;
   //for reading and later combing keywords
-  char temp[1000];
-
-  char str[1000];
-  char str0[5];
-  char str1[5];
-  char str2[5];
-  char str3[15];
-  char str4[5];
-  char str5[15];
-  char str6[15];
-  char str7[30];
-  char str8[5];
-  char str9[5];
-  char str10[5];
-  char str11[30];
-  char str12[20];
-  char str13[5];
-  char str14[5];
-  char str15[5];
-  char str16[5];
-  char str17[20];
-  char str18[5];
-  char str19[20];
-  char str20[20];
-  char str21[20];
-  char str22[20];
-  char str23[20];
-  char str24[20];
-
   //S List of the keywords in the parameter files. Now requiring a path to the 'paths file' and the file name
-  const char *keywords[42] = {"OBSERVATORY_DIR", "OBSERVATORY_LIST",             //0,1
-							  "SET_RANDOM_SEED_TO_CLOCK", "RANDOM_SEED",         //2,3
-							  "SIMULATION_ZERO_TIME", "WEATHER_PROFILE_DIR",     //4,5
-							  "RUN_NAME", "OUTPUT_DIR", "PRINCIPLE_OBSERVATORY", //6,7,8
-							  "OUTPUT_LC", "STARFIELD_DIR", "STARFIELD_LIST",    //9,10,11
-							  "SOURCE_DIR", "SOURCE_LIST", "SOURCE_COLOURS",     //12,13,14
-							  "LENS_DIR", "LENS_LIST", "LENS_COLOURS",           //15,16,17
-							  "PLANET_DIR","PLANET_ROOT", "NFILTERS", "AMIN",    //18,19,20,21
-							  "LARGEPSFMAG","OUTPUT_IMAGES", "PRETTY_PICS",      //22,23,24
-							  "PRETTY_PICS_DIMENSIONS", "MIN_CHISQUARED",        //25,26
-							  "OUTPUT_ONERR", "OUTPUT_ONDET", "OUTPUT_ONALL",    //27,28,29
-							  "PARALLAX","LENS_LIGHT","REPEAT_SEQUENCE",         //30,31,32  
-							  "OBS_GROUPS","NUM_SIM_DAYS","U0MAX",               //33,34,35
-							  "BASE_DIR","USE_FIELDS","ERROR_SCALING",           //36, 37, 38,
-							  "SUBRUNSIZE", "LC_GEN", "LD_GAMMA"};               //39, 40, 41
 
+  unordered_map<string,int> pfdefault;
+  
+  //The expected parameters and their defaults
+  unordered_map<string,string> pfile = {
+    {"OBSERVATORY_DIR",""},
+    {"OBSERVATORY_LIST",""},
+    {"SET_RANDOM_SEED_TO_CLOCK","1"},
+    {"RANDOM_SEED","1"},
+    {"SIMULATION_ZERO_TIME",""},
+    {"WEATHER_PROFILE_DIR",""},     
+    {"RUN_NAME",""},
+    {"OUTPUT_DIR",""},
+    {"FINAL_DIR",""},          //not used in cpp, but in postprocessing
+    {"EXECUTABLE",""},          //not used in cpp, but used in launch scripts
+    {"RATES_FILE",""},
+    {"PRINCIPLE_OBSERVATORY","0"}, 
+    {"OUTPUT_LC","0"},
+    {"STARFIELD_DIR",""},
+    {"STARFIELD_LIST",""},    
+    {"SOURCE_DIR",""},
+    {"SOURCE_LIST",""},
+    {"SOURCE_COLOURS","0"},     
+    {"LENS_DIR",""},
+    {"LENS_LIST",""},
+    {"LENS_COLOURS","0"},           
+    {"PLANET_DIR",""},
+    {"PLANET_ROOT",""},
+    {"NFILTERS",""},
+    {"AMIN",""},    
+    {"LARGEPSFMAG",""},
+    {"OUTPUT_IMAGES","0"},
+    {"PRETTY_PICS","0"},      
+    {"PRETTY_PICS_DIMENSIONS","256"},
+    {"MIN_CHISQUARED",""},     
+    {"OUTPUT_ONERR","0"},
+    {"OUTPUT_ONDET","0"},
+    {"OUTPUT_ONALL","0"},    
+    {"PARALLAX","1"},
+    {"LENS_LIGHT","1"},
+    {"REPEAT_SEQUENCE","0"}, 
+    {"OBS_GROUPS","(ALL)"},
+    {"OBS_GROUP_NAMES",""},   //not used in cpp at the moment, but is in postprocessing
+    {"NUM_SIM_DAYS","2010"},
+    {"U0MAX","3"},           
+    {"ERROR_SCALING","0"},   
+    {"SUBRUNSIZE",""},
+    {"LC_GEN","1"},
+    {"LD_GAMMA","0.00"},     
+    {"VBM_RELTOL","1.0e-6"},
+    {"VBM_ABSTOL","1.0e-4"},
+    {"LC_TIMEOUT","60.0"},
+    {"MULTIPLE_SOURCES","0"},
+    {"MULTIPLE_LENSES","0"}
+  };
 
-
+  //For testing which parameters are at their default values
+  for(auto it=pfile.begin(); it!=pfile.end(); it++)
+    {
+      pfdefault[it->first] = 1;
+    }
+  
   int errsum=0; //use this to check that critical keywords are included in the parameter file
                 //test read_config_var return to set defaults if the keyword is not
 
-  //getenv here for the path to get base_path, tack on to the beginning of everything, should not be bad this way, we can ditch paths.txt or whatever, will make everything simpler. 
+  //getenv here for the path to get base_path, tack on to the beginning of everything, should not be bad this way, we can ditch paths.txt or whatever, will make everything simpler.
 
+  char const* tmp;
 
-  //start off by getting the location of paths.txt, where are the directory/path info is kept
-  //from here on, directories are read from p_file, while v_file is more specific
-  //errsum += read_config_var(v_file, keywords[36], Paramfile->pathdir);
-  //errsum += read_config_var(v_file, keywords[37], Paramfile->pathfile);
-  //Paramfile is a pointer to a structure
-  //printf(Paramfile->pathdir);
-  //printf("%s",Paramfile->pathdir);
-  //strcpy(p_file,Paramfile->pathdir);
-  //strcat(p_file,Paramfile->pathfile);
-  //errsum += read_config_var(p_file, keywords[38], temp);
-  //strcat(Paramfile->basedir,temp);
-  //printf(Paramfile->basedir);
-  //printf("\n");
-
-  //get the base directory from the env variable set in .gulls
+  Paramfile->basedir=string("");
   
-
-  //if(!std::getenv("GULLS_BASE_DIR")){
-  // printf("HERE\n");
-  //   }
-
-
-  if(!(Paramfile->basedir = std::getenv("GULLS_BASE_DIR")))
-	{
-	  printf("GULLS_BASE_DIR environment variable not set\n"); fflush(stdout);
-	  exit(1);
-	}
-  printf("GULLS_BASE_DIR: %s\n", Paramfile->basedir); fflush(stdout);
-  
-  if(std::getenv("GULLS_STARS_DIR"))
-	{
-	  Paramfile->starsdir = std::getenv("GULLS_STARS_DIR");
-	}
+  if(!(tmp = getenv("GULLS_BASE_DIR")))
+    {
+      cout << "GULLS_BASE_DIR environment variable not set" << endl;
+      exit(1);
+    }
   else
-	{
-	  printf("GULLS_STARS_DIR environment variable not set, assuming it is the same as GULLS_BASE_DIR\n"); fflush(stdout);
-	  strcpy(Paramfile->starsdir,Paramfile->basedir);
-	}
-  //printf("GULLS_BASE_DIR: %s\n", Paramfile->basedir); fflush(stdout);
+    {
+      Paramfile->basedir = string(tmp);
+    }
+  cout << "GULLS_BASE_DIR:" << Paramfile->basedir << endl;
   
- 
-  //okay, so this is the best way i have come up with to combine info from
-  //the p_file and v_file. it's not very elegant, but seems to be working okay.
-  //I should write a separate function, but for as few a times as we need this work 
-  //around, I am just going to write it in.
-
-
-  //for observatories
-  //[0] is obsdir
-  //errsum += read_config_var(v_file, keywords[0], Paramfile->obsdir);
-  errsum += read_config_var(v_file, keywords[0], temp);
-  //need to first cat on the base directory
-  strcpy(Paramfile->obsdir,Paramfile->basedir);
-  //then we cat on the actual directory
-  strcat(Paramfile->obsdir,temp);
-
-  //[1] is obslist
-  //errsum += read_config_var(v_file, keywords[1], Paramfile->obslist);
-  errsum += read_config_var(v_file, keywords[1], temp);
-  strcpy(Paramfile->obslist,Paramfile->obsdir);
-  strcat(Paramfile->obslist,temp);
-
-  if(read_config_var(v_file, keywords[2], Paramfile->setseedtoclock))
+  if(tmp = getenv("GULLS_STARS_DIR"))
     {
-      Paramfile->setseedtoclock[0]='1'; Paramfile->setseedtoclock[1]='\0';
-      cerr << "Setting " << keywords[2] << " to 1 by default" << endl;
+      Paramfile->starsdir = string(tmp); 
+    }
+  else
+    {
+      cout << "GULLS_STARS_DIR environment variable not set, assuming it is the same as GULLS_BASE_DIR" << endl;
+      Paramfile->starsdir = Paramfile->basedir;
     }
 
-  //read_config_var(v_file, keywords[3], str8); //seed -left til later
-  errsum += read_config_var(v_file, keywords[4], str7); //zerotime
-  //[5] is weatherdir
-  //errsum += read_config_var(v_file, keywords[5], Paramfile->weatherprofiledir);
-  errsum += read_config_var(v_file, keywords[5], temp);
-  strcpy(Paramfile->weatherprofiledir,Paramfile->basedir);
-  strcat(Paramfile->weatherprofiledir,temp);
-
-  errsum += read_config_var(v_file, keywords[6], Paramfile->run_name);
-  //left output dir separate from restructuring for now
-  errsum += read_config_var(v_file, keywords[7], Paramfile->outputdir);
-  if(read_config_var(v_file, keywords[8], str0)) //principle obs
+  //Read in all the parameters
+  ifstream f;
+  
+  f.open(v_file.c_str());
+  if(!f)
     {
-      str0[0]='0'; str0[1]='\0';
-      cerr << "Setting " << keywords[8] << " to 0 by default" << endl;
-    }
-  if(read_config_var(v_file, keywords[9], str9)) //outputlc
-    {
-      str9[0]='0'; str9[1]='\0';
-      cerr << "Setting " << keywords[9] << " to 0 by default" << endl;
+      cout << __FUNCTION__ << "Error: Could not open parameter file (" << v_file << ")" << endl;
+      exit(1);
     }
 
-  //[10] is starfielddir
-  //errsum += read_config_var(v_file, keywords[10], Paramfile->starfielddir);
-  errsum += read_config_var(v_file, keywords[10], temp);
-  strcpy(Paramfile->starfielddir,Paramfile->starsdir);
-  strcat(Paramfile->starfielddir,temp);
-
-  //[11] is starfieldlist
-  //errsum += read_config_var(v_file, keywords[11], Paramfile->starfieldlist);
-  errsum += read_config_var(v_file, keywords[11], temp);
-  strcpy(Paramfile->starfieldlist,Paramfile->starfielddir);
-  strcat(Paramfile->starfieldlist,temp);
-
-  //[12] is sourcedir
-  //errsum += read_config_var(v_file, keywords[12], Paramfile->sourcedir);
-  errsum += read_config_var(v_file, keywords[12], temp);
-  strcpy(Paramfile->sourcedir,Paramfile->starsdir);
-  strcat(Paramfile->sourcedir,temp);
-
-  //[13] is sourcelist
-  //errsum += read_config_var(v_file, keywords[13], Paramfile->sourcelist);
-  errsum += read_config_var(v_file, keywords[13], temp);
-  strcpy(Paramfile->sourcelist,Paramfile->sourcedir);
-  strcat(Paramfile->sourcelist,temp);
-
-  if(read_config_var(v_file, keywords[14], str1)) //source_colours
+  string key, value;
+  string line, lineorig;
+  vector<string> data;
+  
+  while(!f.eof())
     {
-      str1[0]='0'; str1[1]='\0';
-      cerr << "Setting " << keywords[14] << " to 0 by default" << endl;
+      getline(f,lineorig);
+      line = lineorig.substr(0,lineorig.find_first_of("#"));
+      
+      split(line,data,"=");
+
+      if(data.size()<2)
+	{
+	  if(Paramfile->verbosity>2) cout << "Skipping line in parameter file: " << lineorig << endl;
+	  continue;
+	}
+
+      if(data.size()>2)
+	{
+	  if(Paramfile->verbosity>2) cout << "Comment in parameter file: " << lineorig << endl;
+	}
+
+      
+      key = data[0]; trim(key);
+      value = data[1]; trim(value);
+
+      if(Paramfile->verbosity>2) cout << "Read from parameter file: " << key << "=" << value << endl;
+      
+      if(pfile.find(key)==pfile.end())
+	{
+	  cout << "WARNING: Item " << key << "=" << value << " in the parameter file is not recognized, it will have no effect on the run" << endl;
+	}
+      pfile[key] = value;
+      pfdefault[key] = 0;
     }
 
-
-  //[15] is lensdir
-  //errsum += read_config_var(v_file, keywords[15], Paramfile->lensdir);
-  errsum += read_config_var(v_file, keywords[15], temp);
-  strcpy(Paramfile->lensdir,Paramfile->starsdir);
-  strcat(Paramfile->lensdir,temp);
-
-  //[16] is lenslist
-  //errsum += read_config_var(v_file, keywords[16], Paramfile->lenslist);
-  errsum += read_config_var(v_file, keywords[16], temp);
-  strcpy(Paramfile->lenslist,Paramfile->lensdir);
-  strcat(Paramfile->lenslist,temp);
-
-  if(read_config_var(v_file, keywords[17], str2)) //lens_colours
+  //Check for missing parameters without defaults
+  for(auto it = pfile.begin(); it!=pfile.end(); it++)
     {
-      str2[0]='0'; str2[1]='\0';
-      cerr << "Setting " << keywords[17] << " to 0 by default" << endl;
+      if(it->second.length()==0)
+	{
+	  cout << __FUNCTION__ << ": ERROR: Required parameter " << it->first << " is not set in the parameter file." << endl;
+	  errsum++;
+	}
     }
 
+  if(errsum>0)
+    {
+      cout << __FUNCTION__ << ": There were " << errsum << " missing values in the parameter file (" << v_file << "). Exiting" << endl;
+      exit(1);
+    }
+	  
 
-  //[18] is planetdir
-  //errsum += read_config_var(v_file, keywords[18], Paramfile->planetdir);
-  errsum += read_config_var(v_file, keywords[18], temp);
-  strcpy(Paramfile->planetdir,Paramfile->basedir);
-  strcat(Paramfile->planetdir,temp);
+  //All the data that we need should be in pfile, start assigning it to variables (and parse it further where needed)
 
-  errsum += read_config_var(v_file, keywords[19], Paramfile->planetroot); 
+  //Directories and other input files
+  Paramfile->run_name = pfile["RUN_NAME"];
+  Paramfile->outputdir = pfile["OUTPUT_DIR"] + Paramfile->run_name + string("/");
 
+  Paramfile->obsdir = Paramfile->basedir + pfile["OBSERVATORY_DIR"];
+  Paramfile->obslist = Paramfile->obsdir + pfile["OBSERVATORY_LIST"];
+  Paramfile->weatherprofiledir = Paramfile->basedir + pfile["WEATHER_PROFILE_DIR"];
 
-  errsum += read_config_var(v_file, keywords[20], str4); //nfilters
-  errsum += read_config_var(v_file, keywords[21], str5); //Amin
-  errsum += read_config_var(v_file, keywords[22], str6); //large_psf_mag
-  if(read_config_var(v_file, keywords[23], str8)) //output_images
-    {
-      str8[0]='0'; str8[1]='\0';
-      cerr << "Setting " << keywords[23] << " to 0 by default" << endl;
-    }
-  if(read_config_var(v_file, keywords[24], str10)) //prettypic
-    {
-      str10[0]='0'; str10[1]='\0';
-      cerr << "Setting " << keywords[24] << " to 0 by default" << endl;
-    }
-  if(read_config_var(v_file, keywords[25], str11)) //prettypicDim
-    {
-      strcpy(str11,"256");
-      cerr << "Setting " << keywords[25] << " to 256 by default" << endl;
-    }
-  errsum += read_config_var(v_file, keywords[26], str12); //min_chi2
-  if(read_config_var(v_file, keywords[27], str13)) //outputOnErr
-    {
-      str13[0]='0'; str13[1]='\0';
-      cerr << "Setting " << keywords[27] << " to 0 by default" << endl;
-    }
-  if(read_config_var(v_file, keywords[28], str14)) //outputOnDet
-    {
-      str14[0]='0'; str14[1]='\0';
-      cerr << "Setting " << keywords[28] << " to 0 by default" << endl;
-    }
-  if(read_config_var(v_file, keywords[29], str15)) //outputOnAll
-    {
-      str15[0]='0'; str15[1]='\0';
-      cerr << "Setting " << keywords[29] << " to 0 by default" << endl;
-    }
-  if(read_config_var(v_file, keywords[30], str17)) //pllxMultiplyer
-    {
-      str17[0]='1'; str17[1]='\0';
-      cerr << "Setting " << keywords[30] << " to 1 by default" << endl;
-    }
-  if(read_config_var(v_file, keywords[31], str16)) //lenslight
-    {
-      str16[0]='1'; str16[1]='\0';
-      cerr << "Setting " << keywords[31] << " to 1 by default" << endl;
-    }
-  if(read_config_var(v_file, keywords[32], str18)) //repeat sequence
-    {
-      str18[0]='0'; str18[1]='\0';
-      cerr << "Setting " << keywords[32] << " to 0 by default" << endl;
-    }
-  if(read_config_var(v_file, keywords[33], Paramfile->obsgroupstr))
-    {
-      strcpy(Paramfile->obsgroupstr,"(ALL)");
-    }
-  if(read_config_var(v_file, keywords[34], str19)) //NUM_SIM_DAYS
-    {
-      strcpy(str19,"2010");
-    }
-  if(read_config_var(v_file, keywords[35], str20)) //U0MAX
-    {
-      strcpy(str20,"3");
-    }
+  Paramfile->starfielddir = Paramfile->starsdir + pfile["STARFIELD_DIR"];
+  Paramfile->starfieldlist = Paramfile->starfielddir + pfile["STARFIELD_LIST"];
 
- if(read_config_var(v_file, keywords[38], str21)) //ERROR_SCALING
-    {
-      strcpy(str21,"0");
-      cerr << "Setting " << keywords[38] << " to 0 by default" << endl;
+  Paramfile->sourcedir = Paramfile->starsdir + pfile["SOURCE_DIR"];
+  Paramfile->sourcelist = Paramfile->sourcedir + pfile["SOURCE_LIST"];
 
-    }
+  Paramfile->lensdir = Paramfile->starsdir + pfile["LENS_DIR"];
+  Paramfile->lenslist = Paramfile->lensdir + pfile["LENS_LIST"];
 
-  if(read_config_var(v_file, keywords[40], str23)) //LC_GEN
-    {
-      str23[0]='1'; str23[1]='\0';
-      cerr << "Setting " << keywords[40] << " to 1 by default" << endl;
-    }
-  if(read_config_var(v_file, keywords[41], str24)) //LD_GAMMA
-    {
-      strcpy(str20,"0.00");
-    } 
-  /*char *keywords[27] = {"OBSERVATORY_DIR", "OBSERVATORY_LIST", 
-			"SET_RANDOM_SEED_TO_CLOCK", "RANDOM_SEED", 
-			"SIMULATION_ZERO_TIME", "WEATHER_PROFILE_DIR", 
-			"RUN_NAME", "OUTPUT_DIR", "PRINCIPLE_OBSERVATORY",
-			"OUTPUT_LC", "STARFIELD_DIR", "STARFIELD_LIST",
-			"SOURCE_DIR", "SOURCE_LIST", "SOURCE_COLOURS", 
-			"LENS_DIR", "LENS_LIST", "LENS_COLOURS", "PLANET_DIR",
-			"PLANET_ROOT", "NFILTERS", "AMIN", "LARGEPSFMAG",
-			"OUTPUT_IMAGES", "PRETTY_PICS", 
-			"PRETTY_PICS_DIMENSIONS", "MIN_CHISQUARED",
-			"OUTPUT_ONERR", "OUTPUT_ONDET", "OUTPUT_ONALL"
-			"PARALLAX", "LENS_LIGHT","REPEAT_SEQUENCE",
-			"OBS_GROUPS","NUM_SIM_DAYS"};*/
+  Paramfile->planetdir = Paramfile->basedir + pfile["PLANET_DIR"];
+  Paramfile->planetroot = pfile["PLANET_ROOT"];
 
-  //do any additional processing
+  
+  //Basic setup
+  Paramfile->setseedtoclock = stoi(pfile["SET_RANDOM_SEED_TO_CLOCK"]);
+  if(Paramfile->setseedtoclock==0)
+    Paramfile->Seed = stoi(pfile["RANDOM_SEED"]);
+  Paramfile->simulation_zerotime = stod(pfile["SIMULATION_ZERO_TIME"]);
+  
 
-  strcat(Paramfile->outputdir,Paramfile->run_name);
-  strcat(Paramfile->outputdir,"/");
-  sscanf(Paramfile->setseedtoclock,"%d",&Paramfile->setseedtoclockBIT);
-  sscanf(str7, "%lf", &Paramfile->simulation_zerotime);
-  Paramfile->outputLightcurve=atof(str9);
-  Paramfile->principle_observatory=atoi(str0);
-  Paramfile->sourcecolours=atoi(str1);
-  Paramfile->lenscolours=atoi(str2);
-  Paramfile->Nfilters = atoi(str4);
-  Paramfile->Amin = atof(str5);
-  Paramfile->large_psf_mag = atof(str6);
-  Paramfile->outputImages = atoi(str8);
-  Paramfile->large_psf_mag = atof(str6);
-  Paramfile->outputImages = atoi(str8);
-  Paramfile->prettypic = atoi(str10);
-  Paramfile->large_psf_mag = atof(str6);
-  Paramfile->outputImages = atoi(str8);
-  Paramfile->prettypic = atoi(str10);
-  Paramfile->minChiSquared = atof(str12);
-  Paramfile->outputOnErr = atoi(str13);
-  Paramfile->outputOnDet = atoi(str14);
-  Paramfile->outputOnAll = atoi(str15);
-  Paramfile->pllxMultiplyer = atoi(str17);
-  Paramfile->lenslight = atoi(str16);
-  Paramfile->identicalSequence = atoi(str18);
-  Paramfile->NUM_SIM_DAYS = atoi(str19);
-  Paramfile->u0max = atof(str20);
-  Paramfile->error_scaling = atoi(str21);
-  Paramfile->SUBRUNSIZE = atoi(str22);
-  Paramfile->LC_GEN = atoi(str23);
-  Paramfile->LD_GAMMA = atof(str24);
-  string string11 = string(str11);
+  //Additional
+  if(pfile.find("PRINCIPAL_OBSERVATORY")!=pfile.end())
+    Paramfile->principle_observatory = stoi(pfile["PRINCIPAL_OBSERVATORY"]);
+  else
+    Paramfile->principle_observatory = stoi(pfile["PRINCIPLE_OBSERVATORY"]);
+
+  Paramfile->outputLightcurve=stod(pfile["OUTPUT_LC"]);
+  Paramfile->sourcecolours=stoi(pfile["SOURCE_COLOURS"]);
+  Paramfile->lenscolours=stoi(pfile["LENS_COLOURS"]);
+  Paramfile->Nfilters = stoi(pfile["NFILTERS"]);
+  Paramfile->Amin = stod(pfile["AMIN"]);
+  Paramfile->large_psf_mag = stod(pfile["LARGEPSFMAG"]);
+  Paramfile->outputImages = stoi(pfile["OUTPUT_IMAGES"]);
+  Paramfile->prettypic = stoi(pfile["PRETTY_PICS"]);
+  Paramfile->minChiSquared = stod(pfile["MIN_CHISQUARED"]);
+  Paramfile->outputOnErr = stoi(pfile["OUTPUT_ONERR"]);
+  Paramfile->outputOnDet = stoi(pfile["OUTPUT_ONDET"]);
+  Paramfile->outputOnAll = stoi(pfile["OUTPUT_ONALL"]);
+  Paramfile->pllxMultiplyer = stod(pfile["PARALLAX"]);
+  Paramfile->lenslight = stoi(pfile["LENS_LIGHT"]);
+  Paramfile->identicalSequence = stoi(pfile["REPEAT_SEQUENCE"]);
+  Paramfile->NUM_SIM_DAYS = stoi(pfile["NUM_SIM_DAYS"]);
+  Paramfile->u0max = stod(pfile["U0MAX"]);
+  Paramfile->error_scaling = stoi(pfile["ERROR_SCALING"]);
+  Paramfile->SUBRUNSIZE = stoi(pfile["SUBRUNSIZE"]);
+  Paramfile->LC_GEN = stoi(pfile["LC_GEN"]);
+  Paramfile->LD_GAMMA = stod(pfile["LD_GAMMA"]);
+  Paramfile->vbm_reltol = stod(pfile["VBM_RELTOL"]);
+  Paramfile->vbm_tol = stod(pfile["VBM_ABSTOL"]);  
+  Paramfile->lc_timeout = stod(pfile["LC_TIMEOUT"]);
+  Paramfile->multiple_sources = stoi(pfile["MULTIPLE_SOURCES"]);
+  Paramfile->multiple_lenses = stoi(pfile["MULTIPLE_LENSES"]);
+  
+  //Obsgroups
+  Paramfile->obsgroupstr = pfile["OBS_GROUPS"];
+
+  //Pretty pic dimensions
   size_t pos;
-  pos = string11.find_first_of(",xX:");
+  pos = pfile["PRETTY_PICS_DIMENSIONS"].find_first_of(",xX:");
   if(pos==string::npos)
     {
-      Paramfile->prettypicDimX = atoi(str11);
+      Paramfile->prettypicDimX = stoi(pfile["PRETTY_PICS_DIMENSIONS"]);
       Paramfile->prettypicDimY = Paramfile->prettypicDimX;
     }
   else
     {
-      Paramfile->prettypicDimX = atoi(string11.substr(0,pos).c_str());
-      Paramfile->prettypicDimY = atoi(string11.substr(pos+1).c_str());
+      Paramfile->prettypicDimX = stoi(pfile["PRETTY_PICS_DIMENSIONS"].substr(0,pos));
+      Paramfile->prettypicDimY = stoi(pfile["PRETTY_PICS_DIMENSIONS"].substr(pos+1));
     }
 
-  if(Paramfile->setseedtoclockBIT==0)
+  cout << "Input file " << v_file << " PARSED" << endl;
+  cout << "----------------------------------" << endl;
+  for(auto it = pfile.begin(); it!=pfile.end(); it++)
     {
-      read_config_var(v_file, keywords[3] , str3);
-      sscanf(str3,"%ld",&Paramfile->Seed);
+      cout << it->first << "=" << it->second;
+      if(pfdefault[it->first]==1) cout << " [DEFAULT]";
+      cout << endl;
     }
-
-  sprintf(str,"Input file %s",v_file);
-  fmtline(str,WIDTH,"PARSED");  
-
-  if(errsum<0)
-    {
-      cerr << "There were essential parameters missing. Exiting." << endl;
-      exit(1);
-    }
-
+  cout << "----------------------------------" << endl;
+  
 }

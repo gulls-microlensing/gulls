@@ -33,7 +33,7 @@ void getPlanetvals(struct event* Event, struct obsfilekeywords World[], struct f
   Paramfile->parameterization=1;
   
   //Calculate the derived planet properties
-  double q = Event->params[QQ] = Event->params[PMASS] / Lenses->data[ln][MASS];
+  double q = Event->params[QQ] = Event->params[PMASS] / Lenses->data[ln][Lenses->MASS];
 
   double sqrt1pq = sqrt(1+Event->params[QQ]);
 
@@ -56,7 +56,7 @@ void getPlanetvals(struct event* Event, struct obsfilekeywords World[], struct f
   cout << Event->id << endl;
   cout << "separation: " << s << endl;
   Event->params[TT] = sqrt(cube(Event->params[AA]) 
-			   / (Event->params[PMASS] + Lenses->data[ln][MASS]));
+			   / (Event->params[PMASS] + Lenses->data[ln][Lenses->MASS]));
   //Generate a ucroin, tcroin and alphacroin and convert to u0 and alpha
 
   //double rcroin;

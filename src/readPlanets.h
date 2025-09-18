@@ -6,5 +6,5 @@
 
 using namespace std;
 
-int readPlanets(struct filekeywords *Paramfile, vector<struct pcat> *sl, char* instance, int choosefield);
+int readPlanets(struct filekeywords *Paramfile, vector<struct pcat> *sl, string instance, int choosefield);
 

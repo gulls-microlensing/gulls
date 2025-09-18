@@ -25,7 +25,7 @@ void getPlanetvals(struct event* Event, struct obsfilekeywords World[], struct f
     }
 
   //Calculate the derived planet properties
-  Event->params[QQ] = Event->params[PMASS] / Lenses->data[ln][MASS];
+  Event->params[QQ] = Event->params[PMASS] / Lenses->data[ln][Lenses->MASS];
 
   double sqrtq = sqrt(Event->params[QQ]);
 
@@ -43,7 +43,7 @@ void getPlanetvals(struct event* Event, struct obsfilekeywords World[], struct f
   Event->params[SS] = sqrt(x*x + y*y) / Event->rE;
 
   Event->params[TT] = sqrt(cube(Event->params[AA]) 
-			   / (Event->params[PMASS] + Lenses->data[ln][MASS]));
+			   / (Event->params[PMASS] + Lenses->data[ln][Lenses->MASS]));
 
   Event->t0=-1e9;
   while(!inSeason(Event->t0,Paramfile,World))

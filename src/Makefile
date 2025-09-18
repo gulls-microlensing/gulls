@@ -1,17 +1,19 @@
 
 #Options
 
-OPT = -O2
-#OPT = -g
+#OPT = -O2
+OPT = -O0 -g
+#-fsanitize=address -fno-omit-frame-pointer
 
 BASEDIR = /home/penny/gulls_mp/src
 FFLAGS	= $(OPT) -Wall 
 #CFLAGS = -Wall -ansi $(OPT)  -I/home/penny/apps/VBMicrolensing/VBMicrolensing/lib/ -I/usr/local/include/ -lstdc++
-CFLAGS	= -Wall -ansi -O2  -I/home/fzohrabi/include/ -lstdc++
+CFLAGS	= -Wall -ansi $(OPT)  -I/home/penny/include/ -lstdc++ 
 #CFLAGS	= -Wall -ansi -O2
 
+
 #LINKERFLAGS = $(OPT) -L/Users/penny/apps/VBMicrolensing/ -lcfitsio -lm -lgfortran -lcurl #-g -fsanitize=address
-LINKERFLAGS = -O2 -L/home/fzohrabi/lib/ -L/home/fzohrabi/cfitsio-4.3.0/  -lstdc++ -lcfitsio -lm -lgfortran -lrt -lifcore -ldl
+LINKERFLAGS = $(OPT) -L/home/penny/lib/ -L/home/penny/apps/cfitsio-4.3.0/  -lstdc++ -lcfitsio -lm -lrt -lifcore -ldl
 #LINKERFLAGS = -O2 -L/home/fzohrabi/VBBinaryLensing/ -L/home/fzohrabi/lib/ -lcfitsio -lm -lifcore -lstdc++
 
 #BASEDIR = /Users/penny/gulls/src
@@ -21,7 +23,7 @@ LINKERFLAGS = -O2 -L/home/fzohrabi/lib/ -L/home/fzohrabi/cfitsio-4.3.0/  -lstdc+
 #LINKERFLAGS = -O2 -lcfitsio -lm -lgfortran -lcurl
 
 #LINKERFLAGS = -O2 -lcfitsio -lnsl -lm -lgfortran -lrt
-STATICFLAG = -static -libgcc -static -O2 -lstdc++
+STATICFLAG = -static -libgcc -static $(OPT) -lstdc++
 STATICLFLAG = $(OPT) -lcfitsio -lgfortran -lgsl -lgslcblas -lc -lm -lpthread -lstdc++
 BINDIR = ../bin
 
@@ -41,16 +43,18 @@ VPATH = headers:classes:headers/fs:classes/fs:
 
 #CC	= clang++
 
-CC	= icc
-FC	= ifort
+CC	= icpx
+FC	= ifx
 
 
 #Object dependencies
 
-COMMON = gulls.o strfns.o readParamfile.o readObservatoryfile.o buildWorld.o random.o info.o timeSequencer.o astroFns.o mathFns.o $(wittFSPL) image.o psf.o readStarfields.o readSLList.o readPlanets.o $(parallax) $(zodiacalLight) photometry.o buildEvent.o
+COMMON = gulls.o strfns.o readParamfile.o readObservatoryfile.o buildWorld.o random.o info.o timeSequencer.o astroFns.o mathFns.o $(wittFSPL) image.o psf.o readStarfields.o readSLList.o readPlanets.o $(parallax) $(zodiacalLight) photometry.o buildEvent.o VBMicrolensingLibrary.o
 
 
 FSBLCOMMON = pllxLightcurveGenerator.o outputLightcurve.o $(CURVEGEN) backupGenerator.o fs.o zroots2.o binaryMag.o pllxLightcurveFitter.o pllxLightcurveFitter_FS.o
+
+FSMLCOMMON = pllxLightcurveGeneratorMultiple.o outputLightcurve.o pllxLightcurveFitter.o pllxLightcurveFitter_FS.o
 
 BOZZAOMOBJ = $(COMMON) detectionCuts.o croinPlanet.o outputLightcurve.o bozzaPllxOMLCGen.o pllxLightcurveFitter.o pllxLightcurveFitter_FS.o
 
@@ -59,13 +63,15 @@ BOZZAOMOBJ_std = $(COMMON) detectionCuts.o standardPlanet.o outputLightcurve.o b
 
 
 
-PLLXLOC = $(COMMON) ffpDetectionCuts.o standardPlanet.o outputLightcurve.o parallax_locations.o $(VBMicrolensing) #$(VBMicrolensing) #VBBinaryLensingLibrary.o
+PLLXLOC = $(COMMON) ffpDetectionCuts.o standardPlanet.o outputLightcurve.o parallax_locations.o
 
 CVOBJ = $(COMMON) ffpDetectionCuts.o freeFloatingPlanet.o outputLightcurve.o cv.o
 
-BINARYOMOBJ = $(COMMON) detectionCuts.o binaryStar.o outputLightcurve.o bozzaPllxOMLCGen.o $(VBMicrolensing) #VBBinaryLensingLibrary.o
+BINARYOMOBJ = $(COMMON) detectionCuts.o binaryStar.o outputLightcurve.o bozzaPllxOMLCGen.o
 
 OBJ_std = $(COMMON) $(FSBLCOMMON) detectionCuts.o standardPlanet.o
+
+OBJ_multi = $(COMMON) $(FSMLCOMMON) detectionCuts.o standardPlanet.o
 
 FSCORR = $(COMMON) $(FSBLCOMMON) detectionCuts.o testFSfit.o
 
@@ -90,7 +96,7 @@ CROINOBJ = $(COMMON) $(FSBLCOMMON) detectionCuts.o croinPlanet.o
 
 LIMBOBJ = $(COMMON) limbdarkenlc.o outputLightcurve.o fs.o zroots2.o binaryMag.o limbPlanet.o detectionCuts.o
 
-CURVEGEN = track.o coeff.o zroots.o findImages.o inside.o indexx.o limb.o uniform.o gould.o area.o mag.o $(VBMicrolensing)
+CURVEGEN = track.o coeff.o zroots.o findImages.o inside.o indexx.o limb.o uniform.o gould.o area.o mag.o
 CURVEGEN2 = track.o coeff.o zroots.o findImages.o inside.o indexx.o limb.o uniform.o gould.o area.o magL2origin.o
 
 TESTLC = testlc.o fs.o zroots2.o binaryMag.o $(CURVEGEN)
@@ -104,10 +110,14 @@ TESTPLLXOBJ = test_parallax.o coords.o ephem.o parallax.o astroFns.o
 all: gulls_std gullsFFP gullsFish gullsSingle gullsLimb gullscroin gullskoppa gullsffpfish gullssinglefish gullsmoa gullsBozzaOM gullsBinaryStar gullsP19_std gulls_std_fish gullsBozzaOM_std gulls_croin gulls_croin_fish gullsBozzaOM_croin
 static: sgulls sgullssqcroin sgullsFFP sgullshzgrid sgullsFish sgullsFoM sgullsHZ sgullsSingle sgullsLimb sgullscroin gullskoppa sgullsffpfish sgullssinglefish sgullsmoa sgullsBozzaOM sgullsBinaryStar sgullsCV sgullsPllxLoc gullsP19_std #sgullsfscorr
 
-VBMicrolensingLibrary.o:
-	$(CXX) -c classes/VBMicrolensingLibrary.cpp -Iheaders
+#VBMicrolensingLibrary.o:
+#	$(CXX) -c classes/VBMicrolensingLibrary.cpp -Iheaders
 gulls_std: $(OBJ_std)
 	$(CXX) $(CFLAGS) $(OBJ_std) -o $(BINDIR)/gulls_std.x $(GSLFLAGS) $(LINKERFLAGS)
+
+gullsMulti: $(OBJ_multi)
+	$(CXX) $(CFLAGS) $(OBJ_multi) -o $(BINDIR)/gullsMulti.x $(GSLFLAGS) $(LINKERFLAGS)
+
 
 
 gullsBozzaOM_std: $(BOZZAOMOBJ_std)
@@ -119,7 +129,6 @@ gulls_croin: $(CROINOBJ)
 
 gullsBozzaOM_croin: $(BOZZAOMOBJ)
 	$(CXX) $(CFLAGS) $(BOZZAOMOBJ) -o $(BINDIR)/gullsBozzaOM_croin.x $(GSLFLAGS) $(LINKERFLAGS) 
-
 
 
 
@@ -215,10 +224,11 @@ test_parallax: $(TESTPLLXOBJ)
 ALLFILES = structures.h constdefs.h constants.h definitions.h info.h strfns.h mathFns.h astroFns.h $(parallax_h) $(wittFSPL_h)
 weatherFns_h = weatherFns.h $(random_h)
 
-gulls.o: gulls.cpp gulls.h $(ALLFILES) readParamfile.h buildEvent.h $(random_h) buildWorld.h timeSequencer.h lightcurveGenerator.h lightcurveFitter.h readStarfields.h outputLightcurve.h readSLList.h readPlanets.h detectionCuts.h $(VBMicrolensing_h)
+gulls.o: gulls.cpp gulls.h $(ALLFILES) readParamfile.h buildEvent.h $(random_h) buildWorld.h timeSequencer.h lightcurveGenerator.h lightcurveFitter.h readStarfields.h outputLightcurve.h readSLList.h readPlanets.h detectionCuts.h VBMicrolensingLibrary.h 
 strfns.o: strfns.cpp strfns.h $(ALLFILES)
 readParam_test.o: readParam_test.cpp $(ALLFILES)
 readParamfile.o: readParamfile.cpp readParamfile.h $(ALLFILES)
+readParamfile2.o: readParamfile2.cpp readParamfile2.h $(ALLFILES)
 readObservatoryfile.o: readObservatoryfile.cpp readObservatoryfile.h $(ALLFILES)
 buildEvent.o: buildEvent.cpp buildEvent.h $(ALLFILES) $(random_h)
 info.o: info.cpp info.h $(ALLFILES)
@@ -271,13 +281,13 @@ testlc.o: testlc.cpp lightcurveGenerator.h $(ALLFILES) backupGenerator.h
 mderrors.o: mderrors.cpp mderrors.h split.h structures.h constants.h
 moaDetCuts.o: moaDetCuts.cpp detectionCuts.h $(fisherinversion_h) singleLens.h $(ALLFILES)
 pointfisher.o: pointfisher.cpp fisher.h $(ALLFILES)
-bozzaPllxOMLCGen.o: bozzaPllxOMLCGen.cpp $(VBMicrolensing_h) astroFns.h lightcurveGenerator.h
+bozzaPllxOMLCGen.o: bozzaPllxOMLCGen.cpp VBMicrolensingLibrary.h astroFns.h lightcurveGenerator.h
 #bozzaPllxOMLCGen.o: bozzaOMCroinLCGen.cpp astroFns.h lightcurveGenerator.h
-parallax_locations.o: parallax_locations.cpp $(VBMicrolensing_h) astroFns.h lightcurveGenerator.h
+parallax_locations.o: parallax_locations.cpp VBMicrolensingLibrary.h astroFns.h lightcurveGenerator.h
 #parallax_locations.o: parallax_locations.cpp VBBinaryLensingLibrary.h astroFns.h lightcurveGenerator.h
 cv.o: cv.cpp astroFns.h lightcurveGenerator.h
 test_parallax.o: test_parallax.cpp parallax.h ephem.h coords.h constants.h integerPowers.h astroFns.h
-
+pllxLightcurveGeneratorMultiple.o: pllxLightcurveGeneratorMultiple.cpp lightcurveGenerator.h $(ALLFILES) backupGenerator.h
 
 
 

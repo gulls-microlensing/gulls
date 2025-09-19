@@ -100,11 +100,8 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
 		Event->xs2[idx] = xs2CoM;
 		Event->ys2[idx] = ys2Center;
 	      
-		int filt = World[obsidx].filter;
-		double magnitude1 = Sources->mags[Event->source][filt];
-		double magnitude2 = Sources->mags[Event->scompanions[0]][filt];
-		double fs2ofs1 = pow(10,-0.4*(magnitude2-magnitude1));
-		Event->Atrue[idx] = amp + fs2ofs1 * (amp2-1);
+		int filt = World[obsidx].filter;		
+		Event->Atrue[idx] = amp + Event->scomp_fsofs1[0][filt] * (amp2-1);
 
 	      }
 	    else

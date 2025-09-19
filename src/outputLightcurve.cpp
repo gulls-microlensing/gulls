@@ -1,21 +1,23 @@
 #include "outputLightcurve.h"
 #include "zodiacalLight.h"
 #include "astroFns.h"
+#include <iomanip>
+#include <sstream>
 
 #define DEBUGVAR 0
 
 void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struct filekeywords* Paramfile, struct slcat* Sources, struct slcat* Lenses)
 {
   void muVisibility(double *mu, double rs, double z0, double ld1);
-  char lcfname[1000];
+  string lcfname;
   FILE *lcfile_ptr;
   FILE *lcdatafile_ptr;
   int fileOpen=0;
   int i, obsidx;
-  char data[1000];
-  char tmp[30];
-  char extension[4];
-  char lcdatafname[1000];
+  stringstream data;
+  string tmp;
+  string extension;
+  string lcdatafname;
   double t;
   //double u0_ps,t0_ps,tE_ps,t2_ps,u_ps,psmag,psamp;
   //double u0_fs,t0_fs,tE_fs,t2_fs,u_fs,fsmag,fsamp;
@@ -41,26 +43,27 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
       if(Event->allsat || Event->nepochs==0) return;
     }
 
-  if(Event->detected) strcpy(extension,"det");
-  else if(Event->lcerror||Event->deterror) strcpy(extension,"err");
-  else strcpy(extension,"all");
+  if(Event->detected) extension = "det";
+  else if(Event->lcerror||Event->deterror) extension = "err";
+  else extension = "all";
 
   if(Paramfile->choosefield<0)
     {
-      sprintf(lcfname, "%s%s_%d_%d.%s.lc", Paramfile->outputdir.c_str(),
-	      Paramfile->run_name.c_str(), Event->instance, Event->id, extension);
+      lcfname = Paramfile->outputdir + Paramfile->run_name + "_"
+	+ to_string(Event->instance) + "_" + to_string(Event->id) + "."
+	+ extension + ".lc";
     }
   else
     {
-      sprintf(lcfname, "%s%s_%d_%d_%d.%s.lc", Paramfile->outputdir.c_str(),
-	      Paramfile->run_name.c_str(), Event->instance, Paramfile->choosefield, 
-	      Event->id, extension);
+      lcfname = Paramfile->outputdir + Paramfile->run_name + "_"
+	+ to_string(Event->instance) + "_" + to_string(Paramfile->choosefield) + "_"
+	+ to_string(Event->id) + "." + extension + ".lc";
     }
-  if(DEBUGVAR) printf("lcname: %s\n",lcfname);
+  if(DEBUGVAR) cout << "lcname: " << lcfname << endl;
 
   if(Event->nepochs>0)
     {
-      lcfile_ptr = fopen(lcfname,"w");
+      lcfile_ptr = fopen(lcfname.c_str(),"w");
       fileOpen=1;
     }
   else return;
@@ -70,19 +73,20 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
       cout << "Writing extra lightcurve file" << endl;
       if(Paramfile->choosefield<0)
         {
-          sprintf(lcdatafname, "%s%s_%d_%d.%s.lcdata", Paramfile->outputdir.c_str(),
-              Paramfile->run_name.c_str(), Event->instance, Event->id, extension);
+	  lcdatafname = Paramfile->outputdir + Paramfile->run_name + "_"
+	    + to_string(Event->instance) + "_" + to_string(Event->id) + "."
+	    + extension + ".lcdata";
         }
       else
         {
-          sprintf(lcdatafname, "%s%s_%d_%d_%d.%s.lcdata", Paramfile->outputdir.c_str(),
-              Paramfile->run_name.c_str(), Event->instance, Paramfile->choosefield,
-              Event->id, extension);
+	  lcdatafname = Paramfile->outputdir + Paramfile->run_name + "_"
+	    + to_string(Event->instance) + "_" + to_string(Paramfile->choosefield) + "_" +
+	    to_string(Event->id) + "." + extension + ".lcdata";
         }
-      if(DEBUGVAR) printf("lcdataname: %s\n",lcdatafname);
+      if(DEBUGVAR) cout << "lcdataname: " << lcdatafname << endl;
       if(Event->nepochs>0)
         {
-          lcdatafile_ptr = fopen(lcdatafname,"w");
+          lcdatafile_ptr = fopen(lcdatafname.c_str(),"w");
           fileOpen=1;
 	  fprintf(lcdatafile_ptr, "time Atrue rootaccuracy squarecheck therr \n");
 	  //fprintf(lcdatafile_ptr, "time mag_old_lcgen mag_vbm dif_over_mag\n");
@@ -93,112 +97,196 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
 
   //output header information
 
+  //Is there a source companion
+  int sc=-1;
+  if(Event->scompanions.size()>0)
+    {
+      sc = Event->scompanions[0];
+    }
+
+  //Is there a lens companion
+  int lc=-1;
+  if(Event->lcompanions.size()>0)
+    {
+      lc = Event->lcompanions[0];
+    }
+
+
   //blending
-  strcpy(data,"#fs: ");
+  data.str(""); data << "#fs: ";
   for(int i=0;i<Paramfile->numobservatories;i++)
     {
-      sprintf(tmp,"%g ",Event->fs[i]);
-      strcat(data,tmp);
+      data << Event->fs[i] << " ";
     }
-  fprintf(lcfile_ptr,"%s\n",data);
+  fprintf(lcfile_ptr,"%s\n",data.str().c_str());
+
+  if(Paramfile->multiple_sources)
+    {
+      data.str(""); data << "#fs2: ";
+      for(int i=0;i<Paramfile->numobservatories;i++)
+	{
+	  if(sc>-1)
+	    data << Event->scomp_fsofs1[0][World[i].filter]*Event->fs[i] << " ";
+	  else
+	    data << 0 << " ";
+	}
+      fprintf(lcfile_ptr,"%s\n",data.str().c_str());
+    }  
 
   //Source magnitudes
-  strcpy(data,"#Sourcemag: ");
+  data.str(""); data << "#Sourcemag: ";
   int sn = Event->source;
   for(int i=0;i<Paramfile->Nfilters;i++)
     {
-      sprintf(tmp,"%g ",Sources->mags[sn][i]);
-      strcat(data,tmp);
+      data << Sources->mags[sn][i] << " ";
     }
-  fprintf(lcfile_ptr,"%s\n",data);
+  fprintf(lcfile_ptr,"%s\n",data.str().c_str());
+
+  if(Paramfile->multiple_sources)
+    {
+      data.str(""); data << "#Source2mag: ";
+      for(int i=0;i<Paramfile->Nfilters;i++)
+	{
+	  if(sc>-1) data << Sources->mags[sc][i] << " ";
+	  else data << 99 << " ";
+	}
+      fprintf(lcfile_ptr,"%s\n",data.str().c_str());
+    }
+
 
   //Source data
-  strcpy(data,"#Sourcedata: ");
-  sprintf(tmp,"%d ",sn); strcat(data,tmp);
+  data.str(""); data << "#Sourcedata: ";
+  data << sn << " ";
   for(int i=0;i<Sources->data[sn].size();i++)
     {
-      sprintf(tmp,"%g ", Sources->data[sn][i]);
-      strcat(data,tmp);
+      data << Sources->data[sn][i] << " ";
     }
-  fprintf(lcfile_ptr,"%s\n",data);
+  fprintf(lcfile_ptr,"%s\n",data.str().c_str());
+
+  if(Paramfile->multiple_sources)
+    {
+      data.str(""); data << "#Source2data: ";
+      data << sc << " ";
+      for(int i=0;i<Sources->data[sn].size();i++)
+	{
+	  if(sc>-1) data << Sources->data[sc][i] << " ";
+	  else data << 1e-50 << " ";
+	}
+      fprintf(lcfile_ptr,"%s\n",data.str().c_str());
+    }
+  
 
   //Observatory magnitudes
-  strcpy(data,"#Obssrcmag: ");
+  data.str(""); data << "#Obssrcmag: ";
   for(int i=0;i<Paramfile->numobservatories;i++)
     {
-      sprintf(tmp,"%g ",Sources->mags[sn][World[i].filter]);
-      strcat(data,tmp);
+      data << Sources->mags[sn][World[i].filter] << " ";
     }
-  fprintf(lcfile_ptr,"%s\n",data);
+  fprintf(lcfile_ptr,"%s\n",data.str().c_str());
+
+  if(Paramfile->multiple_sources)
+    {
+      data.str(""); data << "#Obssrc2mag: ";
+      for(int i=0;i<Paramfile->numobservatories;i++)
+	{
+	  if(sc>-1) data << Sources->mags[sc][World[i].filter] << " ";
+	  else data << 99 << " ";
+	}
+      fprintf(lcfile_ptr,"%s\n",data.str().c_str());
+    }
 
 
   //Lens magnitudes
-  strcpy(data,"#Lensmag: ");
+  data.str(""); data << "#Lensmag: ";
   int ln = Event->lens;
   for(int i=0;i<Paramfile->Nfilters;i++)
     {
-      sprintf(tmp,"%g ",Lenses->mags[ln][i]);
-      strcat(data,tmp);
+      data << Lenses->mags[ln][i] << " ";
     }
-  fprintf(lcfile_ptr,"%s\n",data);
+  fprintf(lcfile_ptr,"%s\n",data.str().c_str());
 
+  if(Paramfile->multiple_lenses)
+    {
+      data.str(""); data << "#Lens2mag: ";
+      int ln = Event->lens;
+      for(int i=0;i<Paramfile->Nfilters;i++)
+	{
+	  if(lc>=-1) data << Lenses->mags[lc][i] << " ";
+	  else data << 99 << " ";
+	}
+      fprintf(lcfile_ptr,"%s\n",data.str().c_str());
+    }
+
+  
   //Lens data
-  strcpy(data,"#Lensdata: ");
-  sprintf(tmp,"%d ",ln); strcat(data,tmp);
+  data.str(""); data << "#Lensdata: ";
+  data << ln << " ";
   for(int i=0;i<Lenses->data[ln].size();i++)
     {
-      sprintf(tmp,"%g ", Lenses->data[ln][i]);
-      strcat(data,tmp);
+      data << Lenses->data[ln][i] << " ";
     }
-  fprintf(lcfile_ptr,"%s\n",data);
+  fprintf(lcfile_ptr,"%s\n",data.str().c_str());
+
+  if(Paramfile->multiple_lenses)
+    {
+      data.str(""); data << "#Lens2data: ";
+      data << lc << " ";
+      for(int i=0;i<Lenses->data[ln].size();i++)
+	{
+	  if(lc>-1) data << Lenses->data[ln][i] << " ";
+	  else data << 1e-50 << " ";
+	}
+      fprintf(lcfile_ptr,"%s\n",data.str().c_str());
+    }
 
   //Observatory magnitudes
-  strcpy(data,"#Obslensmag: ");
+  data.str(""); data << "#Obslensmag: ";
   for(int i=0;i<Paramfile->numobservatories;i++)
     {
-      sprintf(tmp,"%g ",Lenses->mags[ln][World[i].filter]);
-      strcat(data,tmp);
+      data << Lenses->mags[ln][World[i].filter] << " ";
     }
-  fprintf(lcfile_ptr,"%s\n",data);
+  fprintf(lcfile_ptr,"%s\n",data.str().c_str());
 
-
+  if(Paramfile->multiple_lenses)
+    {
+      data.str(""); data << "#Obslensmag: ";
+      for(int i=0;i<Paramfile->numobservatories;i++)
+	{
+	  if(lc>-1) data << Lenses->mags[lc][World[i].filter] << " ";
+	  else data << 99 << " ";
+	}
+      fprintf(lcfile_ptr,"%s\n",data.str().c_str());
+    }
+  
   //Planet data
-  strcpy(data,"#Planet: ");
+  data.str(""); data << "#Planet: ";
   for(int i=0;i<NPLANETINPUT+NPLANETDERIV;i++)
     {
-      sprintf(tmp,"%g ",Event->params[i]);
-      strcat(data,tmp);
+      data << Event->params[i] << " ";
     }
-  fprintf(lcfile_ptr,"%s\n",data);
+  fprintf(lcfile_ptr,"%s\n",data.str().c_str());
 
   //Microlensing data
-  strcpy(data,"#Event: ");
-  sprintf(tmp,"%g ",Event->u0); strcat(data,tmp);
-  sprintf(tmp,"%g ",Event->alpha); strcat(data,tmp);
-  sprintf(tmp,"%.12g ",Event->t0); strcat(data,tmp);
-  sprintf(tmp,"%.12g ",Event->tcroin); strcat(data,tmp);
-  sprintf(tmp,"%g ",Event->ucroin); strcat(data,tmp);
-  sprintf(tmp,"%g ",Event->rcroin); strcat(data,tmp);
-  sprintf(tmp,"%g ",Event->tE_r); strcat(data,tmp);
-  sprintf(tmp,"%g ",Event->rs); strcat(data,tmp);
-
-  fprintf(lcfile_ptr,"%s\n",data);
+  data.str(""); data << "#Event: ";
+  data << Event->u0 << " " << Event->alpha << " " << setprecision(12)
+       << Event->t0 << " " << Event->tcroin << " " << setprecision(6) << " "
+       << Event->ucroin << " " << Event->rcroin << " " << Event->tE_r << " " << Event->rs;
+  fprintf(lcfile_ptr,"%s\n",data.str().c_str());
 
   //Observatory groups
   for(int obsgroup=0; obsgroup<int(Event->obsgroups.size()); obsgroup++)
     {
-      strcpy(data,"#Obsgroup: ");
-      sprintf(tmp,"%d ",obsgroup); strcat(data,tmp);
-      sprintf(tmp,"%g ",Event->flatchi2[obsgroup]); strcat(data,tmp);
-      sprintf(tmp,"%d ",Event->flag_needFS[obsgroup]); strcat(data,tmp);
-      sprintf(tmp,"%g ", 
-	      (Event->flag_needFS[obsgroup]?Event->FSPL[obsgroup].chisq:Event->PSPL[obsgroup].chisq)); strcat(data,tmp);
+      data.str(""); data << "#Obsgroup: ";
+      data << obsgroup << " " << Event->flatchi2[obsgroup] << " "
+	   << Event->flag_needFS[obsgroup] << " "
+	   << (Event->flag_needFS[obsgroup]?Event->FSPL[obsgroup].chisq:
+	       Event->PSPL[obsgroup].chisq); 
       //Members
       for(int grpidx=0; grpidx<int(Event->obsgroups[obsgroup].size()); grpidx++)
 	{
-	  sprintf(tmp,"%d ",Event->obsgroups[obsgroup][grpidx]); strcat(data,tmp);
+	  data << Event->obsgroups[obsgroup][grpidx] << " "; 
 	}
-      fprintf(lcfile_ptr,"%s\n",data);
+      fprintf(lcfile_ptr,"%s\n",data.str().c_str());
     }
 
 
@@ -210,7 +298,7 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
       "true_relative_flux",  "true_relative_flux_error",    "observatory_code",
       "saturation_flag",     "best_single_lens_fit",        "parallax_shift_t",
       "parallax_shift_u",    "BJD",                         "source_x",
-      "source_y",            "lens1_x",                     "lens1_y",
+      "source_y",            "source2_x", "source2_y", "lens1_x",                     "lens1_y",
       "lens2_x",             "lens2_y",                     "parallax_shift_x",
       "parallax_shift_y",    "parallax_shift_z"
     };
@@ -331,7 +419,7 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
 
 void outputImages(struct event *Event, struct obsfilekeywords World[], struct slcat* Sources, struct filekeywords* Paramfile)
 {
-  char tmp1[1000];
+  string tmp1;
   string basefname;
   string extension;
   string oname;
@@ -366,13 +454,14 @@ void outputImages(struct event *Event, struct obsfilekeywords World[], struct sl
 
   if(Paramfile->choosefield<0)
     {
-      sprintf(tmp1,"%s%s_%d_%d",Paramfile->outputdir.c_str(), Paramfile->run_name.c_str(),
-	      Event->instance,  Event->id);
+      tmp1 = Paramfile->outputdir +  Paramfile->run_name + "_"
+	+ to_string(Event->instance) + "_" + to_string(Event->id);
     }
   else
     {
-      sprintf(tmp1,"%s%s_%d_%d_%d",Paramfile->outputdir.c_str(), Paramfile->run_name.c_str(),
-	      Event->instance, Paramfile->choosefield, Event->id);
+      tmp1 = "%s%s_%d_%d_%d",Paramfile->outputdir + Paramfile->run_name + "_"
+	+ to_string(Event->instance) + "_" + to_string(Paramfile->choosefield) + "_"
+	+  to_string(Event->id);
     }
   basefname=tmp1;
 
@@ -380,13 +469,13 @@ void outputImages(struct event *Event, struct obsfilekeywords World[], struct sl
   for(int obsidx=0;obsidx<Paramfile->numobservatories;obsidx++)
     {
       if(Event->nepochsvec[obsidx+1]-Event->nepochsvec[obsidx]<=0) continue;
-      sprintf(tmp1,".%d_",obsidx);
+      tmp1 += "." + to_string(obsidx) + "_";
 
       filter = World[obsidx].filter;
 
       //first the baseline image
-      imtype=string("base");
-      oname = basefname + tmp1 + imtype + extension + string(".fits");
+      imtype="base";
+      oname = basefname + tmp1 + imtype + extension + ".fits";
 
       mag = Sources->mags[Event->source][filter];
 

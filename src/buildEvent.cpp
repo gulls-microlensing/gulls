@@ -36,6 +36,7 @@ void buildEvent(struct event *Event, struct obsfilekeywords World[],
   Event->scomp_alpha.clear();
   Event->scomp_inc.clear();
   Event->scomp_phase.clear();
+  Event->scomp_fsofs1.clear();
 
   //Set up obsgroups
   if(int(Event->obsgroups.size())==0)
@@ -315,24 +316,24 @@ void computeBlending(struct event *Event, struct obsfilekeywords World[], struct
 							   Sources->mags[sn][filter], true, true);
 	  
       if(World[obsidx].photcode<0) //setup the fast photometry
-		{
-		  World[obsidx].im.setup_fast_photometry(Event->xsub[obsidx], 
-												 Event->ysub[obsidx], 
-												 Event->xpix[obsidx], 
-												 Event->ypix[obsidx], 
-												 Sources->mags[sn][filter], 
-												 World[obsidx].mintexp,
-												 1.0);
+	{
+	  World[obsidx].im.setup_fast_photometry(Event->xsub[obsidx], 
+						 Event->ysub[obsidx], 
+						 Event->xpix[obsidx], 
+						 Event->ypix[obsidx], 
+						 Sources->mags[sn][filter], 
+						 World[obsidx].mintexp,
+						 1.0);
 												 //World[obsidx].exptime[0],
 												 //World[obsidx].nstack[0]);
 		  
-		  //fast_blend includes all the counts from the unmagnified source too - well named past self!
-		  Event->fs[obsidx] = World[obsidx].im.fast_src/(World[obsidx].im.fast_blend);
-		  //Event->baselineFlux[obsidx] = (World[obsidx].im.fast_blend)/(World[obsidx].exptime[0]*World[obsidx].nstack[0]);
-		  Event->baselineFlux[obsidx] = (World[obsidx].im.fast_blend)/(World[obsidx].mintexp*1.0);
-		  cout << Event->fs[obsidx] << " " << Event->baselineFlux[obsidx] << endl;
-		}
-	  
+	  //fast_blend includes all the counts from the unmagnified source too - well named past self!
+	  Event->fs[obsidx] = World[obsidx].im.fast_src/(World[obsidx].im.fast_blend);
+	  //Event->baselineFlux[obsidx] = (World[obsidx].im.fast_blend)/(World[obsidx].exptime[0]*World[obsidx].nstack[0]);
+	  Event->baselineFlux[obsidx] = (World[obsidx].im.fast_blend)/(World[obsidx].mintexp*1.0);
+	  cout << Event->fs[obsidx] << " " << Event->baselineFlux[obsidx] << endl;
+	}
+      
       World[obsidx].im.subbg();
 	  
     }
@@ -460,23 +461,30 @@ void drawsl(struct filekeywords* Paramfile, struct obsfilekeywords World[], stru
 
   if(Paramfile->multiple_sources)
     {
-      	  //add companion properties to the event data here?
-	  for(auto sc : Event->scompanions)
+      //add companion properties to the event data here?
+      for(auto sc : Event->scompanions)
+	{
+	  Event->scomp_rs.push_back((Sources->data[sc][Sources->RADIUS] * Rsun / Sources->data[sc][Sources->DIST]) / Event->thE);
+	  double P = pow(10,Sources->data[sc][Sources->datadict["combined_logP"]])/DAYINYR;
+	  double M1 = Sources->data[sn][Sources->datadict["Mass"]];
+	  double M2 = Sources->data[sc][Sources->datadict["Mass"]];
+	  double acomb = pow(P*P*(M1+M2),1.0/3.0);
+	  double a1 = M2/(M1+M2) * acomb;
+	  double a2 = M1/(M1+M2) * acomb;
+	  Event->scomp_s.push_back(acomb/(Event->thE * Sources->data[sn][Sources->DIST]));
+	  Event->scomp_alpha.push_back(360.0*ran2(idum));
+	  Event->scomp_phase.push_back(360.0*ran2(idum));
+	  double rnd = ran2(idum);
+	  Event->scomp_inc.push_back(180*(rnd<0.5?acos(2*rnd):-acos(2-2*rnd))/PI);
+	  Event->scomp_fsofs1.push_back(vector<double>());
+	  for(int filt=0; filt<=Paramfile->Nfilters;filt++)
 	    {
-	      Event->scomp_rs.push_back((Sources->data[sc][Sources->RADIUS] * Rsun / Sources->data[sc][Sources->DIST]) / Event->thE);
-	      double P = pow(10,Sources->data[sc][Sources->datadict["combined_logP"]])/DAYINYR;
-	      double M1 = Sources->data[sn][Sources->datadict["Mass"]];
-	      double M2 = Sources->data[sc][Sources->datadict["Mass"]];
-	      double acomb = pow(P*P*(M1+M2),1.0/3.0);
-	      double a1 = M2/(M1+M2) * acomb;
-	      double a2 = M1/(M1+M2) * acomb;
-	      Event->scomp_s.push_back(acomb/(Event->thE * Sources->data[sn][Sources->DIST]));
-	      Event->scomp_alpha.push_back(360.0*ran2(idum));
-	      Event->scomp_phase.push_back(360.0*ran2(idum));
-	      double rnd = ran2(idum);
-	      Event->scomp_inc.push_back(180*(rnd<0.5?acos(2*rnd):-acos(2-2*rnd))/PI);
-	      
+	      double magnitude1 = Sources->mags[sn][filt];
+	      double magnitude2 = Sources->mags[sc][filt];
+	      double fs2ofs1 = pow(10,-0.4*(magnitude2-magnitude1));
+	      Event->scomp_fsofs1.back().push_back(fs2ofs1);
 	    }
+	}
     }
 
   if(Paramfile->multiple_lenses)

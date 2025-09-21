@@ -282,6 +282,7 @@ struct event{
   int source, lens;
   vector<int> scompanions, lcompanions;
   vector<double> scomp_rs, scomp_s, scomp_alpha, scomp_inc, scomp_phase;
+  vector<vector<double> > scomp_fsofs1;
   vector<double> lcomp_s, lcomp_q, lcomp_alpha, lcomp_inc, lcomp_phase;
   int field;
   int id;

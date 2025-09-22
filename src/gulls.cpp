@@ -405,11 +405,11 @@ int main(int argc, char *argv[]){                   /* BEGIN MAIN */
             sprintf(str,"\nDiscarding event %d (Failed detection criteria)",
 		    idx);
 	  fmtline(str,WIDTH,"OKAY"); 
-	  writeEventParams(&Paramfile, &Event, &Sources, &Lenses, logfile_ptr);
+	  writeEventParams(&Paramfile, World, &Event, &Sources, &Lenses, logfile_ptr);
 	}
       else //otherwise
 	{
-	  writeEventParams(&Paramfile, &Event, &Sources, &Lenses, outfile_ptr);
+	  writeEventParams(&Paramfile, World, &Event, &Sources, &Lenses, outfile_ptr);
 	}
       clock_gettime(CLOCK_REALTIME,&tend);
       nsec = tend.tv_nsec - tstart.tv_nsec;

@@ -1,0 +1,45 @@
+#Observing sequence 
+#Roman F146 Sequence
+
+#Cadence Exposure_time Nfields total_overhead
+
+#12.614min 57.76s (7 fields, occasional gc)
+
+#Key:
+#Nstack +ve, Texp +ve  (Image being taken by this instrument)
+#Nstack -ve, Texp +ve  (Image being taken by other instrument)
+#Nstack -ve, Texp -ve  (No image is being taken, but something else is taking 
+#	     	        time e.g. a slew or readout)
+
+#Additional time is inserted between images of stacks by exigere for readout 
+#and dithering. 
+#The readout time for this can be set in the .observatory observatory files.
+#All other readout, slewing, filter changes etc must be specified here.
+
+#Field	Nstack	Texp	Sum     Description
+
+#F146 set
+BEGIN_REPEAT	14
+0	 1	 57.76	57.76	field 2 - F146 exposure
+0	-1	-699.08 756.84	Other fields
+END_REPEAT	
+
+#F087 Set
+##Field  Nstack  Texp    Sum     Description
+
+0	-1	 57.76	57.76	field 2 - F087 exposure
+0	-1	-699.08 756.84	Other fields
+
+#F146 set
+BEGIN_REPEAT	14
+0	 1	 57.76	57.76	field 2 - F146 exposure
+0	-1	-699.08 756.84	Other fields
+END_REPEAT	
+
+#F213 Set
+##Field  Nstack  Texp    Sum     Description
+0	-1	 57.76	57.76	field 2 - F213 exposure
+0	-1	-699.08 756.84	Other fields
+
+0	-1	-217.76	217.76	Galactic center
+

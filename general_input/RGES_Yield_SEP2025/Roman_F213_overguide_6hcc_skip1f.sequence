@@ -1,0 +1,90 @@
+#Observing sequence 
+
+#Roman F213 Sequence
+
+#Cadence Exposure_time Nfields total_overhead
+#12.142min 66.88s (6 fields, incl gc)
+# skips one field
+#Key:
+#Nstack +ve, Texp +ve  (Image being taken by this instrument)
+#Nstack -ve, Texp +ve  (Image being taken by other instrument)
+#Nstack -ve, Texp -ve  (No image is being taken, but something else is taking 
+#	     	        time e.g. a slew or readout)
+
+#Additional time is inserted between images of stacks by exigere for readout 
+#and dithering. 
+#The readout time for this can be set in the .observatory observatory files.
+#All other readout, slewing, filter changes etc must be specified here.
+
+#Field	Nstack	Texp	Sum     Description
+
+# F146 set
+#-------------------------------------------
+BEGIN_REPEAT 5
+  0   -1    66.88     66.88    # F146 expo on current field
+  0   –1   –661.628    728.51    # overhead (slot end)
+END_REPEAT
+
+0   -1   -66.88     66.88      
+0   –1   –661.628    728.51       # Skip “current field” (field 6)
+
+BEGIN_REPEAT 5
+  0   -1    66.88     66.88    # F146 expo on current field
+  0   –1   –661.628    728.51    # overhead (slot end)
+END_REPEAT
+
+0   -1   -66.88     66.88
+0   –1   –661.628    728.51       # Skip “current field” (field 6)
+
+BEGIN_REPEAT 5
+  0   -1    66.88     66.88    # F146 expo on current field
+  0   –1   –661.628    728.51    # overhead (slot end)
+END_REPEAT
+
+0   -1   -66.88     66.88
+0   –1   –661.628    728.51       # Skip “current field” (field 6)
+
+#------------------------------------------------
+#F087 Set
+##Field  Nstack  Texp    Sum     Description
+
+0	-1 	66.88	66.88	field 2 - F087 exposure
+0	-1	-661.628 728.51	Other fields
+
+
+# F146 set
+# -------------------------------------------------
+BEGIN_REPEAT 5
+  0   -1    66.88     66.88    # F146 expo on current field
+  0   –1   –661.628    728.51    # overhead (slot end)
+END_REPEAT
+
+0   -1   -66.88     66.88
+0   –1   –661.628    728.51       # Skip “current field” (field 6)
+
+BEGIN_REPEAT 5
+  0   -1    66.88     66.88    # F146 expo on current field
+  0   –1   –661.628    728.51    # overhead (slot end)
+END_REPEAT
+
+0   -1   -66.88     66.88
+0   –1   –661.628    728.51       # Skip “current field” (field 6)
+
+BEGIN_REPEAT 5
+  0   -1    66.88     66.88    # F146 expo on current field
+  0   –1   –661.628    728.51    # overhead (slot end)
+END_REPEAT
+
+0   -1   -66.88     66.88
+0   –1   –661.628    728.51       # Skip “current field” (field 6)
+
+
+#F213 Set
+#-----------------------------------------------
+
+##Field  Nstack  Texp    Sum     Description
+0	 1	 66.88	 66.88	field 2 - F213 exposure
+0	-1	-661.628 728.51	Other fields
+
+
+

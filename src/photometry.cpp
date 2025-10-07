@@ -94,12 +94,22 @@ void photometry(struct filekeywords* Paramfile, struct event *Event, struct obsf
 	      Event->Aerr[idx] = phot[7]/baseline;
 	    }
 
+	  //Put astrometry errors here
+	  //Event->xcerr[idx] = Event->xctrueerr[idx] = ;
+	  //Event->xc[idx] = Event->xctrue[idx] + Event->xcerr[idx]*gasdev(Paramfile->seed); //add scatter
+	  //Event->ycerr[idx] = Event->yctrueerr[idx] = ;
+	  //Event->yc[idx] = Event->yctrue[idx] + Event->ycerr[idx]*gasdev(Paramfile->seed); //add scatter
+	  //...
+
+	  
 	  if(World[obsidx].photcode%2==0) //ideal photometry
 	    {
 	      Event->Aobs[idx] = Event->Atrue[idx];
 	      Event->Aerr[idx] = Event->Atrueerr[idx];
+	      Event->xc[idx] = Event->xctrue[idx];
+	      Event->yc[idx] = Event->yctrue[idx];
 	    }
-
+	  
 	  //subtract the star
 	  World[obsidx].im.substar(Event->xsub[obsidx], Event->ysub[obsidx], 
 				   ampmag);

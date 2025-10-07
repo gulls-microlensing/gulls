@@ -85,6 +85,8 @@ FFPOBJ = $(COMMON) freeFloatingPlanet.o ffpLightcurveGenerator.o outputLightcurv
 
 FFPFISHOBJ = $(COMMON) freeFloatingPlanet.o ffpLightcurveGenerator.o outputLightcurve.o ffpfishDetectionCuts.o ffpfisher.o $(fisherinversion) mderrors.o
 
+BHFISHOBJ = $(COMMON) blackHole.o ffpLightcurveGenerator.o outputLightcurve.o ffpfishDetectionCuts.o ffpfisher.o $(fisherinversion) mderrors.o
+
 MOAOBJ = $(COMMON) pointLens.o ffpLightcurveGenerator.o outputLightcurve.o moaDetCuts.o pointfisher.o $(fisherinversion)
 
 SINGOBJ = $(COMMON) pointLens.o ffpLightcurveGenerator.o outputLightcurve.o ffpDetectionCuts.o
@@ -108,7 +110,7 @@ TESTPLLXOBJ = test_parallax.o coords.o ephem.o parallax.o astroFns.o
 
 
 all: gulls_std gullsFFP gullsFish gullsSingle gullsLimb gullscroin gullskoppa gullsffpfish gullssinglefish gullsmoa gullsBozzaOM gullsBinaryStar gullsP19_std gulls_std_fish gullsBozzaOM_std gulls_croin gulls_croin_fish gullsBozzaOM_croin
-static: sgulls sgullssqcroin sgullsFFP sgullshzgrid sgullsFish sgullsFoM sgullsHZ sgullsSingle sgullsLimb sgullscroin gullskoppa sgullsffpfish sgullssinglefish sgullsmoa sgullsBozzaOM sgullsBinaryStar sgullsCV sgullsPllxLoc gullsP19_std #sgullsfscorr
+static: sgulls sgullssqcroin sgullsFFP sgullshzgrid sgullsFish sgullsFoM sgullsHZ sgullsSingle sgullsLimb sgullscroin gullskoppa sgullsffpfish sgullssinglefish sgullsmoa sgullsBozzaOM sgullsBinaryStar sgullsCV sgullsPllxLoc gullsP19_std gullsbhfish #sgullsfscorr
 
 #VBMicrolensingLibrary.o:
 #	$(CXX) -c classes/VBMicrolensingLibrary.cpp -Iheaders
@@ -197,6 +199,9 @@ sgullsFish: $(FISHOBJ)
 gullsffpfish: $(FFPFISHOBJ)
 	$(CXX) $(CFLAGS) $(FFPFISHOBJ)  -o $(BINDIR)/gullsffpfish.x $(GSLFLAGS) $(LINKERFLAGS)
 
+gullsbhfish: $(BHFISHOBJ)
+	$(CXX) $(CFLAGS) $(BHFISHOBJ)  -o $(BINDIR)/gullsbhfish.x $(GSLFLAGS) $(LINKERFLAGS)
+
 sgullsffpfish: $(FFPFISHOBJ)
 	$(CXX) $(CFLAGS) $(FFPFISHOBJ) $(STATICFLAG) -o $(BINDIR)/sgullsffpfish.x $(STATICLFLAG)
 
@@ -270,6 +275,7 @@ kopparapuPlanet.o: kopparapuPlanet.cpp getPlanetvals.h buildEvent.h croin.h
 hzgridPlanet.o: hzgridPlanet.cpp getPlanetvals.h buildEvent.h croin.h
 croinLightcurveGenerator.o : croin.cpp $(gouldmag_h) constants.h $(finite_h) lightcurveGenerator.h $(ALLFILES)
 freeFloatingPlanet.o: freeFloatingPlanet.cpp getPlanetvals.h buildEvent.h
+blackHole.o: blackHole.cpp getPlanetvals.h buildEvent.h
 #ogleLens.o: ogleLens.cpp getPlanetvals.h buildEvent.h
 pointLens.o: pointLens.cpp getPlanetvals.h buildEvent.h
 fomPlanet.o: fomPlanet.cpp getPlanetvals.h buildEvent.h

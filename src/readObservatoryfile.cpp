@@ -1,4 +1,5 @@
 #include "readObservatoryfile.h"
+#include "constdefs.h"
 #include<iostream>
 
 #define DEBUGVAR 0
@@ -18,10 +19,10 @@ void specerror(int errval,const char keyword[]){
 }
 
 void readObservatoryfile(string v_file, struct obsfilekeywords World[],int idx){
-  const char *keywords[24] = {"NAME","LATITUDE","LONGITUDE","ALTITUDE","READ_OHEAD","NFIELDS","WEATHER_PROFILE","FIELDCENTRES","NPIX_X","NPIX_Y","PIXELSIZE","PRIMARY","BLOCKAGE","SPACE","FILTER","OBSERVATION_SEQUENCE","DETECTOR","THROUGHPUT","REFERENCE_TEXP","REFERENCE_NSTACK","ORBIT","PHOTOMETRY","EXTCOEFF","SKY_BACKGROUND"};
+  const char *keywords[26] = {"NAME","LATITUDE","LONGITUDE","ALTITUDE","READ_OHEAD","NFIELDS","WEATHER_PROFILE","FIELDCENTRES","NPIX_X","NPIX_Y","PIXELSIZE","PRIMARY","BLOCKAGE","SPACE","FILTER","OBSERVATION_SEQUENCE","DETECTOR","THROUGHPUT","REFERENCE_TEXP","REFERENCE_NSTACK","ORBIT","PHOTOMETRY","EXTCOEFF","SKY_BACKGROUND","MOON_AVOID","ALT_LIMIT"};
 
-  int nkey=24; /* Number of keywords defined in array "keywords" */
-  char String[24][1000];      /*!< Matrix of string variables */
+  int nkey=26; /* Number of keywords defined in array "keywords" */
+  char String[26][1000];      /*!< Matrix of string variables */
 
   int jdx;
 	  
@@ -32,8 +33,17 @@ void readObservatoryfile(string v_file, struct obsfilekeywords World[],int idx){
       if(read_config_var(v_file.c_str(), keywords[jdx] , String[jdx])!=0)
 	{
 	  cerr << "Error reading observatory file (" << v_file << ")" << endl;
-	  specerror(1,keywords[jdx]); 
-	  if(jdx!=22) exit(1);
+	  specerror(1,keywords[jdx]);
+	  switch(jdx)
+	    {
+	    case 22:
+	    case 24:
+	    case 25:
+	      break;
+	    default:
+	      exit(1);
+	    }
+
 	}
     }
 
@@ -75,6 +85,8 @@ void readObservatoryfile(string v_file, struct obsfilekeywords World[],int idx){
   if(sscanf(String[21],"%d",&World[idx].photcode)==0) {specerror(2,keywords[14]); exit(1);}; //"PHOTOMETRY"
   if(sscanf(String[22],"%lf",&World[idx].extcoeff) ==0) {specerror(2,keywords[22]); World[idx].extcoeff=0.0;}; //"EXTCOEFF"
   if(sscanf(String[23],"%lf",&World[idx].skybackground) ==0) {specerror(2,keywords[23]); World[idx].skybackground=99.0;}; //"SKY_BACKGROUND"
+  if(sscanf(String[24],"%lf",&World[idx].moonavoid) ==0) {specerror(2,keywords[24]); World[idx].moonavoid=30.0;}; //"MOON_AVOID"
+    if(sscanf(String[25],"%lf",&World[idx].altlimit) ==0) {specerror(2,keywords[25]); World[idx].altlimit=30.0;}; //"MOON_AVOID"
 
 }
 

@@ -46,11 +46,12 @@ void timeSequencer(struct obsfilekeywords World[], struct event *Event, struct f
 void determineEpochs(struct obsfilekeywords World[], struct event *Event, struct filekeywords *Paramfile)
 {
   /* Altitude limit to observe THIS SHOULD BE IN PARAMETERFILE  */
-  double EVENT_ALT_LIM = 20*(TO_RAD);    
+  //double EVENT_ALT_LIM = 20*(TO_RAD);
+  double altlimit,moonavoid;
   /* Extinction coef. in V. THIS SHOULD BE IN PARAMETERFILE */
-  double C_EXT = 0.3;  //set in observatory loop
+  double C_EXT = 0.3;  //replaced in observatory loop
   /* Sky brightness in V. THIS SHOULD BE IN PARAMETERFILE */
-  double VSKY = 21.7;                    
+  double VSKY = 21.7; //gets replaced by parameter file value below
 
   int obsidx;   /* loop through all observatories */
   int ind;      /* loop through observatory arrays */
@@ -70,6 +71,13 @@ void determineEpochs(struct obsfilekeywords World[], struct event *Event, struct
 
       C_EXT = World[obsidx].extcoeff;
       VSKY =  World[obsidx].skybackground; //20.0 - 2.5*log10(World[obsidx].constbackground);
+      altlimit = World[obsidx].altlimit * TO_RAD;
+      moonavoid = World[obsidx].moonavoid * TO_RAD;
+
+      if(Paramfile->verbosity>2)
+	{
+	  cout << "OBS " << obsidx << "ext. coeff=" << C_EXT << " sky background=" << VSKY << " altitude limit=" << altlimit*TO_DEG << " moonavoid=" << moonavoid*TO_DEG << endl;
+	}
 
       /* Loop through all fields for observatory obsidx */   
       for(jnd=0;jnd<World[obsidx].nfields;jnd++)
@@ -111,17 +119,23 @@ void determineEpochs(struct obsfilekeywords World[], struct event *Event, struct
 					    C_EXT , VSKY,  &DeltaV, &D,
 					    &ObjMoonDist, &K);
 
+
+			/*Test event altitude ALSO SHOULD TEST MOON ANGLE*/
+			if(Alt>altlimit) observing=true;
+			else observing=false;
+			if(ObjMoonDist<moonavoid)
+			  {
+			    observing=false;
+			  }
+
 			if(Paramfile->verbosity>=3)
 			  {
 			    cout << "ra, dec " << Event->ra*TO_DEG << " " << Event->dec*TO_DEG << endl;
 			    cout << " " << World[obsidx].epoch[ind] << " " << setw(14) << fixed << World[obsidx].jd[ind];
 			    cout.setf(ios_base::fmtflags(0), ios::floatfield);
-			    cout << " " << Alt*TO_DEG << " " << Az*TO_DEG << " " << DeltaV << endl;		    
+			    cout << " " << Alt*TO_DEG << " " << Az*TO_DEG << " " << DeltaV << " " << ObjMoonDist*TO_DEG << " " << (observing?"True":"False") << endl;		    
 			  }
-
-			/*Test event altitude ALSO SHOULD TEST MOON ANGLE*/
-			if(Alt>EVENT_ALT_LIM) observing=true;
-			else observing=false;
+			
 		      }
 		    else observing=true;
 	   

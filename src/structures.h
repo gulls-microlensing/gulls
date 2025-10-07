@@ -55,6 +55,8 @@ struct obsfilekeywords{
   double constbackground;
   double skybackground;
   double extcoeff;
+  double moonavoid;
+  double altlimit;
 
   //orbit
   vector<orbitalElements> orbit;

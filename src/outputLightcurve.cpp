@@ -296,7 +296,10 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
     static const char* baseCols[] = {
       "Simulation_time", "measured_relative_flux", "measured_relative_flux_error",
       "true_relative_flux",  "true_relative_flux_error",    "observatory_code",
-      "saturation_flag",     "best_single_lens_fit",        "parallax_shift_t",
+      "saturation_flag",     "best_single_lens_fit",
+      "x_centroid", "x_centroid_error","y_centroid", "y_centroid_error",
+      "true_x_centroid", "true_x_centroid_error","true_y_centroid", "true_y_centroid_error",
+      "parallax_shift_t",
       "parallax_shift_u",    "BJD",                         "source_x",
       "source_y",            "source2_x", "source2_y", "lens1_x",                     "lens1_y",
       "lens2_x",             "lens2_y",                     "parallax_shift_x",
@@ -355,10 +358,12 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
 	  obsidx=Event->obsidx[i];
 	  shiftedidx = i-Event->nepochsvec[obsidx];
 	  
-	  fprintf(lcfile_ptr, "%.12g %.8g %g %.12g %g %d %d %.8g %.6g %.6g %16.7f %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g ",
+	  fprintf(lcfile_ptr, "%.12g %.8g %g %.12g %g %d %d %.8g %.8g %.8g %.8g %.8g %.8g %.8g %.8g %.8g %.6g %.6g %16.7f %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g ",
 		  Event->epoch[i], Event->Aobs[i], Event->Aerr[i], //0, 1, 2
 		  Event->Atrue[i], Event->Atrueerr[i], obsidx, //3, 4, 5
 		  (Event->nosat[i]?0:1), Event->Afit[i], //6, 7
+		  Event->xc[i], Event->xcerr[i], Event->yc[i], Event->ycerr[i],
+		  Event->xctrue[i], Event->xctrueerr[i], Event->yctrue[i], Event->yctrueerr[i],
 		  //Event->pllx[obsidx].tshift(Event->jdepoch[i]), //8
 		  //Event->pllx[obsidx].ushift(Event->jdepoch[i]), //9
 		  //Event->pllx[obsidx].epochs[Event->jdepoch[i]],  //10

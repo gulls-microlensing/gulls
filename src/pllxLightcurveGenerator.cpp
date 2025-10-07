@@ -103,10 +103,19 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
 		int filt = World[obsidx].filter;		
 		Event->Atrue[idx] = amp + Event->scomp_fsofs1[0][filt] * (amp2-1);
 
+		//Put binary source astrometry here
+		//Event->xctrue[idx] = ;
+		//Event->yctrue[idx] = ;
+
 	      }
 	    else
 	      {
 		Event->Atrue[idx] = amp;
+
+
+		//put single source astrometry here
+		//Event->xctrue[idx] = ;
+		//Event->yctrue[idx] = ;
 	      }
 	  }
 

@@ -371,6 +371,15 @@ struct event{
   vector<double> yl1;
   vector<double> xl2; //lens 2 position
   vector<double> yl2;
+  vector<double> xc; //x centroid
+  vector<double> xctrue; //x centroid no noise
+  vector<double> xcerr; //x centroid
+  vector<double> xctrueerr; //x centroid error no noise
+  vector<double> yc; //y centroid
+  vector<double> yctrue; //y centroid no noise
+  vector<double> ycerr; //y centroid error
+  vector<double> yctrueerr; //x centroid error no noise
+  
 
   vector<double> data; //generic data to be output
   vector<string> dataheader;

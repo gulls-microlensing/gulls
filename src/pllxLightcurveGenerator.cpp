@@ -94,7 +94,7 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
 		double x2off = Event->scomp_s[0] * cos(Event->scomp_phase[0]*TO_RAD);
 		double y2off = Event->scomp_s[0] * sin(Event->scomp_phase[0]*TO_RAD) * cos(Event->scomp_inc[0]*TO_RAD);
 		xs2CoM = xsCoM + x2off * cos(Event->scomp_alpha[0]*TO_RAD) - y2off * sin(Event->scomp_alpha[0]*TO_RAD);
-		ys2Center = ysCenter + x2off * sin(Event->scomp_alpha[0]*TO_RAD) + y2off * sin(Event->scomp_alpha[0]*TO_RAD);
+		ys2Center = ysCenter + x2off * sin(Event->scomp_alpha[0]*TO_RAD) + y2off * cos(Event->scomp_alpha[0]*TO_RAD);
 
 		double amp2 = Event->vbm->BinaryMag2(a, q, xs2CoM, ys2Center, Event->scomp_rs[0]);
 		Event->xs2[idx] = xs2CoM;

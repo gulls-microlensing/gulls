@@ -30,3 +30,17 @@
 *.exe
 *.out
 *.app
+
+# Numerical recipes files
+src/headers/random.h
+src/headers/zroots2.h
+src/classes/random.cpp
+src/classes/zroots2.cpp
+
+# VBM files
+src/ESPL.tbl
+
+# CMake artifacts
+build/
+build/CMakeFiles/
+build/.cmake

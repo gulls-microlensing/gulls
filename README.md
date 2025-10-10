@@ -3,34 +3,104 @@
 A microlensing simulator optimized for space-based microlensing
 surveys, but also supporting ground-based observatory simulations.   
 
-
 ## Requirements
 
-1. [GNU Scientific
-   Library](https://www.gnu.org/software/gnuastro/manual/html_node/GNU-Scientific-Library.html)
+1. A C++ compiler with C++17 support (e.g. `g++`, `clang++`, `icpx`)
+1. A Fortran compiler (e.g. `gfortran`, `ifx`)
+1. [CMake ≥ 3.20](https://cmake.org/download/)
+1. [GNU Scientific Library](https://www.gnu.org/software/gsl/)
 1. [CFITSIO](https://heasarc.gsfc.nasa.gov/fitsio/)
-1. [VBMicrolensing](https://github.com/valboz/VBMicrolensing)
+1. `ESPL.tbl` from the
+   [VBMicrolensing data directory](https://github.com/valboz/VBMicrolensing/tree/master/VBMicrolensing/data)
 
-## Installation Instructions
+> **Heads-up:** the repository now vendors the latest
+> `VBMicrolensingLibrary.cpp`/`.h`, so you no longer need a pre-built
+> `libVBB.a` to link against. You only need the `ESPL.tbl` lookup table.
 
-1. Install the above requirements if you don't already have them
-1. Fork this repository, then clone your fork
-1. Create environment variable with `export GULLS_BASE_DIR='/path/to/cloned/gulls/'`
-    * It's recommended to appended this to your ~/.bashrc or
-      ~/.bash_profile file
-1. Run `./configure.sh` from the newly cloned gulls directory
-1. `cd src` to change to the source code directory
-1. Obtain the `random.cpp`, `zroots2.cpp` files (email penny1@lsu.edu)
-   and put them in the `classes` directory. Put the `random.h` and
-   `zroots2.h` files in the `headers` directory.
-1. Copy the `ESPL.tbl` file from `VBMicrolensing/VBMicrolensing/data/`
-   to the `src` directory (where you currently are)
-1. Run `make <executable>` to build a chosen executable. `gullsFFP` is a
-   good starting point, and it will create
-   `${GULLS_BASE_DIR}/bin/gullsFFP.x`
-1. If successfully compiled, running
-   `${GULLS_BASE_DIR}/bin/gullsFFP.x` should give a message about the 
+## Building with CMake (recommended)
 
+1. Install the requirements above. On macOS you can use Homebrew:
+   ```bash
+   brew install cmake gsl cfitsio gcc
+   ```
+   On Linux, your package manager typically provides the same
+   dependencies.
+1. Clone this repository (and optionally place the
+   [`VBMicrolensing`](https://github.com/valboz/VBMicrolensing)
+   repository alongside it so you can copy `ESPL.tbl`).
+1. Copy `ESPL.tbl` into `gulls_mp/src/`.
+1. Configure and build:
+   ```bash
+   cmake -S gulls_mp -B gulls_mp/build
+   cmake --build gulls_mp/build
+   ```
+   This produces `gulls_std`, `gulls_croin`, and `gullsFish` in
+   `gulls_mp/build/bin/`.
+1. (Optional) Install the binaries anywhere you like with
+   `cmake --install build --prefix <path>`.
+
+## Running the executables
+
+After building, the executables are located in `build/bin/`:
+
+```bash
+# Run directly from the project root directory
+./build/bin/gulls_std <parameter_file> [options]
+./build/bin/gulls_croin <parameter_file> [options]
+./build/bin/gullsFish <parameter_file> [options]
+```
+
+Or add the build directory to your PATH for easier access:
+
+```bash
+export PATH="$PWD/build/bin:$PATH"
+gulls_std <parameter_file> [options]
+```
+
+Use the `-d` flag for debug output (repeat for more verbosity: `-d`, `-dd`, `-ddd`).
+
+### Selecting a build type
+
+By default the project configures in `Release` mode. To switch to
+`Debug` (with symbols and runtime checks) pass
+
+```bash
+cmake -S gulls_mp -B build -DCMAKE_BUILD_TYPE=Debug
+```
+
+### Compiler warnings
+
+By default, compiler warnings are **disabled** for a cleaner build output. 
+To enable warnings (useful when fixing code issues):
+
+```bash
+cmake -B build -DENABLE_WARNINGS=ON && cmake --build build
+```
+
+To disable warnings again:
+
+```bash
+cmake -B build -DENABLE_WARNINGS=OFF && cmake --build build
+```
+
+For quick rebuilds with the current warning setting, just use:
+
+```bash
+cmake --build build
+```
+
+### Legacy Makefile workflow
+
+The historical Makefiles remain in `src/` for anyone who relies on the
+old process. They still expect a lot of manual setup (absolute paths,
+Intel compilers, etc.) and are **no longer recommended**. If you must
+use them, run `./configure.sh` to rewrite hard-coded paths and then
+`make <target>` inside `src/`.
+
+> Known gaps: a handful of older targets reference Fortran sources such
+> as `findTrack.f`, `magTrack.f`, `extend.f`, and `readData.f` that are
+> not present in the repository. Only the `gulls_std`, `gulls_croin`,
+> and `gullsFish` executables currently build successfully.
 
 ## (Incomplete) Checklist/Troubleshooting for regular gulls runs
 

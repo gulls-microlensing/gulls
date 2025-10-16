@@ -46,12 +46,25 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
      }
     vector<int> idxshift;
     int shiftedidx;
+	const double timeout = Paramfile->lc_timeout;
+	const bool enforce_timeout = (timeout > 0.0);
+	time_t starttime = time(NULL);
+	bool timed_out = false;
     for(obsidx=0;obsidx<Paramfile->numobservatories;obsidx++)
        idxshift.push_back(Event->nepochsvec[obsidx]);
 
     //Calculate the lightcurve
     for (int idx = 0; idx < Event->nepochs; ++idx)
       {
+					if (enforce_timeout)
+						{
+							time_t now = time(NULL);
+							if (difftime(now, starttime) > timeout)
+								{
+									timed_out = true;
+									break;
+								}
+						}
         obsidx = Event->obsidx[idx];
         shiftedidx=idx-idxshift[obsidx];
         double amp = 0.0;
@@ -125,9 +138,37 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
             Event->peakpoint = idx;
         }
     }
+
+	if(timed_out)
+		{
+			Event->lcerror = LCGEN_TIMEOUT_ERR;
+			Event->detected = 0;
+			Event->deterror = 0;
+			if(Paramfile->verbosity >= 1)
+				{
+					cout << "Lightcurve generation timed out after " << timeout << " seconds" << endl;
+				}
+			if(logfile_ptr.good())
+				{
+					logfile_ptr << "Lightcurve generation timed out after " << timeout << " seconds" << std::endl;
+				}
+			return;
+		}
   //if there has been an error - try the backup generator
   if(Event->lcerror)
     {
+			if(Event->lcerror == LCGEN_TIMEOUT_ERR)
+				{
+					if(Paramfile->verbosity >= 1)
+						{
+							cout << "Skipping backup generator due to lightcurve timeout" << endl;
+						}
+					if(logfile_ptr.good())
+						{
+							logfile_ptr << "Skipping backup generator due to lightcurve timeout" << std::endl;
+						}
+					return;
+				}
       Event->lcerror=0;
       backupGenerator(Paramfile, Event, World, Sources, Lenses, logfile_ptr);
     }

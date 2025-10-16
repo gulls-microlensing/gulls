@@ -372,6 +372,14 @@ void drawsl(struct filekeywords* Paramfile, struct obsfilekeywords World[], stru
   //fractional lens source distance
   x = Lenses->data[ln][Lenses->DIST]/Sources->data[sn][Sources->DIST];
 
+  // Compute Einstein radius terms early so companion calculations below
+  // can safely reference Event->thE without using an uninitialized value.
+  // in AU
+  Event->rE = rEsun * sqrt(Lenses->data[ln][Lenses->MASS]
+                           * Sources->data[sn][Sources->DIST] * (1-x) * x);
+  // in mas
+  Event->thE = Event->rE/Lenses->data[ln][Lenses->DIST];
+
   //positions
   //randomly choose an l,b somewhere in the box
   Event->l = Lenses->l + (ran2(idum)-0.5)*Lenses->dl;
@@ -477,7 +485,7 @@ void drawsl(struct filekeywords* Paramfile, struct obsfilekeywords World[], stru
 	  double rnd = ran2(idum);
 	  Event->scomp_inc.push_back(180*(rnd<0.5?acos(2*rnd):-acos(2-2*rnd))/PI);
 	  Event->scomp_fsofs1.push_back(vector<double>());
-	  for(int filt=0; filt<=Paramfile->Nfilters;filt++)
+          for(int filt=0; filt<Paramfile->Nfilters;filt++)
 	    {
 	      double magnitude1 = Sources->mags[sn][filt];
 	      double magnitude2 = Sources->mags[sc][filt];
@@ -508,12 +516,8 @@ void drawsl(struct filekeywords* Paramfile, struct obsfilekeywords World[], stru
   //einstein radius
   //cout << x << endl;
 
-  //in AU
-  Event->rE = rEsun * sqrt(Lenses->data[ln][Lenses->MASS] 
-			   * Sources->data[sn][Sources->DIST] * (1-x) * x);
-
-  //in mas
-  Event->thE = Event->rE/Lenses->data[ln][Lenses->DIST];
+  // rE and thE already computed above so that companion properties could be
+  // derived safely.
 
   //relative ls proper motion - lens motion relative to the source
   //in mas/yr

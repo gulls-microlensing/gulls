@@ -75,8 +75,12 @@ def _resolve_case_selection(raw_choices: Sequence[str] | None, ci_mode: bool = F
         if ci_mode:
             # CI subset: essential tests only (std, binary source validation)
             return (
-                ("smoke_std", "gulls_std", "smoke_std.prm"),
-                ("smoke_std_binary", "gulls_std", "smoke_std_binary.prm"),
+                ("smoke_std", "gulls_std.x", "smoke_std.prm"),
+                ("smoke_std_binary", "gulls_std.x", "smoke_std_binary.prm"),
+                ("smoke_fish", "gullsFish.x", "smoke_fish.prm"),
+                ("smoke_fish_binary", "gullsFish.x", "smoke_std_binary.prm"),
+                ("smoke_croin", "gulls_croin.x", "smoke_croin.prm"),
+                ("smoke_croin_binary", "gulls_croin.x", "smoke_croin_binary.prm"),
             )
         return CASES
 

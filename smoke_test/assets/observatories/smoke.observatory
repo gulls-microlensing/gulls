@@ -1,0 +1,38 @@
+# Minimal observatory configuration for smoke test
+# All length units are approximate; values chosen to keep the simulator happy.
+
+#Observatory data
+NAME		SmokeScope
+
+LATITUDE	0.0
+LONGITUDE	0.0
+SPACE		1
+ORBIT		2
+
+ALTITUDE	0.0
+
+PRIMARY		1.0
+BLOCKAGE	0.0
+
+FILTER		6
+
+PIXELSIZE	1.0
+NPIX_X		64
+NPIX_Y		64
+
+READ_OHEAD	1.0
+NFIELDS		1
+
+REFERENCE_TEXP	30.0
+REFERENCE_NSTACK	1
+PHOTOMETRY	-1
+
+EXTCOEFF	0.0
+SKY_BACKGROUND	22.0
+
+FIELDCENTRES	smoke.centres
+OBSERVATION_SEQUENCE	smoke.sequence
+DETECTOR	smoke.detector
+THROUGHPUT	smoke.throughput
+
+WEATHER_PROFILE	smoke.weather

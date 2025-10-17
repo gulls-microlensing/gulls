@@ -1,0 +1,11 @@
+name: smoke
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.7
+  - pip
+  - pip:
+      - numpy
+      - pandas
+      - matplotlib

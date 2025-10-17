@@ -44,3 +44,27 @@ src/ESPL.tbl
 build/
 build/CMakeFiles/
 build/.cmake
+
+# Smoke Tests
+smoke_test/output/
+smoke_test/__pycache__/
+smoke_test/parameterfiles/__generated__/
+
+# Documentation build artifacts
+docs/_build/
+docs/build/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -17,37 +17,31 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Install dependencies (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gfortran libcfitsio-dev libgsl-dev cmake build-essential
+    - name: Setup Conda
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        auto-update-conda: true
+        python-version: 3.9
     
-    - name: Install dependencies (macOS)
-      if: matrix.os == 'macos-latest'
+    - name: Install dependencies
       run: |
-        brew install gfortran cfitsio gsl cmake
-        # Set Fortran compiler path for CMake
-        echo "FC=$(which gfortran)" >> $GITHUB_ENV
-    
-    - name: Debug compiler availability
-      run: |
-        echo "Available compilers:"
-        which gfortran || echo "gfortran not found"
-        which gcc || echo "gcc not found"
-        which g++ || echo "g++ not found"
-        echo "PATH: $PATH"
+        conda env create -f cmake.yml
+        conda activate gulls
+        conda list
     
     - name: Configure CMake
       run: |
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_Fortran_COMPILER=gfortran
+        conda activate gulls
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
     
     - name: Build
       run: |
+        conda activate gulls
         cmake --build build --parallel
     
     - name: Run smoke tests (CI subset)
       run: |
+        conda activate gulls
         python3 smoke_test/run_smoke_test.py --ci --exec-timeout 610
     
     - name: Upload test artifacts on failure

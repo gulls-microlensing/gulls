@@ -21,12 +21,12 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
-        sudo apt-get install -y gfortran libcfitsio-dev libgsl-dev
+        sudo apt-get install -y gfortran libcfitsio-dev libgsl-dev cmake build-essential
     
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
       run: |
-        brew install gfortran cfitsio gsl
+        brew install gfortran cfitsio gsl cmake
     
     - name: Configure CMake
       run: |

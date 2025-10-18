@@ -36,3 +36,7 @@ DETECTOR	smoke.detector
 THROUGHPUT	smoke.throughput
 
 WEATHER_PROFILE	smoke.weather
+
+# Optional parameters with default values
+MOON_AVOID	30.0
+ALT_LIMIT	30.0

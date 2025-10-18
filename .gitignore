@@ -38,7 +38,7 @@ src/classes/random.cpp
 src/classes/zroots2.cpp
 
 # VBM files
-src/ESPL.tbl
+# src/ESPL.tbl  # Now included in repo with Matt's permission
 
 # CMake artifacts
 build/

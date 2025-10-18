@@ -7,3 +7,7 @@ dependencies:
   - gsl
   - cfitsio
   - compilers
+  - matplotlib
+  - pandas
+  - astropy
+

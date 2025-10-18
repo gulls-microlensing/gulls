@@ -6,7 +6,7 @@
 // This is a placeholder implementation for CI builds
 // The actual implementation should be provided by the user
 
-void zroots(double a[], int m, double roots[], bool polish) {
+void zroots(double a[], int m, double roots[], bool polish, const char* name) {
     // Simple stub that sets roots to zeros
     // This is NOT a proper polynomial root finder
     // The actual implementation should be provided by the user

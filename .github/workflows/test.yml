@@ -24,22 +24,26 @@ jobs:
         python-version: 3.9
     
     - name: Install dependencies
+      shell: bash -l {0}
       run: |
         conda env create -f cmake.yml
         conda activate gulls
         conda list
     
     - name: Configure CMake
+      shell: bash -l {0}
       run: |
         conda activate gulls
         cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
     
     - name: Build
+      shell: bash -l {0}
       run: |
         conda activate gulls
         cmake --build build --parallel
     
     - name: Run smoke tests (CI subset)
+      shell: bash -l {0}
       run: |
         conda activate gulls
         python3 smoke_test/run_smoke_test.py --ci --exec-timeout 610

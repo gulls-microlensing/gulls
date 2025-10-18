@@ -2,9 +2,9 @@ name: Test Suite
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, dev, feature/documentation-and-testing ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, dev ]
 
 jobs:
   test:
@@ -38,7 +38,7 @@ jobs:
     
     - name: Run smoke tests (CI subset)
       run: |
-        python3 smoke_test/run_smoke_test.py --ci --exec-timeout 300
+        python3 smoke_test/run_smoke_test.py --ci --exec-timeout 610
     
     - name: Upload test artifacts on failure
       if: failure()

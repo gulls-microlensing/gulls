@@ -1,75 +1,92 @@
 #include "random.h"
-#include <cstdlib>
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+#include <gsl/gsl_sf_gamma.h>
+#include <gsl/gsl_sf_gamma.h>
+#include <iostream>
 #include <cmath>
 
-// Stub implementations for numerical recipes random functions
-// These are placeholder implementations for CI builds
+// Fallback implementations for numerical recipes random functions
+// Uses GSL when Numerical Recipes are not available
 // The actual implementations should be provided by the user
 
-double ran1(long *idum) {
-    // Simple linear congruential generator for testing
-    static long seed = 12345;
-    if (idum) seed = *idum;
-    seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-    return (double)seed / 2147483648.0;
-}
+// Global GSL random number generator for fallback
+static gsl_rng* gsl_rng_fallback = nullptr;
 
-double gasdev(long *idum) {
-    // Simple Box-Muller transform for normal distribution
-    static bool has_spare = false;
-    static double spare;
-    
-    if (has_spare) {
-        has_spare = false;
-        return spare;
+// Initialize fallback RNG if not already done
+static void init_fallback_rng() {
+    if (gsl_rng_fallback == nullptr) {
+        gsl_rng_fallback = gsl_rng_alloc(gsl_rng_mt19937);
+        gsl_rng_set(gsl_rng_fallback, 12345); // Default seed
     }
-    
-    has_spare = true;
-    double u = ran1(idum);
-    double v = ran1(idum);
-    double mag = sqrt(-2.0 * log(u));
-    spare = mag * sin(2.0 * M_PI * v);
-    return mag * cos(2.0 * M_PI * v);
 }
 
-double ran0(long *idum) {
-    return ran1(idum);
+// Cleanup function (called at program exit)
+static void cleanup_fallback_rng() {
+    if (gsl_rng_fallback != nullptr) {
+        gsl_rng_free(gsl_rng_fallback);
+        gsl_rng_fallback = nullptr;
+    }
 }
 
-double gammln(double xx) {
-    // Simple approximation for log(gamma(x))
-    return log(tgamma(xx));
-}
+// Register cleanup function
+static int dummy = (atexit(cleanup_fallback_rng), 0);
 
-double gammp(double a, double x) {
-    // Incomplete gamma function P(a,x)
-    // Simple approximation - not numerically accurate
-    return 1.0 - exp(-x);
-}
-
-double gammq(double a, double x) {
-    // Incomplete gamma function Q(a,x) = 1 - P(a,x)
-    return exp(-x);
+double ran1(long *idum) {
+    init_fallback_rng();
+    if (idum) {
+        gsl_rng_set(gsl_rng_fallback, *idum);
+    }
+    return gsl_rng_uniform(gsl_rng_fallback);
 }
 
 double ran2(long *idum) {
-    // Simple linear congruential generator for testing
-    static long seed = 12345;
-    if (idum) seed = *idum;
-    seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-    return (double)seed / 2147483648.0;
+    init_fallback_rng();
+    if (idum) {
+        gsl_rng_set(gsl_rng_fallback, *idum);
+    }
+    return gsl_rng_uniform(gsl_rng_fallback);
+}
+
+double ran0(long *idum) {
+    return ran2(idum);
+}
+
+double gasdev(long *idum) {
+    init_fallback_rng();
+    if (idum) {
+        gsl_rng_set(gsl_rng_fallback, *idum);
+    }
+    return gsl_ran_gaussian(gsl_rng_fallback, 1.0);
+}
+
+double gammln(double xx) {
+    // Use GSL's log gamma function
+    return gsl_sf_lngamma(xx);
+}
+
+double gammp(double a, double x) {
+    // Use GSL's incomplete gamma function P(a,x)
+    return gsl_sf_gamma_inc_P(a, x);
+}
+
+double gammq(double a, double x) {
+    // Use GSL's incomplete gamma function Q(a,x) = 1 - P(a,x)
+    return gsl_sf_gamma_inc_Q(a, x);
 }
 
 int randint(int min, int max, long *seed) {
-    // Generate random integer between min and max (inclusive)
-    double r = ran2(seed);
-    return min + (int)(r * (max - min + 1));
+    init_fallback_rng();
+    if (seed) {
+        gsl_rng_set(gsl_rng_fallback, *seed);
+    }
+    return min + gsl_rng_uniform_int(gsl_rng_fallback, max - min + 1);
 }
 
 double poisson(double mean, long *seed) {
-    // Simple Poisson approximation using normal distribution
-    // This is NOT numerically accurate - just for compilation
-    double normal = gasdev(seed);
-    double result = mean + sqrt(mean) * normal;
-    return (result < 0) ? 0 : result;
+    init_fallback_rng();
+    if (seed) {
+        gsl_rng_set(gsl_rng_fallback, *seed);
+    }
+    return gsl_ran_poisson(gsl_rng_fallback, mean);
 }

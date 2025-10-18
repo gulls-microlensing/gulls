@@ -51,3 +51,25 @@ double gammq(double a, double x) {
     // Incomplete gamma function Q(a,x) = 1 - P(a,x)
     return exp(-x);
 }
+
+double ran2(long *idum) {
+    // Simple linear congruential generator for testing
+    static long seed = 12345;
+    if (idum) seed = *idum;
+    seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+    return (double)seed / 2147483648.0;
+}
+
+int randint(int min, int max, long *seed) {
+    // Generate random integer between min and max (inclusive)
+    double r = ran2(seed);
+    return min + (int)(r * (max - min + 1));
+}
+
+double poisson(double mean, long *seed) {
+    // Simple Poisson approximation using normal distribution
+    // This is NOT numerically accurate - just for compilation
+    double normal = gasdev(seed);
+    double result = mean + sqrt(mean) * normal;
+    return (result < 0) ? 0 : result;
+}

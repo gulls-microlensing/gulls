@@ -27,10 +27,20 @@ jobs:
       if: matrix.os == 'macos-latest'
       run: |
         brew install gfortran cfitsio gsl cmake
+        # Set Fortran compiler path for CMake
+        echo "FC=$(which gfortran)" >> $GITHUB_ENV
+    
+    - name: Debug compiler availability
+      run: |
+        echo "Available compilers:"
+        which gfortran || echo "gfortran not found"
+        which gcc || echo "gcc not found"
+        which g++ || echo "g++ not found"
+        echo "PATH: $PATH"
     
     - name: Configure CMake
       run: |
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_Fortran_COMPILER=gfortran
     
     - name: Build
       run: |

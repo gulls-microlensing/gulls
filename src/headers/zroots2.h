@@ -2,6 +2,7 @@
 #define ZROOTS2_H
 
 #include <complex>
+#include <string>
 
 // Stub header for numerical recipes zroots functions
 // These are placeholder declarations for CI builds
@@ -9,5 +10,6 @@
 
 void zroots(double a[], int m, double roots[], bool polish, const char* name = nullptr);
 void zroots(std::complex<double> a[], int m, std::complex<double> roots[], bool polish, const char* name = nullptr);
+void zroots(std::complex<double> a[], int m, std::complex<double> roots[], bool polish, const std::string& name);
 
 #endif // ZROOTS2_H

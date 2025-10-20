@@ -185,7 +185,7 @@ int main(int argc, char *argv[]){                   /* BEGIN MAIN */
     }
 
 
-  char spftmp[100];
+  char spftmp[512];
   sprintf(spftmp,"%ssrc/ESPL.tbl",Paramfile.basedir.c_str());
   cout << "Loading VBMicrolening ESPL table " << spftmp << endl;
   VBM.LoadESPLTable(spftmp); // Load the pre-calculated table (you only have to do this once)

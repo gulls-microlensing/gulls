@@ -175,6 +175,115 @@ def verify_catalog_alignment(out_files: Sequence[Path], params: Dict[str, str]) 
                     )
 
 
+def verify_source_lens_compatibility(params: Dict[str, str]) -> None:
+    """Verify that at least some valid source/lens pairs exist in catalogs."""
+    _, source_pairs = _gather_catalog_pairs(params, "SOURCE_DIR", "SOURCE_LIST", "source")
+    _, lens_pairs = _gather_catalog_pairs(params, "LENS_DIR", "LENS_LIST", "lens")
+    
+    # Check 1: At least one valid pair where source_dist > lens_dist
+    valid_pairs = 0
+    for src_mass, src_dist in source_pairs:
+        for lens_mass, lens_dist in lens_pairs:
+            if src_dist > lens_dist:
+                valid_pairs += 1
+                if valid_pairs >= 10:  # Early exit after finding enough
+                    break
+        if valid_pairs >= 10:
+            break
+    
+    if valid_pairs == 0:
+        src_dists = [d for _, d in source_pairs]
+        lens_dists = [d for _, d in lens_pairs]
+        raise SmokeTestError(
+            f"No valid source/lens pairs found!\n"
+            f"  All sources must be farther than at least some lenses (source_dist > lens_dist).\n"
+            f"  Source distances: min={min(src_dists):.2f}, max={max(src_dists):.2f}, median={sorted(src_dists)[len(src_dists)//2]:.2f} kpc\n"
+            f"  Lens distances: min={min(lens_dists):.2f}, max={max(lens_dists):.2f}, median={sorted(lens_dists)[len(lens_dists)//2]:.2f} kpc\n"
+            f"  Check catalog generation - sources should generally be farther than lenses."
+        )
+    
+    # Check 2: Verify distances are reasonable (not NaN/Inf, positive, within galaxy scale)
+    for role, pairs in [("source", source_pairs), ("lens", lens_pairs)]:
+        for mass, dist in pairs:
+            if math.isnan(dist) or math.isinf(dist):
+                raise SmokeTestError(f"{role.capitalize()} catalog contains NaN or Inf distance values")
+            if dist <= 0:
+                raise SmokeTestError(f"{role.capitalize()} catalog contains non-positive distance: {dist} kpc")
+            if dist > 50:  # Milky Way is ~50 kpc diameter
+                raise SmokeTestError(f"{role.capitalize()} catalog contains implausibly large distance: {dist} kpc (>50 kpc)")
+
+
+def verify_catalog_columns(params: Dict[str, str]) -> None:
+    """Verify source and lens catalogs contain all required standard columns."""
+    # Required columns for all source catalogs
+    required_source_cols = {"mul", "mub", "Mass", "Radius", "Dist"}
+    
+    # Required columns for all lens catalogs
+    required_lens_cols = {"mul", "mub", "Mass", "Dist"}
+    
+    # Validate source catalogs
+    directory_value = params.get("SOURCE_DIR")
+    list_value = params.get("SOURCE_LIST")
+    if directory_value and list_value:
+        directory = _resolve_param_path(directory_value, "source directory")
+        catalog_paths = _load_catalog_paths(directory, list_value, "source")
+        
+        for catalog_path in catalog_paths:
+            lines = catalog_path.read_text(encoding="utf-8").splitlines()
+            
+            if not lines:
+                raise SmokeTestError(f"Source catalog {catalog_path} is empty")
+            
+            # Find the header line (first non-comment, non-empty line)
+            header_line = None
+            for line in lines:
+                stripped = line.strip()
+                if stripped and not stripped.startswith("#"):
+                    header_line = stripped
+                    break
+            
+            if not header_line:
+                raise SmokeTestError(f"Source catalog {catalog_path} has no header")
+            
+            header_cols = set(header_line.split())
+            missing = required_source_cols - header_cols
+            if missing:
+                raise SmokeTestError(
+                    f"Source catalog {catalog_path.name} is missing required columns: {', '.join(sorted(missing))}"
+                )
+    
+    # Validate lens catalogs
+    directory_value = params.get("LENS_DIR")
+    list_value = params.get("LENS_LIST")
+    if directory_value and list_value:
+        directory = _resolve_param_path(directory_value, "lens directory")
+        catalog_paths = _load_catalog_paths(directory, list_value, "lens")
+        
+        for catalog_path in catalog_paths:
+            lines = catalog_path.read_text(encoding="utf-8").splitlines()
+            
+            if not lines:
+                raise SmokeTestError(f"Lens catalog {catalog_path} is empty")
+            
+            # Find the header line (first non-comment, non-empty line)
+            header_line = None
+            for line in lines:
+                stripped = line.strip()
+                if stripped and not stripped.startswith("#"):
+                    header_line = stripped
+                    break
+            
+            if not header_line:
+                raise SmokeTestError(f"Lens catalog {catalog_path} has no header")
+            
+            header_cols = set(header_line.split())
+            missing = required_lens_cols - header_cols
+            if missing:
+                raise SmokeTestError(
+                    f"Lens catalog {catalog_path.name} is missing required columns: {', '.join(sorted(missing))}"
+                )
+
+
 def verify_binary_source_columns(params: Dict[str, str]) -> None:
     """Verify source catalogs contain required columns when MULTIPLE_SOURCES=1."""
     multiple_sources = params.get("MULTIPLE_SOURCES", "0").strip()
@@ -183,13 +292,9 @@ def verify_binary_source_columns(params: Dict[str, str]) -> None:
     if multiple_sources not in ("1", "1.0"):
         return
     
-    # Required columns for binary source simulations
+    # Required columns for binary source simulations (beyond standard columns)
     # These are accessed via datadict in buildEvent.cpp
-    required_named_cols = {"Is_Binary", "ID", "primary_ID", "combined_logP"}
-    
-    # These columns must exist by position (standard catalog columns)
-    # They're accessed via Sources->RADIUS, Sources->DIST, etc.
-    required_standard_cols = {"mul", "mub", "Mass", "Radius", "Dist"}
+    required_binary_cols = {"Is_Binary", "ID", "primary_ID", "combined_logP"}
     
     directory_value = params.get("SOURCE_DIR")
     list_value = params.get("SOURCE_LIST")
@@ -201,7 +306,7 @@ def verify_binary_source_columns(params: Dict[str, str]) -> None:
     directory = _resolve_param_path(directory_value, "source directory")
     catalog_paths = _load_catalog_paths(directory, list_value, "source")
     
-    # Check each source catalog
+    # Check each source catalog for binary-specific columns
     for catalog_path in catalog_paths:
         lines = catalog_path.read_text(encoding="utf-8").splitlines()
         
@@ -225,21 +330,13 @@ def verify_binary_source_columns(params: Dict[str, str]) -> None:
         
         header_cols = set(header_line.split())
         
-        # Check for required named columns
-        missing_named = required_named_cols - header_cols
-        if missing_named:
+        # Check for required binary-specific columns
+        missing = required_binary_cols - header_cols
+        if missing:
             raise SmokeTestError(
                 f"MULTIPLE_SOURCES=1 but source catalog {catalog_path.name} "
-                f"is missing required binary source columns: {', '.join(sorted(missing_named))}"
-            )
-        
-        # Check for required standard columns
-        missing_standard = required_standard_cols - header_cols
-        if missing_standard:
-            raise SmokeTestError(
-                f"MULTIPLE_SOURCES=1 but source catalog {catalog_path.name} "
-                f"is missing required standard columns: {', '.join(sorted(missing_standard))}"
+                f"is missing required binary source columns: {', '.join(sorted(missing))}"
             )
 
 
-__all__ = ["verify_binary_source_columns", "verify_catalog_alignment", "verify_outputs"]
+__all__ = ["verify_binary_source_columns", "verify_catalog_alignment", "verify_catalog_columns", "verify_outputs", "verify_source_lens_compatibility"]

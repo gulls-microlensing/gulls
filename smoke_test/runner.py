@@ -23,7 +23,7 @@ from .execution import run_command
 from .metrics import gather_case_metrics
 from .plotting import plot_lightcurves
 from .prep import PreparedCase, prepare_cases
-from .validation import verify_binary_source_columns, verify_catalog_alignment, verify_outputs
+from .validation import verify_binary_source_columns, verify_catalog_alignment, verify_catalog_columns, verify_outputs, verify_source_lens_compatibility
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -137,12 +137,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not prepared_cases:
         return 1
     
-    # Validate binary source catalog columns for cases with MULTIPLE_SOURCES=1
+    # Validate catalogs: columns, compatibility, and binary-specific requirements
     for case in prepared_cases:
         try:
+            verify_catalog_columns(case.params)
+            verify_source_lens_compatibility(case.params)
             verify_binary_source_columns(case.params)
         except SmokeTestError as err:
-            print(f"Binary source validation failed for {case.label}:")
+            print(f"Catalog validation failed for {case.label}:")
             print(f" - {err}")
             return 1
 

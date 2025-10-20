@@ -34,16 +34,20 @@ static int dummy = (atexit(cleanup_fallback_rng), 0);
 
 double ran1(long *idum) {
     init_fallback_rng();
-    if (idum) {
-        gsl_rng_set(gsl_rng_fallback, *idum);
+    // Only reseed if idum is negative (NR convention for initialization)
+    if (idum && *idum < 0) {
+        gsl_rng_set(gsl_rng_fallback, -(*idum));
+        *idum = 1; // Mark as initialized
     }
     return gsl_rng_uniform(gsl_rng_fallback);
 }
 
 double ran2(long *idum) {
     init_fallback_rng();
-    if (idum) {
-        gsl_rng_set(gsl_rng_fallback, *idum);
+    // Only reseed if idum is negative (NR convention for initialization)
+    if (idum && *idum < 0) {
+        gsl_rng_set(gsl_rng_fallback, -(*idum));
+        *idum = 1; // Mark as initialized
     }
     return gsl_rng_uniform(gsl_rng_fallback);
 }
@@ -54,8 +58,10 @@ double ran0(long *idum) {
 
 double gasdev(long *idum) {
     init_fallback_rng();
-    if (idum) {
-        gsl_rng_set(gsl_rng_fallback, *idum);
+    // Only reseed if idum is negative (NR convention for initialization)
+    if (idum && *idum < 0) {
+        gsl_rng_set(gsl_rng_fallback, -(*idum));
+        *idum = 1; // Mark as initialized
     }
     return gsl_ran_gaussian(gsl_rng_fallback, 1.0);
 }
@@ -77,16 +83,20 @@ double gammq(double a, double x) {
 
 int randint(int min, int max, long *seed) {
     init_fallback_rng();
-    if (seed) {
-        gsl_rng_set(gsl_rng_fallback, *seed);
+    // Only reseed if seed is negative (NR convention for initialization)
+    if (seed && *seed < 0) {
+        gsl_rng_set(gsl_rng_fallback, -(*seed));
+        *seed = 1; // Mark as initialized
     }
     return min + gsl_rng_uniform_int(gsl_rng_fallback, max - min + 1);
 }
 
 double poisson(double mean, long *seed) {
     init_fallback_rng();
-    if (seed) {
-        gsl_rng_set(gsl_rng_fallback, *seed);
+    // Only reseed if seed is negative (NR convention for initialization)
+    if (seed && *seed < 0) {
+        gsl_rng_set(gsl_rng_fallback, -(*seed));
+        *seed = 1; // Mark as initialized
     }
     return gsl_ran_poisson(gsl_rng_fallback, mean);
 }

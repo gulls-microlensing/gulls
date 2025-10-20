@@ -19,7 +19,7 @@ extern "C"
 
 void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, struct obsfilekeywords World[], struct slcat *Sources, struct slcat *Lenses, ofstream& logfile_ptr)
 {
-  char str[100];
+  char str[512];
 
   double m1, a;
   double q;

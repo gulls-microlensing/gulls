@@ -1,13 +1,103 @@
 #!/usr/bin/env python3
-"""Validate GULLS input files before running simulations."""
+"""
+Validate GULLS input files before running simulations.
+
+This script checks:
+- Parameter file format and required parameters
+- Source and lens catalog column headers
+- Valid source/lens distance pairs
+- Reasonable numerical ranges
+- Binary source requirements (when MULTIPLE_SOURCES=1)
+
+Usage:
+    python validate_inputs.py <parameter_file.prm>
+    python validate_inputs.py --sources <file> --lenses <file>
+    python validate_inputs.py --all
+
+Examples:
+    # Validate using parameter file (recommended - most comprehensive)
+    python validate_inputs.py my_simulation.prm
+    
+    # Validate specific files
+    python validate_inputs.py --sources my_sources.dat --lenses my_lenses.dat
+    
+    # Auto-discover and validate all input files in current directory
+    python validate_inputs.py --all
+"""
 
 import argparse
 import sys
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List
 
-def validate_sources(filepath: Path) -> List[str]:
-    """Validate source catalog format."""
+# Add repo root to path to import smoke_test as a package
+REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT))
+
+try:
+    from smoke_test.validation import (
+        verify_binary_source_columns,
+        verify_catalog_columns,
+        verify_source_lens_compatibility,
+    )
+    from smoke_test.errors import SmokeTestError
+    USE_SMOKE_TEST_VALIDATION = True
+except ImportError as e:
+    USE_SMOKE_TEST_VALIDATION = False
+    print(f"Warning: Could not import smoke test validation ({e}). Using basic checks only.")
+
+
+def read_parameter_file(param_file: Path) -> dict:
+    """Parse a gulls parameter file into a dictionary."""
+    params = {}
+    
+    with param_file.open("r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            
+            # Skip comments and empty lines
+            if not line or line.startswith("#"):
+                continue
+            
+            # Split on = sign
+            if "=" in line:
+                key, value = line.split("=", 1)
+                params[key.strip()] = value.strip()
+    
+    return params
+
+
+def validate_parameter_file(filepath: Path) -> List[str]:
+    """Validate parameter file format and required parameters."""
+    errors = []
+    
+    if not filepath.exists():
+        return [f"Parameter file not found: {filepath}"]
+    
+    try:
+        params = read_parameter_file(filepath)
+        
+        required_params = [
+            'RUN_NAME', 'OUTPUT_DIR', 'EXECUTABLE',
+            'OBSERVATORY_DIR', 'OBSERVATORY_LIST',
+            'SOURCE_DIR', 'SOURCE_LIST',
+            'LENS_DIR', 'LENS_LIST'
+        ]
+        
+        for param in required_params:
+            if param not in params:
+                errors.append(f"Missing required parameter: {param}")
+            elif not params[param]:
+                errors.append(f"Parameter {param} has no value")
+    
+    except Exception as e:
+        errors.append(f"Error reading parameter file: {e}")
+    
+    return errors
+
+
+def validate_sources_basic(filepath: Path) -> List[str]:
+    """Basic validation of source catalog format (fallback when smoke test unavailable)."""
     errors = []
     
     if not filepath.exists():
@@ -22,54 +112,24 @@ def validate_sources(filepath: Path) -> List[str]:
         
         # Check header
         header = lines[0].strip().split()
-        required_cols = ['RA2000.0', 'DEC2000.0', 'Dist', 'Mass', 'Radius']
+        required_cols = {'mul', 'mub', 'Mass', 'Radius', 'Dist'}
+        missing = required_cols - set(header)
         
-        for col in required_cols:
-            if col not in header:
-                errors.append(f"Missing required column: {col}")
+        if missing:
+            errors.append(f"Missing required columns: {', '.join(sorted(missing))}")
         
         # Check for data
         if len(lines) < 2:
             errors.append("No data rows found")
-        
-        # Basic data validation
-        for i, line in enumerate(lines[1:], 2):
-            if line.strip().startswith('#'):
-                continue
-            parts = line.strip().split()
-            if len(parts) != len(header):
-                errors.append(f"Row {i}: Expected {len(header)} columns, got {len(parts)}")
-                continue
-            
-            # Check numeric values
-            try:
-                ra = float(parts[header.index('RA2000.0')])
-                dec = float(parts[header.index('DEC2000.0')])
-                dist = float(parts[header.index('Dist')])
-                mass = float(parts[header.index('Mass')])
-                radius = float(parts[header.index('Radius')])
-                
-                if not (0 <= ra <= 360):
-                    errors.append(f"Row {i}: RA must be 0-360 degrees")
-                if not (-90 <= dec <= 90):
-                    errors.append(f"Row {i}: DEC must be -90 to 90 degrees")
-                if dist <= 0:
-                    errors.append(f"Row {i}: Distance must be positive")
-                if mass <= 0:
-                    errors.append(f"Row {i}: Mass must be positive")
-                if radius <= 0:
-                    errors.append(f"Row {i}: Radius must be positive")
-                    
-            except (ValueError, IndexError) as e:
-                errors.append(f"Row {i}: Invalid numeric data: {e}")
     
     except Exception as e:
         errors.append(f"Error reading source file: {e}")
     
     return errors
 
-def validate_lenses(filepath: Path) -> List[str]:
-    """Validate lens catalog format."""
+
+def validate_lenses_basic(filepath: Path) -> List[str]:
+    """Basic validation of lens catalog format (fallback when smoke test unavailable)."""
     errors = []
     
     if not filepath.exists():
@@ -84,140 +144,133 @@ def validate_lenses(filepath: Path) -> List[str]:
         
         # Check header
         header = lines[0].strip().split()
-        required_cols = ['RA2000.0', 'DEC2000.0', 'Dist', 'Mass', 'mul', 'mub']
+        required_cols = {'mul', 'mub', 'Mass', 'Dist'}
+        missing = required_cols - set(header)
         
-        for col in required_cols:
-            if col not in header:
-                errors.append(f"Missing required column: {col}")
+        if missing:
+            errors.append(f"Missing required columns: {', '.join(sorted(missing))}")
         
         # Check for data
         if len(lines) < 2:
             errors.append("No data rows found")
-        
-        # Basic data validation
-        for i, line in enumerate(lines[1:], 2):
-            if line.strip().startswith('#'):
-                continue
-            parts = line.strip().split()
-            if len(parts) != len(header):
-                errors.append(f"Row {i}: Expected {len(header)} columns, got {len(parts)}")
-                continue
-            
-            # Check numeric values
-            try:
-                ra = float(parts[header.index('RA2000.0')])
-                dec = float(parts[header.index('DEC2000.0')])
-                dist = float(parts[header.index('Dist')])
-                mass = float(parts[header.index('Mass')])
-                
-                if not (0 <= ra <= 360):
-                    errors.append(f"Row {i}: RA must be 0-360 degrees")
-                if not (-90 <= dec <= 90):
-                    errors.append(f"Row {i}: DEC must be -90 to 90 degrees")
-                if dist <= 0:
-                    errors.append(f"Row {i}: Distance must be positive")
-                if mass <= 0:
-                    errors.append(f"Row {i}: Mass must be positive")
-                    
-            except (ValueError, IndexError) as e:
-                errors.append(f"Row {i}: Invalid numeric data: {e}")
     
     except Exception as e:
         errors.append(f"Error reading lens file: {e}")
     
     return errors
 
-def validate_parameter_file(filepath: Path) -> List[str]:
-    """Validate parameter file format."""
+
+def validate_with_smoke_test(param_file: Path) -> List[str]:
+    """Run comprehensive validation using smoke test validation functions."""
     errors = []
     
-    if not filepath.exists():
-        return [f"Parameter file not found: {filepath}"]
-    
     try:
-        with open(filepath, 'r') as f:
-            lines = f.readlines()
+        params = read_parameter_file(param_file)
         
-        required_params = [
-            'RUN_NAME', 'OUTPUT_DIR', 'EXECUTABLE',
-            'OBSERVATORY_DIR', 'OBSERVATORY_LIST',
-            'SOURCE_DIR', 'SOURCE_LIST',
-            'LENS_DIR', 'LENS_LIST'
-        ]
+        print("\n1. Checking parameter file format...")
+        param_errors = validate_parameter_file(param_file)
+        if param_errors:
+            errors.extend(param_errors)
+            return errors  # Can't proceed without valid params
+        print("   ✓ Parameter file format valid")
         
-        found_params = set()
+        print("\n2. Checking required catalog columns...")
+        verify_catalog_columns(params)
+        print("   ✓ All required columns present")
         
-        for i, line in enumerate(lines, 1):
-            line = line.strip()
-            if not line or line.startswith('#'):
-                continue
-            
-            if '=' not in line:
-                errors.append(f"Line {i}: Invalid format (missing '=')")
-                continue
-            
-            key, value = line.split('=', 1)
-            key = key.strip()
-            value = value.strip()
-            
-            found_params.add(key)
-            
-            if not value:
-                errors.append(f"Line {i}: Parameter {key} has no value")
+        print("\n3. Checking source/lens compatibility...")
+        verify_source_lens_compatibility(params)
+        print("   ✓ Valid source/lens pairs exist")
+        print("   ✓ Distance values are reasonable")
         
-        for param in required_params:
-            if param not in found_params:
-                errors.append(f"Missing required parameter: {param}")
-    
+        print("\n4. Checking binary source requirements...")
+        multiple_sources = params.get("MULTIPLE_SOURCES", "0").strip()
+        if multiple_sources in ("1", "1.0"):
+            verify_binary_source_columns(params)
+            print("   ✓ Binary source columns present")
+        else:
+            print("   ⊘ Skipped (MULTIPLE_SOURCES not enabled)")
+        
+    except SmokeTestError as e:
+        errors.append(str(e))
     except Exception as e:
-        errors.append(f"Error reading parameter file: {e}")
+        errors.append(f"Validation error: {e}")
     
     return errors
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Validate GULLS input files")
-    parser.add_argument("--sources", type=Path, help="Source catalog file")
-    parser.add_argument("--lenses", type=Path, help="Lens catalog file")
-    parser.add_argument("--params", type=Path, help="Parameter file")
-    parser.add_argument("--all", action="store_true", help="Validate all files in current directory")
+    parser = argparse.ArgumentParser(
+        description="Validate GULLS input files",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__
+    )
+    parser.add_argument("param_file", nargs="?", type=Path, 
+                       help="Parameter file (.prm) - validates all catalogs referenced in it")
+    parser.add_argument("--sources", type=Path, help="Source catalog file (basic validation only)")
+    parser.add_argument("--lenses", type=Path, help="Lens catalog file (basic validation only)")
+    parser.add_argument("--all", action="store_true", 
+                       help="Auto-discover and validate all .prm files in current directory")
     
     args = parser.parse_args()
     
     all_errors = []
     
-    if args.all:
-        # Find files automatically
-        sources_files = list(Path(".").glob("**/*.sources"))
-        lens_files = list(Path(".").glob("**/*.lenses"))
+    if args.param_file and USE_SMOKE_TEST_VALIDATION:
+        # Comprehensive validation using parameter file
+        print(f"Validating catalogs specified in: {args.param_file}")
+        print("=" * 70)
+        all_errors = validate_with_smoke_test(args.param_file)
+        
+    elif args.all:
+        # Find and validate all parameter files
         param_files = list(Path(".").glob("**/*.prm"))
         
-        for sources_file in sources_files:
-            all_errors.extend(validate_sources(sources_file))
-        
-        for lens_file in lens_files:
-            all_errors.extend(validate_lenses(lens_file))
+        if not param_files:
+            print("No .prm files found in current directory")
+            return 1
         
         for param_file in param_files:
-            all_errors.extend(validate_parameter_file(param_file))
+            print(f"\nValidating {param_file}...")
+            print("=" * 70)
+            
+            if USE_SMOKE_TEST_VALIDATION:
+                errors = validate_with_smoke_test(param_file)
+            else:
+                errors = validate_parameter_file(param_file)
+            
+            if errors:
+                all_errors.extend([f"{param_file}: {e}" for e in errors])
     
     else:
+        # Basic individual file validation (legacy mode)
         if args.sources:
-            all_errors.extend(validate_sources(args.sources))
+            print(f"Validating source catalog: {args.sources}")
+            all_errors.extend(validate_sources_basic(args.sources))
         
         if args.lenses:
-            all_errors.extend(validate_lenses(args.lenses))
+            print(f"Validating lens catalog: {args.lenses}")
+            all_errors.extend(validate_lenses_basic(args.lenses))
         
-        if args.params:
-            all_errors.extend(validate_parameter_file(args.params))
+        if not args.sources and not args.lenses and not args.param_file:
+            parser.print_help()
+            return 1
     
+    # Print results
     if all_errors:
-        print("Validation errors found:")
+        print("\n" + "=" * 70)
+        print("✗ Validation failed:")
         for error in all_errors:
-            print(f"  - {error}")
+            print(f"  {error}")
+        print("\n" + "=" * 70)
+        print("Please fix the issues above and try again.")
         return 1
     else:
-        print("All files validated successfully!")
+        print("\n" + "=" * 70)
+        print("✓ All validations passed!")
+        print("\nYour input files appear to be correctly formatted.")
         return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

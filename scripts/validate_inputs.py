@@ -160,12 +160,49 @@ def validate_lenses_basic(filepath: Path) -> List[str]:
     return errors
 
 
+def check_numerical_libraries() -> List[str]:
+    """Check if GSL fallbacks are being used instead of Numerical Recipes."""
+    warnings = []
+    
+    # Check if random.cpp exists and contains GSL fallback code
+    random_cpp = REPO_ROOT / "src" / "classes" / "random.cpp"
+    if random_cpp.exists():
+        content = random_cpp.read_text(encoding="utf-8")
+        if "gsl_rng" in content and "Fallback implementation" in content:
+            warnings.append(
+                "⚠ Warning: Using GSL fallback implementations for random number generation.\n"
+                "  The actual Numerical Recipes implementations are preferred for production runs.\n"
+                "  GSL fallbacks are provided for CI/testing purposes only."
+            )
+    
+    # Check if zroots2.cpp exists and contains GSL fallback code
+    zroots_cpp = REPO_ROOT / "src" / "classes" / "zroots2.cpp"
+    if zroots_cpp.exists():
+        content = zroots_cpp.read_text(encoding="utf-8")
+        if "gsl_poly_complex_solve" in content and "Fallback implementation" in content:
+            warnings.append(
+                "⚠ Warning: Using GSL fallback implementations for polynomial root finding.\n"
+                "  The actual Numerical Recipes implementations are preferred for production runs.\n"
+                "  GSL fallbacks are provided for CI/testing purposes only."
+            )
+    
+    return warnings
+
+
 def validate_with_smoke_test(param_file: Path) -> List[str]:
     """Run comprehensive validation using smoke test validation functions."""
     errors = []
     
     try:
         params = read_parameter_file(param_file)
+        
+        # Check for GSL fallbacks first
+        warnings = check_numerical_libraries()
+        if warnings:
+            print("\n" + "=" * 70)
+            for warning in warnings:
+                print(warning)
+            print("=" * 70)
         
         print("\n1. Checking parameter file format...")
         param_errors = validate_parameter_file(param_file)

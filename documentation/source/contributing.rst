@@ -89,6 +89,53 @@ All contributions must pass the smoke tests:
 
 The CI system will automatically run tests on pull requests.
 
+Adding Validation for New Error Conditions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you encounter a condition that causes a **breaking computational or science error**,
+please add validation to catch it early:
+
+**When to Add Validation:**
+
+- ✅ Conditions that cause crashes, hangs, or incorrect physics
+- ✅ Invalid catalog configurations (e.g., all sources closer than all lenses)
+- ✅ Missing required columns for specific simulation modes
+- ✅ Numerical values that cause undefined behavior (NaN, Inf, negative distances)
+- ❌ Warnings or soft errors that don't break the simulation
+- ❌ Performance issues that don't affect correctness
+
+**How to Add Validation:**
+
+1. Add a validation function to ``smoke_test/validation.py``:
+
+   .. code-block:: python
+
+      def verify_your_condition(params: Dict[str, str]) -> None:
+          """Check that [condition] is satisfied."""
+          # Load and check relevant data
+          if condition_violated:
+              raise SmokeTestError(
+                  "Clear error message explaining what's wrong "
+                  "and how to fix it"
+              )
+
+2. Export it in ``__all__`` at the bottom of ``validation.py``
+
+3. Call it in ``smoke_test/runner.py`` in the validation loop (around line 141)
+
+4. The validation will automatically be used by:
+   
+   - CI smoke tests
+   - ``scripts/validate_inputs.py`` (for users)
+
+**Example:** The infinite loop bug we encountered could have been caught by validating
+that at least some source/lens distance pairs are valid (source > lens). This is now
+implemented in ``verify_source_lens_compatibility()``.
+
+.. tip::
+   Write clear, actionable error messages. Users should understand what's wrong
+   and how to fix it without reading the code.
+
 Documentation
 -------------
 

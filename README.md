@@ -18,6 +18,11 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
 
+### Validate Your Input Catalogs (Recommended)
+```bash
+python3 scripts/validate_inputs.py parameter_file.prm
+```
+
 ### Run a Simulation
 ```bash
 ./build/bin/gulls_std.x parameter_file.prm
@@ -56,6 +61,22 @@ GULLS requires several input files specified in your parameter file:
 - **Weather**: Observing conditions and weather profiles
 
 See [PARAMETER_REFERENCE.md](PARAMETER_REFERENCE.md) for complete parameter documentation.
+
+## Validating Your Input Files
+
+Before running a simulation, validate your input catalogs to catch common issues:
+
+```bash
+python3 scripts/validate_inputs.py your_parameter_file.prm
+```
+
+This checks:
+- Required column headers in source and lens catalogs
+- Valid source/lens distance pairs (sources must be farther than lenses)
+- Reasonable distance ranges (positive, < 50 kpc, not NaN/Inf)
+- Binary source column requirements (when `MULTIPLE_SOURCES=1`)
+
+The validation uses the same checks as CI, catching issues before you start long simulations.
 
 ## Examples
 

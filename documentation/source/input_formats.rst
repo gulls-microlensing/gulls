@@ -3,6 +3,16 @@ Input File Formats
 
 This document describes the required formats for GULLS input files.
 
+.. tip::
+   Validate your input catalogs before running simulations:
+   
+   .. code-block:: bash
+   
+      python3 scripts/validate_inputs.py your_parameter_file.prm
+   
+   This checks for required columns, valid source/lens pairs, reasonable
+   distance ranges, and binary source requirements.
+
 Source Catalogs
 ---------------
 

@@ -10,6 +10,7 @@ Usage:
     python3 scripts/bump_version.py minor    # 2.0.1 -> 2.1.0  
     python3 scripts/bump_version.py major    # 2.1.0 -> 3.0.0
     python3 scripts/bump_version.py release  # Create release commit and tag
+    python3 scripts/bump_version.py patch --revert  # 2.0.1 -> 2.0.0
 """
 
 import argparse
@@ -39,21 +40,34 @@ def get_current_version():
     
     return match.group(1)
 
-def bump_version(version, bump_type):
+def bump_version(version, bump_type, revert=False):
     """Bump version number according to semantic versioning."""
     major, minor, patch = map(int, version.split('.'))
     
-    if bump_type == "major":
-        major += 1
-        minor = 0
-        patch = 0
-    elif bump_type == "minor":
-        minor += 1
-        patch = 0
-    elif bump_type == "patch":
-        patch += 1
+    if revert:
+        if bump_type == "major":
+            major = max(0, major - 1)
+            minor = 0
+            patch = 0
+        elif bump_type == "minor":
+            minor = max(0, minor - 1)
+            patch = 0
+        elif bump_type == "patch":
+            patch = max(0, patch - 1)
+        else:
+            raise ValueError(f"Invalid bump type: {bump_type}")
     else:
-        raise ValueError(f"Invalid bump type: {bump_type}")
+        if bump_type == "major":
+            major += 1
+            minor = 0
+            patch = 0
+        elif bump_type == "minor":
+            minor += 1
+            patch = 0
+        elif bump_type == "patch":
+            patch += 1
+        else:
+            raise ValueError(f"Invalid bump type: {bump_type}")
     
     return f"{major}.{minor}.{patch}"
 
@@ -214,6 +228,8 @@ def main():
                        help="Type of version bump")
     parser.add_argument("--dry-run", action="store_true",
                        help="Show what would be changed without making changes")
+    parser.add_argument("--revert", action="store_true",
+                       help="Revert version bump (e.g., patch --revert: 2.0.1 -> 2.0.0)")
     
     args = parser.parse_args()
     
@@ -225,8 +241,11 @@ def main():
             new_version = current_version
             print(f"Creating release for version {new_version}")
         else:
-            new_version = bump_version(current_version, args.bump_type)
-            print(f"New version: {new_version}")
+            new_version = bump_version(current_version, args.bump_type, args.revert)
+            if args.revert:
+                print(f"Reverted version: {new_version}")
+            else:
+                print(f"New version: {new_version}")
         
         if args.dry_run:
             print("Dry run - no changes made")

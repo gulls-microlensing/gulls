@@ -101,6 +101,7 @@ This produces maximum diagnostic output:
 **GSL fallback warnings:**
 - For production science, replace `src/classes/random.cpp` and `src/classes/zroots2.cpp` with licensed Numerical Recipes implementations
 - GSL fallbacks are for CI/testing only
+- **Binary releases include GSL fallbacks and are NOT suitable for production science**
 
 ### Image Analysis
 

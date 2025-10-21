@@ -58,8 +58,14 @@ jobs:
         # Create source archive
         git archive --format=tar.gz --prefix=gulls-${{ github.ref_name }}/ -o gulls-${{ github.ref_name }}.tar.gz HEAD
         
-        # Create binary archive (if needed)
-        tar -czf gulls-${{ github.ref_name }}-binaries.tar.gz bin/ documentation/build/html/
+        # Create binary archive with GSL fallback warning
+        echo "⚠️  WARNING: Binaries include GSL fallback implementations" > BINARY_WARNING.txt
+        echo "These are for testing/CI only and NOT suitable for production science." >> BINARY_WARNING.txt
+        echo "For production use, compile from source with licensed Numerical Recipes." >> BINARY_WARNING.txt
+        echo "" >> BINARY_WARNING.txt
+        echo "See documentation for details on replacing GSL stubs with Numerical Recipes." >> BINARY_WARNING.txt
+        
+        tar -czf gulls-${{ github.ref_name }}-binaries.tar.gz bin/ documentation/build/html/ BINARY_WARNING.txt
     
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
@@ -67,7 +73,21 @@ jobs:
         files: |
           gulls-${{ github.ref_name }}.tar.gz
           gulls-${{ github.ref_name }}-binaries.tar.gz
-        generate_release_notes: true
+        body: |
+          ## ⚠️ Important Notice
+          
+          **Binary releases include GSL fallback implementations and are NOT suitable for production science.**
+          
+          - **For production use**: Download source code and compile with licensed Numerical Recipes
+          - **For testing/development**: Binary releases are fine for testing workflows
+          - **See documentation**: Details on replacing GSL stubs with Numerical Recipes
+          
+          ## What's Included
+          
+          - **Source code**: Complete Gulls source with CMake build system
+          - **Binaries**: Linux/macOS executables (GSL fallbacks - testing only)
+          - **Documentation**: Built HTML documentation
+        generate_release_notes: false
         draft: false
         prerelease: false
       env:

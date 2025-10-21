@@ -40,6 +40,7 @@ try:
         verify_catalog_columns,
         verify_nfilters_matches_catalogs,
         verify_rates_file,
+        verify_sequence_has_observations,
         verify_source_lens_compatibility,
         verify_weather_coverage,
     )
@@ -242,6 +243,10 @@ def validate_with_smoke_test(param_file: Path) -> List[str]:
         print("\n7. Checking rates file validity...")
         verify_rates_file(params)
         print("   ✓ Rates file parameters are valid")
+        
+        print("\n8. Checking observing sequence has observations...")
+        verify_sequence_has_observations(params)
+        print("   ✓ Sequence file contains observations")
         
     except SmokeTestError as e:
         errors.append(str(e))

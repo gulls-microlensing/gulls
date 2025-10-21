@@ -30,6 +30,7 @@ from .validation import (
     verify_nfilters_matches_catalogs,
     verify_outputs,
     verify_rates_file,
+    verify_sequence_has_observations,
     verify_source_lens_compatibility,
     verify_weather_coverage,
 )
@@ -155,6 +156,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             verify_nfilters_matches_catalogs(case.params)
             verify_weather_coverage(case.params)
             verify_rates_file(case.params)
+            verify_sequence_has_observations(case.params)
         except SmokeTestError as err:
             print(f"Validation failed for {case.label}:")
             print(f" - {err}")

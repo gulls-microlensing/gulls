@@ -536,6 +536,85 @@ def verify_nfilters_matches_catalogs(params: Dict[str, str]) -> None:
             break
 
 
+def verify_sequence_has_observations(params: Dict[str, str]) -> None:
+    """Verify observing sequence files have at least one observation (Nstack > 0)."""
+    obs_dir_str = params.get("OBSERVATORY_DIR")
+    obs_list_str = params.get("OBSERVATORY_LIST")
+    
+    if not obs_dir_str or not obs_list_str:
+        # Can't validate without observatory info
+        return
+    
+    obs_dir = _resolve_param_path(obs_dir_str, "observatory directory")
+    obs_list = _resolve_param_path(f"{obs_dir_str}/{obs_list_str}", "observatory list")
+    
+    if not obs_list.exists():
+        # Observatory list doesn't exist, will fail elsewhere
+        return
+    
+    # Read observatory list to find .observatory files
+    lines = obs_list.read_text(encoding="utf-8").splitlines()
+    
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        
+        # Observatory list format is just filenames
+        obs_file = obs_dir / line
+        if not obs_file.exists():
+            continue
+        
+        # Read observatory file to find sequence file
+        obs_content = obs_file.read_text(encoding="utf-8")
+        
+        # Look for OBSERVATION_SEQUENCE keyword
+        for obs_line in obs_content.splitlines():
+            obs_line = obs_line.strip()
+            if obs_line.startswith("OBSERVATION_SEQUENCE"):
+                parts = obs_line.split()
+                if len(parts) >= 2:
+                    seq_file = obs_dir / parts[1]
+                    
+                    if not seq_file.exists():
+                        raise SmokeTestError(
+                            f"Sequence file not found: {seq_file}\n"
+                            f"  Referenced in observatory file: {obs_file.name}"
+                        )
+                    
+                    # Check sequence file has at least one observation
+                    seq_lines = seq_file.read_text(encoding="utf-8").splitlines()
+                    has_observation = False
+                    
+                    for seq_line in seq_lines:
+                        seq_line = seq_line.strip()
+                        if not seq_line or seq_line.startswith("#"):
+                            continue
+                        if seq_line.startswith("BEGIN_REPEAT") or seq_line.startswith("END_REPEAT"):
+                            continue
+                        
+                        # Parse sequence line: Field Nstack Texp Sum Description
+                        parts = seq_line.split()
+                        if len(parts) >= 2:
+                            try:
+                                nstack = int(parts[1])
+                                if nstack > 0:
+                                    has_observation = True
+                                    break
+                            except ValueError:
+                                continue
+                    
+                    if not has_observation:
+                        raise SmokeTestError(
+                            f"Sequence file {seq_file.name} has no observations (no lines with Nstack > 0).\n"
+                            f"  At least one line must have positive Nstack to indicate this observatory takes images.\n"
+                            f"  Format: Field Nstack(+ve) Texp Sum Description"
+                        )
+                    
+                    # Only check first sequence file found
+                    return
+
+
 __all__ = [
     "verify_binary_source_columns",
     "verify_catalog_alignment", 
@@ -543,6 +622,7 @@ __all__ = [
     "verify_nfilters_matches_catalogs",
     "verify_outputs",
     "verify_rates_file",
+    "verify_sequence_has_observations",
     "verify_source_lens_compatibility",
     "verify_weather_coverage",
 ]

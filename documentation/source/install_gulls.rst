@@ -24,6 +24,23 @@ For the **legacy Makefile build** (OS/environment dependent):
 
 - Traditional build tools (make, etc.)
 
+**Numerical Recipes License Requirement**
+
+Gulls includes GSL-based fallback implementations in ``src/classes/random.cpp`` and 
+``src/classes/zroots2.cpp`` for CI and testing purposes. **These are not suitable for 
+production science runs.**
+
+.. important::
+
+   For production use, **you must replace these files with the licensed Numerical Recipes 
+   implementations:**
+
+   - ``src/classes/random.cpp`` - Replace with Numerical Recipes: ``ran1``, ``ran2``, ``gasdev``, ``gammln``, ``gammp``, ``gammq``, ``randint``, ``poisson``
+   - ``src/classes/zroots2.cpp`` - Replace with Numerical Recipes: ``zroots``
+   - Corresponding header files in ``src/headers/``
+
+The validation tool (``scripts/validate_inputs.py``) will warn you if GSL fallbacks are detected.
+
 **Installation Methods**
 
 Gulls supports two build systems. **We recommend using CMake** for most users as it handles
@@ -61,7 +78,9 @@ Method 1: CMake (Recommended)
    .. code-block:: shell
 
       cd /path/to/gulls/
-      cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      cmake -S . -B build
+      # for production builds, remember to replace the random and zroots2 stubs 
+      # with Numerical Recipes files before building!
       cmake --build build --parallel
 
    The executables will be in the ``bin/`` directory:
@@ -71,7 +90,7 @@ Method 1: CMake (Recommended)
    - ``bin/gullsFish.x`` - Fisher matrix analysis
 
    .. tip::
-      For development or debugging, use ``-DCMAKE_BUILD_TYPE=Debug`` instead of ``Release``.
+      For development or debugging, use ``-DCMAKE_BUILD_TYPE=Debug`` instead of ``Release`` (default).
       The ``--parallel`` flag speeds up compilation by using multiple CPU cores.
 
 3. **Verify Installation**:
@@ -80,36 +99,17 @@ Method 1: CMake (Recommended)
 
    .. code-block:: shell
 
-      python3 smoke_test/run_smoke_test.py --ci
+      python smoke_test/run_smoke_test.py --ci
 
-   This runs a subset of quick validation tests to ensure the build is working correctly.
+   This runs a subset of quick validation tests on single-planet subruns to ensure the build is working correctly.
 
 Method 2: Legacy Makefile (Alternative)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. warning::
+
    This build method is OS and environment dependent and may require manual configuration.
    Use the CMake method above unless you have specific reasons to use the legacy build system.
-
-**Numerical Recipes License Requirement**
-
-Gulls includes GSL-based fallback implementations in ``src/classes/random.cpp`` and 
-``src/classes/zroots2.cpp`` for CI and testing purposes. **These are not suitable for 
-production science runs.**
-
-For production use, you must replace these files with the licensed Numerical Recipes 
-implementations if you have access to them:
-
-- ``src/classes/random.cpp`` - Replace with Numerical Recipes: ``ran1``, ``ran2``, ``gasdev``, ``gammln``, ``gammp``, ``gammq``, ``randint``, ``poisson``
-- ``src/classes/zroots2.cpp`` - Replace with Numerical Recipes: ``zroots``
-- Corresponding header files in ``src/headers/``
-
-The validation tool (``scripts/validate_inputs.py``) will warn you if GSL fallbacks are detected.
-
-.. note::
-   The CMake build with conda automatically handles dependencies. The Numerical Recipes 
-   files are only needed if you're using the legacy Makefile build or require production-grade
-   random number generation and root finding.
 
 1. **Install Dependencies**:
 
@@ -153,7 +153,7 @@ The validation tool (``scripts/validate_inputs.py``) will warn you if GSL fallba
 
       cd $GULLS_BASE_DIR
       ./configure.sh
-      make
+      make <executable_name>
 
    The executables will be in the ``bin/`` directory.
 

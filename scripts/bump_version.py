@@ -65,7 +65,7 @@ def update_gulls_cpp(new_version):
     # Update version
     content = re.sub(
         r'printf\("\\n\\n\\n\\ngulls v\d+\.\d+\.\d+\\n"\);',
-        f'printf("\\n\\n\\n\\ngulls v{new_version}\\n");',
+        rf'printf("\\n\\n\\n\\ngulls v{new_version}\\n");',
         content
     )
     
@@ -134,8 +134,30 @@ def create_release_commit(new_version):
         # Check if we're in a git repository
         subprocess.run(["git", "status"], check=True, capture_output=True)
         
-        # Add all changes
-        subprocess.run(["git", "add", "."], check=True)
+        # Check for unstaged changes
+        try:
+            result = subprocess.run(["git", "diff", "--name-only"], capture_output=True, text=True, check=True)
+            unstaged_files = result.stdout.strip().split('\n') if result.stdout.strip() else []
+            
+            if unstaged_files:
+                print(f"Found unstaged changes in {len(unstaged_files)} files:")
+                for file in unstaged_files[:5]:  # Show first 5 files
+                    print(f"  - {file}")
+                if len(unstaged_files) > 5:
+                    print(f"  ... and {len(unstaged_files) - 5} more files")
+                
+                response = input("Include all unstaged changes in release commit? (y/N): ")
+                if response.lower() in ['y', 'yes']:
+                    subprocess.run(["git", "add", "."], check=True)
+                    print("Added all changes to staging area")
+                else:
+                    print("Only committing staged changes")
+            else:
+                print("No unstaged changes found")
+                subprocess.run(["git", "add", "."], check=True)
+        except subprocess.CalledProcessError:
+            # Fallback if git diff fails
+            subprocess.run(["git", "add", "."], check=True)
         
         # Create commit (only if there are changes)
         commit_msg = f"Release version {new_version}"

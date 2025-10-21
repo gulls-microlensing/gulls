@@ -5,7 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - 2025-10-XX
+
+
+## [2.0.0] - 2025-10-21
+
+### Added
+- [Add new features here]
+
+### Changed  
+- [Add changes here]
+
+### Fixed
+- [Add bug fixes here]
+
+### Security
+- [Add security fixes here]
+
+
+## [2.0.1] - 2025-10-21
+
+### Added
+- missing docs build requirements in the `environment.yml`
+
+### Fixed
+- Failure to build docs in the release workflow on GitHub.
+
+## [2.0.0] - 2025-10-20
 
 ### Added
 - Comprehensive documentation expansion with Sphinx/Read the Docs

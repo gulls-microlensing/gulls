@@ -11,5 +11,7 @@ dependencies:
   - pandas
   - astropy
   - numpy
+  - sphinx
+  - sphinx_rtd_theme
   - pip:
       - VBMicrolensing

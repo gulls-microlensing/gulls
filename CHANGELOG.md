@@ -9,13 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.1] - 2025-10-21
 
 ### Added
-- missing docs build requirements in the `environment.yml`
+- Missing docs build requirements in the `environment.yml`
+- Smoke test output figures in Release Notes
 
 ### Changed
-- Simplified release workflow: patch > edit changelog > release.
+- Simplified release workflow: patch > edit changelog > release
 
 ### Fixed
-- Failure to build docs in the release workflow on GitHub.
+- Failure to build docs in the release workflow on GitHub
 
 ## [2.0.0] - 2025-10-20
 

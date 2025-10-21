@@ -137,9 +137,13 @@ def create_release_commit(new_version):
         # Add all changes
         subprocess.run(["git", "add", "."], check=True)
         
-        # Create commit
+        # Create commit (only if there are changes)
         commit_msg = f"Release version {new_version}"
-        subprocess.run(["git", "commit", "-m", commit_msg], check=True)
+        try:
+            subprocess.run(["git", "commit", "-m", commit_msg], check=True)
+            print(f"Created release commit for version {new_version}")
+        except subprocess.CalledProcessError:
+            print("No changes to commit - working tree is clean")
         
         # Create tag
         tag_name = f"v{new_version}"

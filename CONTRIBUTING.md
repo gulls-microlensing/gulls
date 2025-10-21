@@ -92,7 +92,7 @@ If you run in to a new error, consider adding a check in the validation.
 ### Phase 2: Try CMake Build (10 minutes)
 ```bash
 # Instead of 'make', try:
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B build
 cmake --build build
 ```
 Same result, but with better dependency management.

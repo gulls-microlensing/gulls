@@ -88,13 +88,7 @@ int main(int argc, char *argv[]){                   /* BEGIN MAIN */
   int field=-1;
 
   //system("clear");
-  printf("
-
-
-
-gulls v2.0.1
-");
-  printf("October 2025 \n\n");
+  printf("\n\n\n\ngulls v2.0.1\n");  printf("October 2025 \n\n");
   st=time(0); st1=st;
   printf("Execution begins: %s\n",ctime(&st));
 

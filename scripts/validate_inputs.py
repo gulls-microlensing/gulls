@@ -38,6 +38,7 @@ try:
     from smoke_test.validation import (
         verify_binary_source_columns,
         verify_catalog_columns,
+        verify_input_files_exist,
         verify_nfilters_matches_catalogs,
         verify_rates_file,
         verify_sequence_has_observations,
@@ -208,45 +209,49 @@ def validate_with_smoke_test(param_file: Path) -> List[str]:
                 print(warning)
             print("=" * 70)
         
-        print("\n1. Checking parameter file format...")
-        param_errors = validate_parameter_file(param_file)
-        if param_errors:
-            errors.extend(param_errors)
-            return errors  # Can't proceed without valid params
-        print("   ✓ Parameter file format valid")
-        
-        print("\n2. Checking required catalog columns...")
-        verify_catalog_columns(params)
-        print("   ✓ All required columns present")
-        
-        print("\n3. Checking source/lens compatibility...")
-        verify_source_lens_compatibility(params)
-        print("   ✓ Valid source/lens pairs exist")
-        print("   ✓ Distance values are reasonable")
-        
-        print("\n4. Checking binary source requirements...")
-        multiple_sources = params.get("MULTIPLE_SOURCES", "0").strip()
-        if multiple_sources in ("1", "1.0"):
-            verify_binary_source_columns(params)
-            print("   ✓ Binary source columns present")
-        else:
-            print("   ⊘ Skipped (MULTIPLE_SOURCES not enabled)")
-        
-        print("\n5. Checking NFILTERS matches catalog format...")
-        verify_nfilters_matches_catalogs(params)
-        print("   ✓ NFILTERS matches magnitude columns")
-        
-        print("\n6. Checking weather file coverage...")
-        verify_weather_coverage(params)
-        print("   ✓ Weather file covers simulation duration")
-        
-        print("\n7. Checking rates file validity...")
-        verify_rates_file(params)
-        print("   ✓ Rates file parameters are valid")
-        
-        print("\n8. Checking observing sequence has observations...")
-        verify_sequence_has_observations(params)
-        print("   ✓ Sequence file contains observations")
+            print("\n1. Checking parameter file format...")
+            param_errors = validate_parameter_file(param_file)
+            if param_errors:
+                errors.extend(param_errors)
+                return errors  # Can't proceed without valid params
+            print("   ✓ Parameter file format valid")
+            
+            print("\n2. Checking input files exist...")
+            verify_input_files_exist(params)
+            print("   ✓ All input files found")
+            
+            print("\n3. Checking required catalog columns...")
+            verify_catalog_columns(params)
+            print("   ✓ All required columns present")
+            
+            print("\n4. Checking source/lens compatibility...")
+            verify_source_lens_compatibility(params)
+            print("   ✓ Valid source/lens pairs exist")
+            print("   ✓ Distance values are reasonable")
+            
+            print("\n5. Checking binary source requirements...")
+            multiple_sources = params.get("MULTIPLE_SOURCES", "0").strip()
+            if multiple_sources in ("1", "1.0"):
+                verify_binary_source_columns(params)
+                print("   ✓ Binary source columns present")
+            else:
+                print("   ⊘ Skipped (MULTIPLE_SOURCES not enabled)")
+            
+            print("\n6. Checking NFILTERS matches catalog format...")
+            verify_nfilters_matches_catalogs(params)
+            print("   ✓ NFILTERS matches magnitude columns")
+            
+            print("\n7. Checking weather file coverage...")
+            verify_weather_coverage(params)
+            print("   ✓ Weather file covers simulation duration")
+            
+            print("\n8. Checking rates file validity...")
+            verify_rates_file(params)
+            print("   ✓ Rates file parameters are valid")
+            
+            print("\n9. Checking observing sequence has observations...")
+            verify_sequence_has_observations(params)
+            print("   ✓ Sequence file contains observations")
         
     except SmokeTestError as e:
         errors.append(str(e))

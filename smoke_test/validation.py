@@ -536,6 +536,147 @@ def verify_nfilters_matches_catalogs(params: Dict[str, str]) -> None:
             break
 
 
+def verify_input_files_exist(params: Dict[str, str]) -> None:
+    """Verify all input files referenced in parameter file actually exist."""
+    missing_files = []
+    
+    # Check observatory files
+    obs_dir_str = params.get("OBSERVATORY_DIR")
+    obs_list_str = params.get("OBSERVATORY_LIST")
+    
+    if obs_dir_str and obs_list_str:
+        obs_dir = _resolve_param_path(obs_dir_str, "observatory directory")
+        obs_list = _resolve_param_path(f"{obs_dir_str}/{obs_list_str}", "observatory list")
+        
+        if not obs_list.exists():
+            missing_files.append(f"Observatory list: {obs_list}")
+        else:
+            # Check each observatory file listed
+            lines = obs_list.read_text(encoding="utf-8").splitlines()
+            for line in lines:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                
+                obs_file = obs_dir / line
+                if not obs_file.exists():
+                    missing_files.append(f"Observatory file: {obs_file}")
+                else:
+                    # Check sequence file referenced in observatory
+                    obs_content = obs_file.read_text(encoding="utf-8")
+                    for obs_line in obs_content.splitlines():
+                        obs_line = obs_line.strip()
+                        if obs_line.startswith("OBSERVATION_SEQUENCE"):
+                            parts = obs_line.split()
+                            if len(parts) >= 2:
+                                seq_file = obs_dir / parts[1]
+                                if not seq_file.exists():
+                                    missing_files.append(f"Sequence file: {seq_file} (referenced in {obs_file.name})")
+    
+    # Check source files
+    source_dir_str = params.get("SOURCE_DIR")
+    source_list_str = params.get("SOURCE_LIST")
+    
+    if source_dir_str and source_list_str:
+        source_dir = _resolve_param_path(source_dir_str, "source directory")
+        source_list = _resolve_param_path(f"{source_dir_str}/{source_list_str}", "source list")
+        
+        if not source_list.exists():
+            missing_files.append(f"Source list: {source_list}")
+        else:
+            # Check each source catalog listed
+            lines = source_list.read_text(encoding="utf-8").splitlines()
+            for line in lines:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                
+                parts = line.split()
+                if len(parts) >= 6:  # field_number l b l_width b_width catalog_filename
+                    catalog_file = source_dir / parts[5]
+                    if not catalog_file.exists():
+                        missing_files.append(f"Source catalog: {catalog_file}")
+    
+    # Check lens files
+    lens_dir_str = params.get("LENS_DIR")
+    lens_list_str = params.get("LENS_LIST")
+    
+    if lens_dir_str and lens_list_str:
+        lens_dir = _resolve_param_path(lens_dir_str, "lens directory")
+        lens_list = _resolve_param_path(f"{lens_dir_str}/{lens_list_str}", "lens list")
+        
+        if not lens_list.exists():
+            missing_files.append(f"Lens list: {lens_list}")
+        else:
+            # Check each lens catalog listed
+            lines = lens_list.read_text(encoding="utf-8").splitlines()
+            for line in lines:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                
+                parts = line.split()
+                if len(parts) >= 6:  # field_number l b l_width b_width catalog_filename
+                    catalog_file = lens_dir / parts[5]
+                    if not catalog_file.exists():
+                        missing_files.append(f"Lens catalog: {catalog_file}")
+    
+    # Check starfield files
+    starfield_dir_str = params.get("STARFIELD_DIR")
+    starfield_list_str = params.get("STARFIELD_LIST")
+    
+    if starfield_dir_str and starfield_list_str:
+        starfield_dir = _resolve_param_path(starfield_dir_str, "starfield directory")
+        starfield_list = _resolve_param_path(f"{starfield_dir_str}/{starfield_list_str}", "starfield list")
+        
+        if not starfield_list.exists():
+            missing_files.append(f"Starfield list: {starfield_list}")
+        else:
+            # Check each starfield catalog listed
+            lines = starfield_list.read_text(encoding="utf-8").splitlines()
+            for line in lines:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                
+                parts = line.split()
+                if len(parts) >= 4:  # field_number l b area_or_weight catalog_filename
+                    catalog_file = starfield_dir / parts[3]
+                    if not catalog_file.exists():
+                        missing_files.append(f"Starfield catalog: {catalog_file}")
+    
+    # Check weather files
+    weather_dir_str = params.get("WEATHER_PROFILE_DIR")
+    if weather_dir_str:
+        weather_dir = _resolve_param_path(weather_dir_str, "weather directory")
+        if not weather_dir.exists():
+            missing_files.append(f"Weather directory: {weather_dir}")
+    
+    # Check rates file
+    rates_file_str = params.get("RATES_FILE")
+    if rates_file_str:
+        rates_file = _resolve_param_path(rates_file_str, "rates file")
+        if not rates_file.exists():
+            missing_files.append(f"Rates file: {rates_file}")
+    
+    # Check planet files (if using planet executables)
+    planet_dir_str = params.get("PLANET_DIR")
+    planet_root_str = params.get("PLANET_ROOT")
+    executable = params.get("EXECUTABLE", "")
+    
+    if planet_dir_str and planet_root_str and ("croin" in executable or "planet" in executable.lower()):
+        planet_dir = _resolve_param_path(planet_dir_str, "planet directory")
+        if not planet_dir.exists():
+            missing_files.append(f"Planet directory: {planet_dir}")
+    
+    if missing_files:
+        raise SmokeTestError(
+            f"Missing input files:\n" + 
+            "\n".join(f"  - {f}" for f in missing_files) + 
+            "\n\nCheck that all file paths in your parameter file are correct."
+        )
+
+
 def verify_sequence_has_observations(params: Dict[str, str]) -> None:
     """Verify observing sequence files have at least one observation (Nstack > 0)."""
     obs_dir_str = params.get("OBSERVATORY_DIR")
@@ -619,6 +760,7 @@ __all__ = [
     "verify_binary_source_columns",
     "verify_catalog_alignment", 
     "verify_catalog_columns",
+    "verify_input_files_exist",
     "verify_nfilters_matches_catalogs",
     "verify_outputs",
     "verify_rates_file",

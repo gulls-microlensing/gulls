@@ -27,6 +27,7 @@ from .validation import (
     verify_binary_source_columns,
     verify_catalog_alignment,
     verify_catalog_columns,
+    verify_input_files_exist,
     verify_nfilters_matches_catalogs,
     verify_outputs,
     verify_rates_file,
@@ -150,6 +151,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     # Validate catalogs: columns, compatibility, and binary-specific requirements
     for case in prepared_cases:
         try:
+            verify_input_files_exist(case.params)
             verify_catalog_columns(case.params)
             verify_source_lens_compatibility(case.params)
             verify_binary_source_columns(case.params)

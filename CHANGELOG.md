@@ -33,15 +33,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed potential buffer overflows in file path construction
 - Improved input validation to prevent malformed data crashes
 
-## [1.0.0] - 2013-2019
+## [1.0.0] - 2013-2025
 
 ### Added
 - Core microlensing simulation framework
 - Support for single and binary sources/lenses
 - Realistic observing conditions and detector effects
 - Multiple observatory and filter system support
-- Astrometric and photometric signal generation
+- Photometric signal generation
+- Lens orbital motion
+- Support for low-level VBMicrolensing functions
 - Detection statistics and survey planning tools
+- Many other features, executables, and documentation evolutions.
 
 ### Original Development
 - Initial implementation by Matthew Penny and collaborators

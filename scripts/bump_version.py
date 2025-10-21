@@ -178,7 +178,6 @@ def main():
         
         # Update files
         update_gulls_cpp(new_version)
-        update_changelog(new_version, args.bump_type)
         update_conf_py(new_version)
         
         if args.bump_type == "release":

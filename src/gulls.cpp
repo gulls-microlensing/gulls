@@ -92,7 +92,7 @@ int main(int argc, char *argv[]){                   /* BEGIN MAIN */
 
 
 
-gulls v2.0.0
+gulls v2.0.1
 ");
   printf("October 2025 \n\n");
   st=time(0); st1=st;

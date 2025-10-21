@@ -68,3 +68,7 @@ __pycache__/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Documentation build artifacts
+#documentation/_build/
+#documentation/build/

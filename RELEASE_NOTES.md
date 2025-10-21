@@ -56,10 +56,10 @@ This is a major release that significantly improves the usability and maintainab
 ## Technical Improvements
 
 ### Bug Fixes
-- Fixed infinite loop in random number generation
+- Fixed infinite loop in random number generation CI stub
 - Fixed uninitialized memory issues in binary source calculations  
 - Fixed off-by-one errors in catalog parsing
-- Fixed buffer overflows in file path construction
+- Fixed buffer overflows in file path construction (required change for succesfull CI runs)
 
 ### Performance
 - Improved error handling and user feedback

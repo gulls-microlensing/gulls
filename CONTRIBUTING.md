@@ -2,7 +2,7 @@
 
 Thank you for your interest in contributing to Gulls! This document provides guidelines for contributing to the project.
 
-## 🚀 Quick Start for Existing Developers
+## Quick Start for Existing Developers
 
 **Don't worry - everything you know still works!** The new features are **optional** and **additive**:
 
@@ -107,6 +107,97 @@ Same result, but with better dependency management.
 - Help improve documentation for others
 
 **Remember: All old methods still work!** Adopt new features at your own pace.
+
+## 🔍 Adding New Validation Tests
+
+One of the best ways to contribute is by adding validation for new error conditions you encounter. This helps prevent others from hitting the same issues.
+
+### When to Add Validation
+
+Add validation when you encounter:
+- ✅ **Configuration errors** that cause crashes or hangs
+- ✅ **Data format issues** that lead to incorrect results  
+- ✅ **Missing files** that cause cryptic error messages
+- ✅ **Invalid parameter combinations** that cause undefined behavior
+- ❌ **Performance issues** (validation is for correctness, not speed)
+
+### How to Add Validation
+
+**Step 1: Add validation function to `smoke_test/validation.py`**
+
+```python
+def verify_your_new_condition(params: Dict[str, str]) -> None:
+    """Check that [your condition] is satisfied."""
+    # Load relevant data
+    some_file = _resolve_param_path(params.get("SOME_FILE"), "some file")
+    
+    if not some_file.exists():
+        raise SmokeTestError(f"Some file not found: {some_file}")
+    
+    # Check your condition
+    if condition_violated:
+        raise SmokeTestError(
+            "Clear error message explaining what's wrong "
+            "and how to fix it"
+        )
+```
+
+**Step 2: Export it in `__all__` at the bottom of `validation.py`**
+
+```python
+__all__ = [
+    # ... existing functions ...
+    "verify_your_new_condition",
+]
+```
+
+**Step 3: Call it in `smoke_test/runner.py`**
+
+Add to the validation loop around line 154:
+```python
+verify_your_new_condition(case.params)
+```
+
+**Step 4: Test your validation**
+
+```bash
+# Test with a bad file to make sure it catches the error
+python3 scripts/validate_inputs.py your_test_file.prm
+```
+
+### Example: Adding Weather File Validation
+
+```python
+def verify_weather_coverage(params: Dict[str, str]) -> None:
+    """Verify weather file covers the full simulation duration."""
+    sim_length = float(params.get("SIMULATION_LENGTH", "0"))
+    weather_dir = _resolve_param_path(params.get("WEATHER_PROFILE_DIR"), "weather directory")
+    
+    # Check weather files exist and cover simulation length
+    weather_files = list(weather_dir.glob("*.weather"))
+    if not weather_files:
+        raise SmokeTestError(f"No weather files found in {weather_dir}")
+    
+    # Parse weather file to check max time
+    max_time = 0.0
+    for weather_file in weather_files:
+        # ... parse file and check coverage ...
+    
+    if max_time < sim_length:
+        raise SmokeTestError(
+            f"Weather file only covers {max_time:.2f} days "
+            f"but SIMULATION_LENGTH is {sim_length:.2f} days.\n"
+            f"Use scripts/make_weather.py to generate longer weather profiles."
+        )
+```
+
+### Benefits of Adding Validation
+
+- **Prevents others** from hitting the same error
+- **Clear error messages** instead of cryptic crashes
+- **Documentation** of what can go wrong
+- **Automated testing** catches regressions
+- **Community contribution** that helps everyone
 
 ### Code Style
 

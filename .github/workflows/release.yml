@@ -59,7 +59,7 @@ jobs:
         git archive --format=tar.gz --prefix=gulls-${{ github.ref_name }}/ -o gulls-${{ github.ref_name }}.tar.gz HEAD
         
         # Create binary archive (if needed)
-        tar -czf gulls-${{ github.ref_name }}-binaries.tar.gz build/bin/ documentation/build/html/
+        tar -czf gulls-${{ github.ref_name }}-binaries.tar.gz bin/ documentation/build/html/
     
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1

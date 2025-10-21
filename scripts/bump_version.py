@@ -145,9 +145,36 @@ def create_release_commit(new_version):
         except subprocess.CalledProcessError:
             print("No changes to commit - working tree is clean")
         
-        # Create tag
+        # Push any unpushed commits first
+        try:
+            subprocess.run(["git", "push", "origin", "HEAD"], check=True)
+            print("Pushed local commits to remote")
+        except subprocess.CalledProcessError:
+            print("No commits to push or push failed")
+        
+        # Create tag (handle existing tags)
         tag_name = f"v{new_version}"
-        subprocess.run(["git", "tag", "-a", tag_name, "-m", f"Release {new_version}"], check=True)
+        try:
+            subprocess.run(["git", "tag", "-a", tag_name, "-m", f"Release {new_version}"], check=True)
+            print(f"Created tag {tag_name}")
+        except subprocess.CalledProcessError:
+            print(f"Tag {tag_name} already exists!")
+            response = input(f"Delete existing tag {tag_name} and create new one? (y/N): ")
+            if response.lower() in ['y', 'yes']:
+                # Delete local tag
+                subprocess.run(["git", "tag", "-d", tag_name], check=True)
+                # Delete remote tag
+                try:
+                    subprocess.run(["git", "push", "origin", "--delete", tag_name], check=True)
+                    print(f"Deleted remote tag {tag_name}")
+                except subprocess.CalledProcessError:
+                    print(f"Remote tag {tag_name} doesn't exist or couldn't be deleted")
+                # Create new tag
+                subprocess.run(["git", "tag", "-a", tag_name, "-m", f"Release {new_version}"], check=True)
+                print(f"Created new tag {tag_name}")
+            else:
+                print("Aborting release - tag already exists")
+                return
         
         # Push the tag (this triggers the release workflow)
         subprocess.run(["git", "push", "origin", tag_name], check=True)

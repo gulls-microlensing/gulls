@@ -85,7 +85,7 @@ jobs:
           ## What's Included
           
           - **Source code**: Complete Gulls source with CMake build system
-          - **Binaries**: Linux/macOS executables (GSL fallbacks - testing only)
+          - **Binaries**: Linux executables (GSL fallbacks - testing only)
           - **Documentation**: Built HTML documentation
         generate_release_notes: false
         draft: false

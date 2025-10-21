@@ -41,6 +41,23 @@ python scripts/bump_version.py patch    # 2.0.0 -> 2.0.1
 python scripts/bump_version.py release  # Commit, tag, and push automatically
 ```
 
+### For Matt's Workflow
+```bash
+# 1. Make your changes
+# 2. Bump version
+python scripts/bump_version.py patch
+
+# 3. Edit CHANGELOG.md (add your changes)
+# 4. Create release (handles everything automatically)
+python scripts/bump_version.py release
+```
+
+**That's it!** The script handles:
+- ✅ Commits changes (with smart unstaged change detection)
+- ✅ Creates and pushes tags
+- ✅ Triggers release workflow automatically
+- ✅ Handles existing tags gracefully
+
 ## Workflow Triggers
 
 ### CI Workflow (`.github/workflows/test.yml`)
@@ -53,8 +70,12 @@ python scripts/bump_version.py release  # Commit, tag, and push automatically
 - **What it does**: Builds, tests, creates GitHub release with source/binary archives
 - **How to trigger**: 
   ```bash
+  # Manual (old way)
   git tag v2.0.0
   git push origin v2.0.0
+  
+  # Automated (new way)
+  python scripts/bump_version.py release
   ```
 
 ### Documentation Workflow (`.github/workflows/docs.yml`)

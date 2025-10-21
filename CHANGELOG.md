@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.0] - 2025-10-XX
 
 ### Added
-- Comprehensive documentation system with Sphinx/Read the Docs
+- Comprehensive documentation expansion with Sphinx/Read the Docs
 - Input file format specifications and parameter reference
 - Validation system for input catalogs and configuration files
 - CI/CD pipeline with GitHub Actions

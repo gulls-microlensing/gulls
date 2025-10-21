@@ -45,13 +45,13 @@ This is a major release that significantly improves the usability and maintainab
 
 ### For Existing Users
 1. **Update your build process** - CMake is now recommended over Makefile
-2. **Validate your input files** - Run `python3 scripts/validate_inputs.py your_file.prm` before simulations
+2. **Validate your input files** - Run `python scripts/validate_inputs.py your_file.prm` before simulations
 3. **Check documentation** - New comprehensive guides available at [Read the Docs](https://gulls.readthedocs.io)
 
 ### For Developers
 1. **Use the new validation system** - Add validation for new error conditions
 2. **Follow contributing guidelines** - See `CONTRIBUTING.md` for development workflow
-3. **Update version numbers** - Use `python3 scripts/bump_version.py` for releases
+3. **Update version numbers** - Use `python scripts/bump_version.py` for releases
 
 ## Technical Improvements
 
@@ -88,7 +88,7 @@ This release represents a major community effort to improve Gulls' usability and
 ## Getting Started
 
 1. **Install Gulls** - See the [Installation Guide](https://gulls.readthedocs.io/en/latest/install_gulls.html)
-2. **Validate your inputs** - Use `python3 scripts/validate_inputs.py your_file.prm`
+2. **Validate your inputs** - Use `python scripts/validate_inputs.py your_file.prm`
 3. **Run simulations** - See the [Running Guide](https://gulls.readthedocs.io/en/latest/run_simulations.html)
 4. **Get help** - Check the [Troubleshooting Guide](https://gulls.readthedocs.io/en/latest/basic_troubleshooting.html)
 

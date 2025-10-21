@@ -12,7 +12,7 @@ Thank you for your interest in contributing to Gulls! This document provides gui
 - 🆕 **New optional features** - Validation, documentation, CI (use if you want)
 
 ### What's New (Optional)
-- **Input validation** - `python3 scripts/validate_inputs.py your_file.prm` (catches errors early)
+- **Input validation** - `python scripts/validate_inputs.py your_file.prm` (catches errors early)
 - **Better documentation** - See [Read the Docs](https://gulls.readthedocs.io) for detailed guides
 - **Automated testing** - CI runs tests automatically on pull requests
 - **Version management** - Automated version bumping and releases
@@ -29,7 +29,7 @@ Thank you for your interest in contributing to Gulls! This document provides gui
 2. Clone your fork: `git clone <your-fork-url>`
 3. Create a feature branch: `git checkout -b feature/your-feature-name`
 4. Make your changes
-5. Test your changes: `python3 smoke_test/run_smoke_test.py`
+5. Test your changes: `python smoke_test/run_smoke_test.py`
 6. Submit a pull request
 
 ## Development Workflow
@@ -61,19 +61,22 @@ cmake --build build
 **Option 2: Automated smoke tests (new, optional)**
 ```bash
 # Run all smoke tests
-python3 smoke_test/run_smoke_test.py
+python smoke_test/run_smoke_test.py
+
+# smoke_test help text (lists options and cases)
+python smoke_test/run_smoke_test.py --help
 
 # Run CI subset (faster)
-python3 smoke_test/run_smoke_test.py --ci
+python smoke_test/run_smoke_test.py --ci
 
 # Run specific test
-python3 smoke_test/run_smoke_test.py --cases std-binary
+python smoke_test/run_smoke_test.py --cases std-binary
 ```
 
 **Option 3: Input validation (new, recommended)**
 ```bash
 # Check your input files before running
-python3 scripts/validate_inputs.py your_file.prm
+python scripts/validate_inputs.py your_file.prm
 ```
 
 ## 🔄 Gradual Adoption Guide
@@ -83,7 +86,7 @@ python3 scripts/validate_inputs.py your_file.prm
 ### Phase 1: Just Try Validation (5 minutes)
 ```bash
 # Before running your simulation, just try this:
-python3 scripts/validate_inputs.py your_parameter_file.prm
+python scripts/validate_inputs.py your_parameter_file.prm
 ```
 This catches common errors early and saves debugging time.
 
@@ -162,7 +165,7 @@ verify_your_new_condition(case.params)
 
 ```bash
 # Test with a bad file to make sure it catches the error
-python3 scripts/validate_inputs.py your_test_file.prm
+python scripts/validate_inputs.py your_test_file.prm
 ```
 
 ### Example: Adding Weather File Validation
@@ -237,7 +240,7 @@ For new features, please:
 All contributions must pass the smoke tests:
 
 ```bash
-python3 smoke_test/run_smoke_test.py
+python smoke_test/run_smoke_test.py
 ```
 
 The CI system will automatically run tests on pull requests.

@@ -46,13 +46,13 @@ make
 ### Optional: Validate Your Input Catalogs
 ```bash
 # Check your input files before running (catches common errors)
-python3 scripts/validate_inputs.py parameter_file.prm
+python scripts/validate_inputs.py parameter_file.prm
 ```
 
 ### Optional: Test the Installation
 ```bash
 # Run automated tests to verify everything works
-python3 smoke_test/run_smoke_test.py --ci
+python smoke_test/run_smoke_test.py --ci
 ```
 
 ## 🆕 What's New (v2.0.0)
@@ -102,7 +102,7 @@ See [PARAMETER_REFERENCE.md](PARAMETER_REFERENCE.md) for complete parameter docu
 Before running a simulation, validate your input catalogs to catch common issues:
 
 ```bash
-python3 scripts/validate_inputs.py your_parameter_file.prm
+python scripts/validate_inputs.py your_parameter_file.prm
 ```
 
 This checks:
@@ -129,7 +129,7 @@ The `smoke_test/` directory contains working examples:
 
 1. Fork the repository
 2. Create a feature branch
-3. Run smoke tests: `python3 smoke_test/run_smoke_test.py`
+3. Run smoke tests: `python smoke_test/run_smoke_test.py`
 4. Submit a pull request
 
 ## License

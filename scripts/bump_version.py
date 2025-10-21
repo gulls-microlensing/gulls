@@ -145,8 +145,11 @@ def create_release_commit(new_version):
         tag_name = f"v{new_version}"
         subprocess.run(["git", "tag", "-a", tag_name, "-m", f"Release {new_version}"], check=True)
         
+        # Push the tag (this triggers the release workflow)
+        subprocess.run(["git", "push", "origin", tag_name], check=True)
+        
         print(f"Created release commit and tag {tag_name}")
-        print("Run 'git push --tags' to push the release")
+        print(f"Pushed tag {tag_name} - release workflow should trigger automatically")
         
     except subprocess.CalledProcessError as e:
         print(f"Git operations failed: {e}")

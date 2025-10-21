@@ -35,9 +35,10 @@ This PR adds modern development infrastructure to Gulls while maintaining full b
 # Validate inputs before running
 python scripts/validate_inputs.py your_file.prm
 
-# Bump version for releases
+# Bump version and create release
 python scripts/bump_version.py patch    # 2.0.0 -> 2.0.1
-python scripts/bump_version.py release  # Create release commit/tag
+# Edit CHANGELOG.md with your changes
+python scripts/bump_version.py release  # Commit, tag, and push automatically
 ```
 
 ## Workflow Triggers

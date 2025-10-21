@@ -202,7 +202,7 @@ NFILTERS
 ~~~~~~~~
 - **Type**: int
 - **Default**: 32
-- **Description**: Number of filters in the system.
+- **Description**: Number of filter magnitude columns in source/lens catalogs. Must match the number of magnitude columns present in your input catalogs.
 
 AMIN
 ~~~~

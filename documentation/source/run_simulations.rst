@@ -280,7 +280,7 @@ Additional Resources
 - **Synthpop**: https://synthpop.readthedocs.io/en/latest/
 - **Observatory files**: https://github.com/gulls-microlensing/Parameterfiles
 - **Planet generators**: https://github.com/gulls-microlensing/gulls-planets
-- **Original papers**: Penny et al. (2013, 2019)
+- **Original papers**: Penny et al. (`2013 <https://ui.adsabs.harvard.edu/abs/2013AAS...22143503P/abstract>`_, `2014 <https://ui.adsabs.harvard.edu/abs/2014ApJ...790..142P/abstract>`_, and `2019 <https://ui.adsabs.harvard.edu/abs/2019ApJS..241....3P/abstract>`_)
 
 .. tip::
    Before postprocessing, use ``scripts/reduce_gulls.py`` to convert raw simulation output

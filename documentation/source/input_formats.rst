@@ -229,8 +229,77 @@ Required Files
 - ``observatory.detector`` - Detector properties
 - ``observatory.centres`` - Observatory locations
 
+Observing Sequence Files (``.sequence``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sequence files define the observing cadence and time allocation for each field.
+
+**Format**:
+
+.. code-block:: text
+
+   #Key:
+   #Nstack +ve, Texp +ve  (Image being taken by this instrument)
+   #Nstack -ve, Texp +ve  (Image being taken by other instrument)
+   #Nstack -ve, Texp -ve  (Overhead: slew, readout, filter change, etc.)
+
+   #Field  Nstack  Texp    Sum     Description
+   BEGIN_REPEAT 15
+   0       -1      66.88   66.88   field 0 - F146 exposure (other observatory)
+   0       -1     -661.628 728.51  Other fields (overhead)
+   END_REPEAT
+
+   0        1      66.88   66.88   field 0 - F087 exposure (THIS observatory)
+   0       -1     -661.628 728.51  Other fields (overhead)
+
+**Column meanings**:
+
++----------+--------+--------------------------------------------------------------+
+| Column   | Type   | Description                                                  |
++==========+========+==============================================================+
+| Field    | int    | Field number being observed                                  |
++----------+--------+--------------------------------------------------------------+
+| Nstack   | int    | +: this observatory observes; -: time passing/overhead       |
++----------+--------+--------------------------------------------------------------+
+| Texp     | float  | +: exposure time (s); -: overhead time (s)                   |
++----------+--------+--------------------------------------------------------------+
+| Sum      | float  | Running total time (for reference/cadence calculation)       |
++----------+--------+--------------------------------------------------------------+
+| Descrip. | string | Comment describing this sequence step                        |
++----------+--------+--------------------------------------------------------------+
+
+**Repeat blocks**: Use ``BEGIN_REPEAT N`` / ``END_REPEAT`` to loop sequence sections N times.
+
+.. important::
+   **Simulation cadence** = sum of all sequence times (including repeats).
+   
+   Additional readout time between exposures in a stack is specified by ``READ_OHEAD``
+   in the ``.observatory`` file, not in the sequence.
+
+**Example interpretation** (from smoke.sequence):
+
+.. code-block:: text
+
+   0   1   500.0   500.0   field 0 - F184 daily exposure
+   0  -1  10000.0 10000.0  other instrument
+
+This means:
+- Field 0: 500s exposure by this observatory (Nstack=1, Texp=500)
+- Then 10,000s passes while other instruments observe (Nstack=-1, Texp=10000)
+- **Total cadence**: 10,500 seconds between field 0 observations
+
+**Complex example with repeats**:
+
+From ``Roman_F146_overguide_6hcc.sequence``:
+
+- 15 × (F146 exposure by others + overhead) = ~3h
+- 1 × (F087 exposure + overhead) = ~12 min
+- 15 × (F146 exposure by THIS observatory + overhead) = ~3h
+- 1 × (F213 exposure + overhead) = ~12 min
+- **Total cadence**: ~6.4 hours between F146 observations of field 0
+
 Example Observatory Configuration
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **observatory.observatory:**
 
@@ -241,6 +310,7 @@ Example Observatory Configuration
    PSFFWHM=0.8
    BACKGROUND=20.0
    READOUT=3.0
+   READ_OHEAD=5.0
 
 Weather Profiles
 ----------------

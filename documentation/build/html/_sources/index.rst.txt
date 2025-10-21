@@ -38,3 +38,16 @@ Table of Content
    run_simulations
    run_input
    run_output
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Reference:
+
+   parameter_reference
+   input_formats
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Contributing:
+
+   contributing

@@ -1,23 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="C++">
+<html class="writer-html5" lang="C++" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Quickstart &mdash; GULLS &#39;1.0.0&#39; documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=1500f011"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -46,7 +44,10 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">General:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#getting-started">Getting Started</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="basic_troubleshooting.html">Troubleshooting</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Installing gulls:</span></p>
@@ -59,6 +60,15 @@
 <li class="toctree-l1"><a class="reference internal" href="run_simulations.html">Running gulls</a></li>
 <li class="toctree-l1"><a class="reference internal" href="run_input.html">Input files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="run_output.html">Output files</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="parameter_reference.html">Parameter Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="input_formats.html">Input File Formats</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributing:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to GULLS</a></li>
 </ul>
 
         </div>
@@ -86,11 +96,26 @@
            <div itemprop="articleBody">
              
   <section id="quickstart">
-<h1>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this heading"></a></h1>
-<hr><ul class="simple" id="general-quickstart">
-<li><p>All information needed to install gulls simulation is described in the sections: <a class="reference internal" href="install_gulls.html"><span class="doc">Installation</span></a> Please, follow these instructions carefully before running gulls.</p></li>
-<li><p>All information needed to prepare the parameter files and running gulls simulation is described in <a class="reference internal" href="run_overview.html"><span class="doc">Running GULLS</span></a></p></li>
-</ul>
+<h1>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading"></a></h1>
+<hr><section id="getting-started">
+<span id="general-quickstart"></span><h2>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Installation</strong>: Follow the instructions in <a class="reference internal" href="install_gulls.html"><span class="doc">Installation</span></a></p></li>
+<li><p><strong>Prepare Input Files</strong>: Create your parameter file and catalogs (see <a class="reference internal" href="input_formats.html"><span class="doc">Input Formats</span></a>)</p></li>
+<li><p><strong>Validate Inputs</strong> (Recommended):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>scripts/validate_inputs.py<span class="w"> </span>your_parameter_file.prm
+</pre></div>
+</div>
+<p>This checks for common catalog issues before running simulations.</p>
+</li>
+<li><p><strong>Run Simulation</strong>: See <a class="reference internal" href="run_overview.html"><span class="doc">Running GULLS</span></a> for execution details</p></li>
+</ol>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Start with the smoke test examples in <code class="docutils literal notranslate"><span class="pre">smoke_test/parameterfiles/</span></code> to understand
+the expected input format.</p>
+</div>
+</section>
 </section>
 
 

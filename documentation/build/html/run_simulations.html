@@ -1,23 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="C++">
+<html class="writer-html5" lang="C++" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Running gulls &mdash; GULLS &#39;1.0.0&#39; documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=1500f011"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -62,8 +60,16 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="run_input.html">Input files</a></li>
-<li class="toctree-l1"><a class="reference internal" href="run_input.html#parameter-file">Parameter File</a></li>
 <li class="toctree-l1"><a class="reference internal" href="run_output.html">Output files</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="parameter_reference.html">Parameter Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="input_formats.html">Input File Formats</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributing:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to GULLS</a></li>
 </ul>
 
         </div>
@@ -91,15 +97,15 @@
            <div itemprop="articleBody">
              
   <section id="running-gulls">
-<h1>Running gulls<a class="headerlink" href="#running-gulls" title="Permalink to this heading"></a></h1>
+<h1>Running gulls<a class="headerlink" href="#running-gulls" title="Link to this heading"></a></h1>
 <p>After configuring your environment and meeting all prerequisites, follow these steps to run simulations with the GULLS Simulator.</p>
 <section id="building-the-simulator">
-<h2>Building the Simulator<a class="headerlink" href="#building-the-simulator" title="Permalink to this heading"></a></h2>
+<h2>Building the Simulator<a class="headerlink" href="#building-the-simulator" title="Link to this heading"></a></h2>
 <ol class="arabic">
 <li><p><strong>Open the Makefile</strong>:
 Navigate to the GULLS source directory and open the <code class="docutils literal notranslate"><span class="pre">Makefile</span></code>:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> /path/to/gulls/src/
-open Makefile
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>/path/to/gulls/src/
+open<span class="w"> </span>Makefile
 </pre></div>
 </div>
 </li>
@@ -109,22 +115,22 @@ Edit the Makefile to set the <code class="docutils literal notranslate"><span cl
 Based on your simulation needs, choose an executable from the list defined in the Makefile. For instance, to simulate single lens microlensing events, you would focus on <code class="docutils literal notranslate"><span class="pre">gullsSingle</span></code>.</p></li>
 <li><p><strong>Build the Executable</strong>:
 Compile the chosen executable by running:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>make gullsSingle
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>gullsSingle
 </pre></div>
 </div>
 <p>Clean up any intermediate files if necessary:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>make clean
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>clean
 </pre></div>
 </div>
 </li>
 </ol>
 </section>
 <section id="running-a-simulation">
-<h2>Running a Simulation<a class="headerlink" href="#running-a-simulation" title="Permalink to this heading"></a></h2>
+<h2>Running a Simulation<a class="headerlink" href="#running-a-simulation" title="Link to this heading"></a></h2>
 <ol class="arabic">
 <li><p><strong>Change to the Bin Directory</strong>:
 Once the build process completes, navigate to the bin directory:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> /path/to/gulls/bin
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>/path/to/gulls/bin
 </pre></div>
 </div>
 </li>
@@ -144,7 +150,7 @@ Prepare your input parameter file (e.g., <code class="docutils literal notransla
 <li><p><strong>-d</strong>: Debug mode, can be repeated for increased verbosity.</p></li>
 </ul>
 <p>Example command:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>./gullsSingle.x -i PATH/singlelens.prm -s <span class="m">0</span> -f <span class="m">83</span> -d
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>./gullsSingle.x<span class="w"> </span>-i<span class="w"> </span>PATH/singlelens.prm<span class="w"> </span>-s<span class="w"> </span><span class="m">0</span><span class="w"> </span>-f<span class="w"> </span><span class="m">83</span><span class="w"> </span>-d
 </pre></div>
 </div>
 <p>This command initiates the simulation with specified parameters and outputs data to the <code class="docutils literal notranslate"><span class="pre">OUTPUT_DIR</span></code> configured in your parameter file.</p>

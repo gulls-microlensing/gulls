@@ -23,12 +23,12 @@ jobs:
         auto-update-conda: true
         python-version: 3.9
     
-    - name: Install dependencies
-      shell: bash -l {0}
-      run: |
-        conda env create -f cmake.yml
-        conda activate gulls
-        conda list
+      - name: Install dependencies
+        shell: bash -l {0}
+        run: |
+          conda env create -f environment.yml
+          conda activate gulls
+          conda list
     
     - name: Configure CMake
       shell: bash -l {0}

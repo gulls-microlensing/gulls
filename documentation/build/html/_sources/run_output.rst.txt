@@ -37,5 +37,3 @@ Each line in the output file represents a single microlensing event. The values 
 3. The final weight (w) should be used for statistical analyses, such as creating histograms of event frequencies against certain parameters (e.g., planet mass).
 
 It's essential to consider the flags and chi-square values for a comprehensive understanding of each event's quality and the simulation's overall fidelity.
-
-This guide provides a foundational understanding of how to navigate and utilize the data in the output file for further analysis and interpretation.

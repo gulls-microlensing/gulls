@@ -33,7 +33,7 @@ def get_current_version():
         raise FileNotFoundError("src/gulls.cpp not found")
     
     content = gulls_cpp.read_text()
-    match = re.search(r'printf\("\\n\\n\\n\\ngulls v(\d+\.\d+\.\d+)\\n"\);', content)
+    match = re.search(r'gulls v(\d+\.\d+\.\d+)', content)
     if not match:
         raise ValueError("Could not find version in src/gulls.cpp")
     

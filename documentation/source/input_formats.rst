@@ -242,33 +242,128 @@ Example Observatory Configuration
    BACKGROUND=20.0
    READOUT=3.0
 
-Starfield Files
----------------
-
-Starfield files define the distribution of background stars.
-
-Format
-~~~~~~
-
-.. code-block:: text
-
-   # Field ID, RA, DEC, number of stars
-   0 270.0 -29.5 1000
-
 Weather Profiles
 ----------------
 
-Weather files define observing conditions over time.
+Weather files define observing conditions over time, specifying when observations can occur.
 
 Format
 ~~~~~~
 
+**Two columns**: ``time(days) observing_flag``
+
+- **time**: Days since simulation start
+- **observing_flag**: 1 = good weather (observe), 0 = bad weather (no observation)
+
+.. important::
+   Weather files must cover the **entire simulation duration** specified by ``SIMULATION_LENGTH``
+   in your parameter file. Gulls checks weather every 0.25 days (6 hours).
+
+**Example** (``smoke.weather``):
+
 .. code-block:: text
 
-   # Time (days), seeing (arcsec), transparency
-   0.0 1.2 0.95
-   1.0 1.0 0.98
-   2.0 1.5 0.90
+   0.00 1
+   0.25 1
+   0.50 1
+   0.75 0
+   1.00 1
+   ...
+   200.75 1
+
+**Generating weather files**:
+
+Use ``scripts/make_weather.py`` to generate weather profiles. Edit the script to set:
+
+- ``init_zero``: Days of bad weather at start (burn-in period)
+- ``length``: Days of good weather (observing campaign)
+- ``final_zero``: Days of bad weather at end
+- Sampling interval (typically 0.25 days)
+
+Rates Files
+-----------
+
+Rates files define the expected event rate and parameter ranges for generating microlensing events.
+
+Format
+~~~~~~
+
+**Header line** (comment): ``# field u0min u0max t0min t0max tEmin tEmax rate``
+
+**Data lines**: One per field
+
++----------+--------+----------------------------------------------+
+| Column   | Type   | Description                                  |
++==========+========+==============================================+
+| field    | int    | Field identifier                             |
++----------+--------+----------------------------------------------+
+| u0min    | float  | Minimum impact parameter                     |
++----------+--------+----------------------------------------------+
+| u0max    | float  | Maximum impact parameter                     |
++----------+--------+----------------------------------------------+
+| t0min    | float  | Minimum peak time (JD)                       |
++----------+--------+----------------------------------------------+
+| t0max    | float  | Maximum peak time (JD)                       |
++----------+--------+----------------------------------------------+
+| tEmin    | float  | Minimum Einstein crossing time (days)        |
++----------+--------+----------------------------------------------+
+| tEmax    | float  | Maximum Einstein crossing time (days)        |
++----------+--------+----------------------------------------------+
+| rate     | float  | Event rate (events per star per year)        |
++----------+--------+----------------------------------------------+
+
+**Example** (``smoke.rates``):
+
+.. code-block:: text
+
+   # field u0min u0max t0min t0max tEmin tEmax rate
+   0 0.001 1.0 2458849.0 2458949.0 10.0 100.0 1.0
+
+.. note::
+   The ``rate`` value is used as a weight for Monte Carlo sampling. Events are generated
+   according to this rate and the parameter ranges specified.
+
+Planet Files
+------------
+
+Planet files define orbital properties for planetary companions in binary-lens simulations.
+
+Format
+~~~~~~
+
+**Header line** (comment): ``# mass(Msun) a(au) inc(deg) phase(deg)``
+
+**Data lines**: One planet per line
+
++----------+--------+----------------------------------------------+
+| Column   | Type   | Description                                  |
++==========+========+==============================================+
+| mass     | float  | Planet mass (solar masses)                   |
++----------+--------+----------------------------------------------+
+| a        | float  | Semi-major axis (AU)                         |
++----------+--------+----------------------------------------------+
+| inc      | float  | Orbital inclination (degrees)                |
++----------+--------+----------------------------------------------+
+| phase    | float  | Orbital phase (degrees)                      |
++----------+--------+----------------------------------------------+
+
+**Example** (``smoke.planets.0.0``):
+
+.. code-block:: text
+
+   # mass(Msun) a(au) inc(deg) phase(deg)
+   1.0e-6 0.5 30.0 0.0
+
+**File naming**: ``<PLANET_ROOT>.<field>.<subrun>``
+
+- ``PLANET_ROOT``: Specified in parameter file (e.g., ``smoke.planets``)
+- ``field``: Field number
+- ``subrun``: Subrun number
+
+.. tip::
+   Generate large planet catalogs efficiently using the 
+   `gulls-planets <https://github.com/gulls-microlensing/gulls-planets>`_ repository,
+   which supports various mass functions and orbital distributions.
 
 Validation
 ----------

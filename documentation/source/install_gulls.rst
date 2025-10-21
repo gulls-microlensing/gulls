@@ -130,6 +130,10 @@ Method 2: Legacy Makefile (Alternative)
       # Or using homebrew (macOS)
       brew install gsl cfitsio
 
+   .. important::
+
+      For production builds, remember to replace the random and zroots2 stubs with Numerical Recipes files before building.
+
 2. **Set Environment Variables**:
 
    Define the base directory for gulls installation:

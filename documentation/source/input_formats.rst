@@ -106,9 +106,9 @@ Your parameter file specifies ``SOURCE_DIR`` and ``SOURCE_LIST``. The ``SOURCE_L
 +================+========+==========================================+
 | field_number   | int    | Field identifier (0, 1, 2, ...)          |
 +----------------+--------+------------------------------------------+
-| l              | float  | Galactic longitude (degrees)             |
+| l              | float  | Galactic longitude of field center (°)   |
 +----------------+--------+------------------------------------------+
-| b              | float  | Galactic latitude (degrees)              |
+| b              | float  | Galactic latitude of field center (°)    |
 +----------------+--------+------------------------------------------+
 | l_width        | float  | Field width in l direction (degrees)     |
 +----------------+--------+------------------------------------------+
@@ -195,9 +195,9 @@ Starfield List File (``.starfields``)
 +==================+========+======================================================+
 | field_number     | int    | Field identifier (0, 1, 2, ...)                      |
 +------------------+--------+------------------------------------------------------+
-| l                | float  | Galactic longitude (degrees)                         |
+| l                | float  | Galactic longitude of field center (°)               |
 +------------------+--------+------------------------------------------------------+
-| b                | float  | Galactic latitude (degrees)                          |
+| b                | float  | Galactic latitude of field center (°)                |
 +------------------+--------+------------------------------------------------------+
 | area_or_weight   | float  | Sampling weight (for brightness level stratification)|
 +------------------+--------+------------------------------------------------------+

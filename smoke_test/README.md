@@ -61,18 +61,26 @@ Use `dat_tool.py` to inspect and adjust the whitespace-delimited catalogs under 
 
 ### Setting Up Python Dependencies
 
-#### Using Conda (Recommended)
-A conda environment file is provided for easy setup:
+#### Option 1: Use the main Gulls environment (Recommended)
+If you've already set up the main Gulls environment, you can use it directly:
+```bash
+conda activate gulls  # Already includes all smoke test dependencies
+```
+
+#### Option 2: Dedicated smoke test environment
+For isolated testing or if you have conflicting dependencies:
 ```bash
 conda env create -f smoke_test/smoke.yml
 conda activate smoke
 ```
 
-#### Using pip
+#### Option 3: Using pip
 Alternatively, install packages with pip:
 ```bash
 pip install numpy pandas matplotlib
 ```
+
+**Note**: The main `environment.yml` includes all smoke test dependencies, so you don't need a separate smoke environment unless you have specific dependency conflicts.
 
 ## Running the Smoke Test
 

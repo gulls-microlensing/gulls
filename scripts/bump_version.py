@@ -121,9 +121,9 @@ def update_conf_py(new_version):
     
     content = conf_py.read_text()
     
-    # Update version and release
-    content = re.sub(r'version = [\'"][^\'"]*[\'"]', f'version = "{new_version}"', content)
-    content = re.sub(r'release = [\'"][^\'"]*[\'"]', f'release = "{new_version}"', content)
+    # Update version and release (more specific patterns)
+    content = re.sub(r'version = [\'"][0-9]+\.[0-9]+\.[0-9]+[\'"]', f'version = "{new_version}"', content)
+    content = re.sub(r'release = [\'"][0-9]+\.[0-9]+\.[0-9]+[\'"]', f'release = "{new_version}"', content)
     
     conf_py.write_text(content)
     print(f"Updated documentation/conf.py to version {new_version}")

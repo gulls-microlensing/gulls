@@ -18,21 +18,41 @@ Source Catalogs
 
 Source catalogs contain information about the stars that can be lensed.
 
-Required Columns
-~~~~~~~~~~~~~~~~
+Catalog Format
+~~~~~~~~~~~~~~
+
+Source catalogs are whitespace-delimited text files with:
+
+1. **Header line**: Column names (must match exactly as shown below)
+2. **Data lines**: One star per line
+
+.. important::
+   The **first N columns** must be **photometric magnitudes** in various filters, where N = ``NFILTERS``
+   parameter in your ``.prm`` file. These filter names should correspond to filters used in your
+   observatory sequence files.
+
+**Example filter columns** (first 32 columns for NFILTERS=32):
+
+- Roman filters: ``R062``, ``Z087``, ``Y106``, ``J129``, ``W146``, ``H158``, ``F184``, ``K213``
+- 2MASS: ``2MASS_Ks``, ``2MASS_J``, ``2MASS_H``
+- Bessell: ``Bessell_U``, ``Bessell_B``, ``Bessell_V``, ``Bessell_I``, ``Bessell_R``
+- Other systems: ``Kepler_Kp``, ``TESS``, ``DECam_*``, ``Gaia_*``, ``VISTA_*``
+
+Required Columns (after magnitude columns)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 +----------------+--------+--------------------------------+----------+
 | Column         | Type   | Description                    | Units    |
 +================+========+================================+==========+
-| RA2000.0       | float  | Right ascension (J2000)        | degrees  |
+| mul            | float  | Proper motion in l             | mas/yr   |
 +----------------+--------+--------------------------------+----------+
-| DEC2000.0      | float  | Declination (J2000)            | degrees  |
-+----------------+--------+--------------------------------+----------+
-| Dist           | float  | Distance to source             | kpc      |
+| mub            | float  | Proper motion in b             | mas/yr   |
 +----------------+--------+--------------------------------+----------+
 | Mass           | float  | Stellar mass                   | M☉       |
 +----------------+--------+--------------------------------+----------+
 | Radius         | float  | Stellar radius                 | R☉       |
++----------------+--------+--------------------------------+----------+
+| Dist           | float  | Distance to source             | kpc      |
 +----------------+--------+--------------------------------+----------+
 
 Optional Columns
@@ -41,9 +61,9 @@ Optional Columns
 +----------------+--------+--------------------------------+----------+
 | Column         | Type   | Description                    | Units    |
 +================+========+================================+==========+
-| mul            | float  | Proper motion in l             | mas/yr   |
+| RA2000.0       | float  | Right ascension (J2000)        | degrees  |
 +----------------+--------+--------------------------------+----------+
-| mub            | float  | Proper motion in b             | mas/yr   |
+| DEC2000.0      | float  | Declination (J2000)            | degrees  |
 +----------------+--------+--------------------------------+----------+
 | Vr             | float  | Radial velocity                | km/s     |
 +----------------+--------+--------------------------------+----------+
@@ -73,48 +93,126 @@ When ``MULTIPLE_SOURCES=1``, additional columns are required:
 | combined_logP  | float  | Log10 of orbital period        | days     |
 +----------------+--------+--------------------------------+----------+
 
-Example Source Catalog
-~~~~~~~~~~~~~~~~~~~~~~
+Source List File (``.sources``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Your parameter file specifies ``SOURCE_DIR`` and ``SOURCE_LIST``. The ``SOURCE_LIST`` file
+(e.g., ``my_sources.sources``) maps fields to catalog files:
+
+**Format**: ``field_number l b l_width b_width catalog_filename``
+
++----------------+--------+------------------------------------------+
+| Column         | Type   | Description                              |
++================+========+==========================================+
+| field_number   | int    | Field identifier (0, 1, 2, ...)          |
++----------------+--------+------------------------------------------+
+| l              | float  | Galactic longitude (degrees)             |
++----------------+--------+------------------------------------------+
+| b              | float  | Galactic latitude (degrees)              |
++----------------+--------+------------------------------------------+
+| l_width        | float  | Field width in l direction (degrees)     |
++----------------+--------+------------------------------------------+
+| b_width        | float  | Field height in b direction (degrees)    |
++----------------+--------+------------------------------------------+
+| catalog_file   | string | Name of catalog file (in SOURCE_DIR)     |
++----------------+--------+------------------------------------------+
+
+**Example** (``smoke.sources``):
 
 .. code-block:: text
 
-   RA2000.0 DEC2000.0 Dist Mass Radius mul mub Vr [Fe/H] Teff logg Is_Binary ID primary_ID combined_logP
-   270.1234 -29.5678 8.5 1.0 1.0 0.0 0.0 0.0 0.0 5778 4.44 0 1 0 0.0
-   270.1235 -29.5679 8.5 0.8 0.8 0.0 0.0 0.0 0.0 5000 4.5 1 2 0 1.5
-   270.1236 -29.5680 8.5 0.6 0.6 0.0 0.0 0.0 0.0 4500 4.6 2 3 2 1.5
+   0 0.0 0.0 0.01 0.01 smoke_source_catalog.dat
+
+This defines field 0 at Galactic coordinates (l, b) = (0.0°, 0.0°) with a 0.01° × 0.01° size,
+using the catalog ``SOURCE_DIR/smoke_source_catalog.dat``.
 
 Lens Catalogs
 -------------
 
-Lens catalogs contain information about potential lensing objects.
+Lens catalogs have the same format as source catalogs: magnitude columns first, then required physical properties.
 
-Required Columns
-~~~~~~~~~~~~~~~~
+Required Columns (after magnitude columns)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 +----------------+--------+--------------------------------+----------+
 | Column         | Type   | Description                    | Units    |
 +================+========+================================+==========+
-| RA2000.0       | float  | Right ascension (J2000)        | degrees  |
-+----------------+--------+--------------------------------+----------+
-| DEC2000.0      | float  | Declination (J2000)            | degrees  |
-+----------------+--------+--------------------------------+----------+
-| Dist           | float  | Distance to lens               | kpc      |
-+----------------+--------+--------------------------------+----------+
-| Mass           | float  | Lens mass                      | M☉       |
-+----------------+--------+--------------------------------+----------+
 | mul            | float  | Proper motion in l             | mas/yr   |
 +----------------+--------+--------------------------------+----------+
 | mub            | float  | Proper motion in b             | mas/yr   |
 +----------------+--------+--------------------------------+----------+
+| Mass           | float  | Lens mass                      | M☉       |
++----------------+--------+--------------------------------+----------+
+| Dist           | float  | Distance to lens               | kpc      |
++----------------+--------+--------------------------------+----------+
 
-Example Lens Catalog
-~~~~~~~~~~~~~~~~~~~~
+.. note::
+   Lens catalogs typically have no magnitude limit, as mass (not brightness) is the
+   primary factor for lensing. The number of lenses needed depends on field pointing
+   and solid angle (e.g., ~10⁴ for a crowded Galactic bulge field).
+
+Lens List File (``.lenses``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Same format as source list files:
+
+**Format**: ``field_number l b l_width b_width catalog_filename``
+
+**Example** (``smoke.lenses``):
 
 .. code-block:: text
 
-   RA2000.0 DEC2000.0 Dist Mass mul mub
-   270.1200 -29.5600 4.0 0.3 2.0 1.0
-   270.1300 -29.5700 6.0 0.5 1.5 0.8
+   0 0.0 0.0 0.01 0.01 smoke_lens_catalog.dat
+
+Starfield Catalogs
+------------------
+
+Starfield catalogs contain background stars (non-lensing, non-source stars) for realistic image generation.
+
+Catalog Format
+~~~~~~~~~~~~~~
+
+Starfield catalogs have the same format as source/lens catalogs: magnitude columns first, then physical properties.
+The catalog size and area/weight parameters (in the ``.starfields`` list file) should be tuned iteratively
+to achieve the desired number of stars sampled per image for your field and detector configuration.
+
+**Magnitude categories** (for efficient sampling):
+
+- Bright: H ≤ 15 mag
+- Moderate 1: 15 < H ≤ 20 mag  
+- Moderate 2: 20 < H ≤ 25 mag
+- Faint: H > 25 mag
+
+Starfield List File (``.starfields``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Different format** from source/lens lists - includes an area/weight column for sampling:
+
+**Format**: ``field_number l b area_or_weight catalog_filename``
+
++------------------+--------+------------------------------------------------------+
+| Column           | Type   | Description                                          |
++==================+========+======================================================+
+| field_number     | int    | Field identifier (0, 1, 2, ...)                      |
++------------------+--------+------------------------------------------------------+
+| l                | float  | Galactic longitude (degrees)                         |
++------------------+--------+------------------------------------------------------+
+| b                | float  | Galactic latitude (degrees)                          |
++------------------+--------+------------------------------------------------------+
+| area_or_weight   | float  | Sampling weight (for brightness level stratification)|
++------------------+--------+------------------------------------------------------+
+| catalog_file     | string | Name of starfield catalog file (in STARFIELD_DIR)    |
++------------------+--------+------------------------------------------------------+
+
+**Example** (``smoke.starfields``):
+
+.. code-block:: text
+
+   0 0 1.0 smoke_field0_level0.starfield
+
+.. note::
+   The area/weight column enables proper sampling for very bright stars, which are rare
+   but important for realistic images. Different magnitude levels may have different weights.
 
 Observatory Configuration
 -------------------------

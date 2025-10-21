@@ -70,5 +70,5 @@ __pycache__/
 Thumbs.db
 
 # Documentation build artifacts
-#documentation/_build/
-#documentation/build/
+documentation/_build/
+documentation/build/

@@ -23,7 +23,16 @@ from .execution import run_command
 from .metrics import gather_case_metrics
 from .plotting import plot_lightcurves
 from .prep import PreparedCase, prepare_cases
-from .validation import verify_binary_source_columns, verify_catalog_alignment, verify_catalog_columns, verify_outputs, verify_source_lens_compatibility
+from .validation import (
+    verify_binary_source_columns,
+    verify_catalog_alignment,
+    verify_catalog_columns,
+    verify_nfilters_matches_catalogs,
+    verify_outputs,
+    verify_rates_file,
+    verify_source_lens_compatibility,
+    verify_weather_coverage,
+)
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -143,8 +152,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             verify_catalog_columns(case.params)
             verify_source_lens_compatibility(case.params)
             verify_binary_source_columns(case.params)
+            verify_nfilters_matches_catalogs(case.params)
+            verify_weather_coverage(case.params)
+            verify_rates_file(case.params)
         except SmokeTestError as err:
-            print(f"Catalog validation failed for {case.label}:")
+            print(f"Validation failed for {case.label}:")
             print(f" - {err}")
             return 1
 

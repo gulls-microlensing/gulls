@@ -38,7 +38,10 @@ try:
     from smoke_test.validation import (
         verify_binary_source_columns,
         verify_catalog_columns,
+        verify_nfilters_matches_catalogs,
+        verify_rates_file,
         verify_source_lens_compatibility,
+        verify_weather_coverage,
     )
     from smoke_test.errors import SmokeTestError
     USE_SMOKE_TEST_VALIDATION = True
@@ -227,6 +230,18 @@ def validate_with_smoke_test(param_file: Path) -> List[str]:
             print("   ✓ Binary source columns present")
         else:
             print("   ⊘ Skipped (MULTIPLE_SOURCES not enabled)")
+        
+        print("\n5. Checking NFILTERS matches catalog format...")
+        verify_nfilters_matches_catalogs(params)
+        print("   ✓ NFILTERS matches magnitude columns")
+        
+        print("\n6. Checking weather file coverage...")
+        verify_weather_coverage(params)
+        print("   ✓ Weather file covers simulation duration")
+        
+        print("\n7. Checking rates file validity...")
+        verify_rates_file(params)
+        print("   ✓ Rates file parameters are valid")
         
     except SmokeTestError as e:
         errors.append(str(e))

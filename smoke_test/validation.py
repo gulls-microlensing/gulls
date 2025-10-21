@@ -339,4 +339,210 @@ def verify_binary_source_columns(params: Dict[str, str]) -> None:
             )
 
 
-__all__ = ["verify_binary_source_columns", "verify_catalog_alignment", "verify_catalog_columns", "verify_outputs", "verify_source_lens_compatibility"]
+def verify_weather_coverage(params: Dict[str, str]) -> None:
+    """Verify weather file covers the full simulation duration."""
+    sim_length_str = params.get("SIMULATION_LENGTH")
+    weather_dir = params.get("WEATHER_PROFILE_DIR")
+    
+    if not sim_length_str or not weather_dir:
+        # If not specified, we can't validate
+        return
+    
+    try:
+        sim_length = float(sim_length_str)
+    except ValueError:
+        raise SmokeTestError(f"SIMULATION_LENGTH must be a number, got: {sim_length_str}")
+    
+    # Weather files are referenced in observatory files, but we can check the base directory
+    weather_dir_path = _resolve_param_path(weather_dir, "weather directory")
+    
+    # Look for .weather files in the directory
+    weather_files = list(weather_dir_path.glob("*.weather"))
+    
+    if not weather_files:
+        # No weather files found, might be okay if observatories don't use them
+        return
+    
+    # Check the first weather file we find
+    for weather_file in weather_files:
+        lines = weather_file.read_text(encoding="utf-8").splitlines()
+        
+        if not lines:
+            raise SmokeTestError(f"Weather file {weather_file.name} is empty")
+        
+        # Parse weather data (format: time observing_flag)
+        max_time = 0.0
+        for line in lines:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            
+            parts = line.split()
+            if len(parts) >= 2:
+                try:
+                    time = float(parts[0])
+                    max_time = max(max_time, time)
+                except ValueError:
+                    continue
+        
+        if max_time < sim_length:
+            raise SmokeTestError(
+                f"Weather file {weather_file.name} only covers {max_time:.2f} days "
+                f"but SIMULATION_LENGTH is {sim_length:.2f} days.\n"
+                f"  Weather files must cover the entire simulation duration.\n"
+                f"  Use scripts/make_weather.py to generate appropriate weather profiles."
+            )
+        
+        # Only check the first file
+        break
+
+
+def verify_rates_file(params: Dict[str, str]) -> None:
+    """Verify rates file has valid parameter ranges."""
+    rates_file_str = params.get("RATES_FILE")
+    
+    if not rates_file_str:
+        # Rates file is optional for some simulation types
+        return
+    
+    rates_file = _resolve_param_path(rates_file_str, "rates file")
+    
+    if not rates_file.exists():
+        raise SmokeTestError(f"Rates file not found: {rates_file}")
+    
+    lines = rates_file.read_text(encoding="utf-8").splitlines()
+    
+    if not lines:
+        raise SmokeTestError(f"Rates file {rates_file.name} is empty")
+    
+    # Parse rates data (format: field u0min u0max t0min t0max tEmin tEmax rate)
+    for line_num, line in enumerate(lines, 1):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        
+        parts = line.split()
+        if len(parts) < 8:
+            raise SmokeTestError(
+                f"Rates file {rates_file.name} line {line_num}: expected 8 columns "
+                f"(field u0min u0max t0min t0max tEmin tEmax rate), got {len(parts)}"
+            )
+        
+        try:
+            field, u0min, u0max, t0min, t0max, tEmin, tEmax, rate = [float(x) for x in parts[:8]]
+        except ValueError as e:
+            raise SmokeTestError(
+                f"Rates file {rates_file.name} line {line_num}: invalid numeric value: {e}"
+            )
+        
+        # Validate ranges
+        if u0min >= u0max:
+            raise SmokeTestError(
+                f"Rates file {rates_file.name} line {line_num}: u0min ({u0min}) >= u0max ({u0max})"
+            )
+        
+        if t0min >= t0max:
+            raise SmokeTestError(
+                f"Rates file {rates_file.name} line {line_num}: t0min ({t0min}) >= t0max ({t0max})"
+            )
+        
+        if tEmin >= tEmax:
+            raise SmokeTestError(
+                f"Rates file {rates_file.name} line {line_num}: tEmin ({tEmin}) >= tEmax ({tEmax})"
+            )
+        
+        if rate < 0:
+            raise SmokeTestError(
+                f"Rates file {rates_file.name} line {line_num}: rate ({rate}) is negative"
+            )
+        
+        if u0min < 0:
+            raise SmokeTestError(
+                f"Rates file {rates_file.name} line {line_num}: u0min ({u0min}) is negative"
+            )
+        
+        if tEmin <= 0:
+            raise SmokeTestError(
+                f"Rates file {rates_file.name} line {line_num}: tEmin ({tEmin}) must be positive"
+            )
+
+
+def verify_nfilters_matches_catalogs(params: Dict[str, str]) -> None:
+    """Verify NFILTERS parameter matches the number of magnitude columns in catalogs."""
+    nfilters_str = params.get("NFILTERS")
+    
+    if not nfilters_str:
+        # NFILTERS not specified, can't validate
+        return
+    
+    try:
+        nfilters = int(nfilters_str)
+    except ValueError:
+        raise SmokeTestError(f"NFILTERS must be an integer, got: {nfilters_str}")
+    
+    # Check source catalogs
+    directory_value = params.get("SOURCE_DIR")
+    list_value = params.get("SOURCE_LIST")
+    
+    if directory_value and list_value:
+        directory = _resolve_param_path(directory_value, "source directory")
+        catalog_paths = _load_catalog_paths(directory, list_value, "source")
+        
+        for catalog_path in catalog_paths[:1]:  # Just check the first one
+            lines = catalog_path.read_text(encoding="utf-8").splitlines()
+            
+            if not lines:
+                continue
+            
+            # Find header line
+            header_line = None
+            for line in lines:
+                stripped = line.strip()
+                if stripped and not stripped.startswith("#"):
+                    header_line = stripped
+                    break
+            
+            if not header_line:
+                continue
+            
+            header_cols = header_line.split()
+            total_cols = len(header_cols)
+            
+            # The first NFILTERS columns should be magnitude columns
+            # Common non-magnitude columns that should come after magnitudes
+            physical_cols = {"mul", "mub", "Mass", "Radius", "Dist", "Vr", "U", "V", "W", 
+                           "RA2000.0", "DEC2000.0", "Teff", "logg", "[Fe/H]", "l", "b",
+                           "x", "y", "z", "pop", "age", "CL", "Av", "[alpha/Fe]", "Mbol",
+                           "iMass", "In_Final_Phase", "Fe/H_initial", "Fe/H_evolved",
+                           "Is_Binary", "ID", "primary_ID", "combined_logP", "combined_logL",
+                           "total_mass", "q", "logL", "logTeff", "log_radius", "vr_bc", "VR_LSR"}
+            
+            # Count columns before we hit physical property columns
+            magnitude_cols = 0
+            for col in header_cols:
+                if col in physical_cols:
+                    break
+                magnitude_cols += 1
+            
+            if magnitude_cols != nfilters:
+                raise SmokeTestError(
+                    f"NFILTERS={nfilters} but source catalog {catalog_path.name} has "
+                    f"{magnitude_cols} magnitude columns before physical properties.\n"
+                    f"  The first {nfilters} columns must be photometric magnitudes.\n"
+                    f"  Check that NFILTERS matches your catalog format."
+                )
+            
+            # Only check the first catalog
+            break
+
+
+__all__ = [
+    "verify_binary_source_columns",
+    "verify_catalog_alignment", 
+    "verify_catalog_columns",
+    "verify_nfilters_matches_catalogs",
+    "verify_outputs",
+    "verify_rates_file",
+    "verify_source_lens_compatibility",
+    "verify_weather_coverage",
+]

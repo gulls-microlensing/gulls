@@ -91,6 +91,26 @@ Method 2: Legacy Makefile (Alternative)
    This build method is OS and environment dependent and may require manual configuration.
    Use the CMake method above unless you have specific reasons to use the legacy build system.
 
+**Numerical Recipes License Requirement**
+
+Gulls includes GSL-based fallback implementations in ``src/classes/random.cpp`` and 
+``src/classes/zroots2.cpp`` for CI and testing purposes. **These are not suitable for 
+production science runs.**
+
+For production use, you must replace these files with the licensed Numerical Recipes 
+implementations if you have access to them:
+
+- ``src/classes/random.cpp`` - Replace with Numerical Recipes: ``ran1``, ``ran2``, ``gasdev``, ``gammln``, ``gammp``, ``gammq``, ``randint``, ``poisson``
+- ``src/classes/zroots2.cpp`` - Replace with Numerical Recipes: ``zroots``
+- Corresponding header files in ``src/headers/``
+
+The validation tool (``scripts/validate_inputs.py``) will warn you if GSL fallbacks are detected.
+
+.. note::
+   The CMake build with conda automatically handles dependencies. The Numerical Recipes 
+   files are only needed if you're using the legacy Makefile build or require production-grade
+   random number generation and root finding.
+
 1. **Install Dependencies**:
 
    Install libraries manually (commands vary by OS):

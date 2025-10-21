@@ -4,34 +4,69 @@ Gulls is a comprehensive simulation framework for modeling gravitational microle
 
 ## Quick Start
 
-### Prerequisites
-- **CMake** 3.10 or later
-- **C++17** compatible compiler (GCC, Clang, or MSVC)
-- **Fortran** compiler (gfortran recommended)
-- **Python 3.7+** (for smoke tests and validation)
+### For Existing Users
+**Everything you know still works!** Your existing workflow, parameter files, and scripts are unchanged.
 
-### Build
+### For New Users
+Choose your preferred build method:
+
+**Option 1: CMake (recommended)**
 ```bash
 git clone <repository-url>
-cd gulls_push
+cd gulls
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
 
-### Validate Your Input Catalogs (Recommended)
+**Option 2: Traditional Makefile**
 ```bash
-python3 scripts/validate_inputs.py parameter_file.prm
+git clone <repository-url>
+cd gulls
+make clean
+make
 ```
+
+**Both methods produce identical executables!**
+
+### Prerequisites
+- **C++17** compatible compiler (GCC, Clang, or MSVC)
+- **Fortran** compiler (gfortran recommended)
+- **CMake** 3.10+ (for CMake build) or **Make** (for traditional build)
+- **Python 3.7+** (for validation and testing - optional)
 
 ### Run a Simulation
 ```bash
-./build/bin/gulls_std.x parameter_file.prm
+# Your existing workflow (unchanged)
+./bin/gulls_std.x -i parameter_file.prm -s 0 -f 0
+
+# Or with CMake build
+./build/bin/gulls_std.x -i parameter_file.prm -s 0 -f 0
 ```
 
-### Test the Installation
+### Optional: Validate Your Input Catalogs
 ```bash
+# Check your input files before running (catches common errors)
+python3 scripts/validate_inputs.py parameter_file.prm
+```
+
+### Optional: Test the Installation
+```bash
+# Run automated tests to verify everything works
 python3 smoke_test/run_smoke_test.py --ci
 ```
+
+## 🆕 What's New (v2.0.0)
+
+**For existing users:** All your workflows, parameter files, and scripts work exactly the same!
+
+**New optional features:**
+- **Input validation** - Catch configuration errors before running simulations
+- **Comprehensive documentation** - Detailed guides at [Read the Docs](https://gulls.readthedocs.io)
+- **Automated testing** - CI runs tests automatically
+- **Better error messages** - Clear feedback when things go wrong
+- **Version management** - Proper semantic versioning and releases
+
+**See [CONTRIBUTING.md](CONTRIBUTING.md) for a gradual adoption guide.**
 
 ## What Gulls Does
 

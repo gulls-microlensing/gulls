@@ -438,11 +438,163 @@ Format
 Validation
 ----------
 
-Use the validation scripts to check your input files:
+GULLS provides comprehensive validation tools to check your input files before running simulations. This catches common configuration errors and data format issues early, saving time and preventing failed runs.
+
+Basic Usage
+~~~~~~~~~~~
+
+**Recommended approach** - validate using your parameter file:
 
 .. code-block:: bash
 
-   python3 scripts/validate_inputs.py --sources sources.dat --lenses lenses.dat
+   python3 scripts/validate_inputs.py your_parameter_file.prm
+
+This performs comprehensive validation of all files referenced in your parameter file.
+
+**Legacy approach** - validate individual files:
+
+.. code-block:: bash
+
+   python3 scripts/validate_inputs.py --sources sources.dat --lenses lenses.dat --params config.prm
+
+**Batch validation** - check all parameter files in a directory:
+
+.. code-block:: bash
+
+   python3 scripts/validate_inputs.py --all
+
+Validation Checks
+~~~~~~~~~~~~~~~~~
+
+The validation tool performs these checks in order:
+
+1. **File Existence** - All referenced files actually exist
+   - Observatory list and files
+   - Source/lens/starfield catalogs and lists  
+   - Weather files and directories
+   - Rates files (if specified)
+   - Planet files (if using planet executables)
+   - Sequence files referenced in observatory files
+
+2. **Parameter File Format** - Valid syntax and required parameters
+
+3. **Catalog Columns** - Required column headers present
+   - Standard columns: ``mul``, ``mub``, ``Mass``, ``Radius``, ``Dist``
+   - Binary columns (when ``MULTIPLE_SOURCES=1``): ``Is_Binary``, ``ID``, ``primary_ID``, etc.
+
+4. **Source/Lens Compatibility** - Valid distance relationships
+   - Sources must be farther than lenses (``source.Dist > lens.Dist``)
+   - Reasonable distance ranges (positive, < 50 kpc, not NaN/Inf)
+   - At least some valid source/lens pairs exist
+
+5. **NFILTERS Matching** - Parameter matches catalog format
+   - ``NFILTERS`` equals number of magnitude columns in catalogs
+   - Magnitude columns come before physical property columns
+
+6. **Weather Coverage** - Weather files cover simulation duration
+   - Weather file time range ≥ ``SIMULATION_LENGTH``
+   - Suggests using ``scripts/make_weather.py`` if coverage insufficient
+
+7. **Rates File Validity** - Parameter ranges are reasonable
+   - ``u0min < u0max``, ``t0min < t0max``, ``tEmin < tEmax``
+   - Non-negative rates and impact parameters
+   - Positive Einstein times
+
+8. **Sequence Observations** - At least one observation scheduled
+   - At least one line with ``Nstack > 0`` in sequence files
+   - Prevents "observatory never takes images" configuration errors
+
+Example Output
+~~~~~~~~~~~~~~
+
+**Successful validation:**
+
+.. code-block:: text
+
+   Validating catalogs specified in: my_simulation.prm
+   ======================================================================
+   
+   1. Checking parameter file format...
+      ✓ Parameter file format valid
+   
+   2. Checking input files exist...
+      ✓ All input files found
+   
+   3. Checking required catalog columns...
+      ✓ All required columns present
+   
+   4. Checking source/lens compatibility...
+      ✓ Valid source/lens pairs exist
+      ✓ Distance values are reasonable
+   
+   5. Checking binary source requirements...
+      ⊘ Skipped (MULTIPLE_SOURCES not enabled)
+   
+   6. Checking NFILTERS matches catalog format...
+      ✓ NFILTERS matches magnitude columns
+   
+   7. Checking weather file coverage...
+      ✓ Weather file covers simulation duration
+   
+   8. Checking rates file validity...
+      ✓ Rates file parameters are valid
+   
+   9. Checking observing sequence has observations...
+      ✓ Sequence file contains observations
+   
+   ======================================================================
+   ✓ All validations passed!
+   
+   Your input files appear to be correctly formatted.
+
+**Failed validation:**
+
+.. code-block:: text
+
+   ======================================================================
+   ✗ Validation failed:
+     Missing input files:
+     - Source catalog: /path/to/nonexistent.dat
+     - Observatory file: /path/to/missing.observatory
+   
+   Check that all file paths in your parameter file are correct.
+   ======================================================================
+
+**Warning about GSL fallbacks:**
+
+.. code-block:: text
+
+   ======================================================================
+   ⚠ Warning: Using GSL fallback implementations for random number generation.
+     The actual Numerical Recipes implementations are preferred for production runs.
+     GSL fallbacks are provided for CI/testing purposes only.
+   ======================================================================
+
+Integration with CI
+~~~~~~~~~~~~~~~~~~~
+
+The same validation functions are used in:
+
+- **Smoke tests** - Validates all test cases before running
+- **CI pipeline** - Catches issues in pull requests
+- **User validation** - ``scripts/validate_inputs.py`` for manual checking
+
+This ensures consistent validation across development, testing, and production use.
+
+Troubleshooting Validation Errors
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**"Missing input files"** - Check file paths in parameter file are correct
+
+**"No valid source/lens pairs"** - Verify source distances > lens distances
+
+**"NFILTERS mismatch"** - Count magnitude columns in your catalogs
+
+**"Weather file coverage insufficient"** - Use ``scripts/make_weather.py`` to generate longer weather profiles
+
+**"Sequence file has no observations"** - Add at least one line with ``Nstack > 0``
+
+**"Binary source columns missing"** - Add required columns when ``MULTIPLE_SOURCES=1``
 
 Examples
 --------

@@ -276,7 +276,12 @@ Additional Resources
 --------------------
 
 - **Example configurations**: See ``smoke_test/`` for working examples
+- **Postprocessing & visualization**: `gulls-postprocessing <https://github.com/gulls-microlensing/gulls-postprocessing>`_ - Jupyter notebooks for analyzing simulation output
 - **Synthpop**: https://synthpop.readthedocs.io/en/latest/
 - **Observatory files**: https://github.com/gulls-microlensing/Parameterfiles
 - **Planet generators**: https://github.com/gulls-microlensing/gulls-planets
 - **Original papers**: Penny et al. (2013, 2019)
+
+.. tip::
+   Before postprocessing, use ``scripts/reduce_gulls.py`` to convert raw simulation output
+   into HDF5 format (``.det`` and ``.out`` files) for easier analysis.

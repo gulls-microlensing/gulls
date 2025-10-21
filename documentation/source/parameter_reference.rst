@@ -1,7 +1,7 @@
 Parameter Reference
 ===================
 
-This document lists all parameters available in GULLS parameter files.
+This document lists all parameters available in Gulls parameter files.
 
 Basic Configuration
 -------------------
@@ -28,7 +28,7 @@ EXECUTABLE
 ~~~~~~~~~~
 - **Type**: string
 - **Default**: 
-- **Description**: Which GULLS executable to run (gulls_std.x, gulls_croin.x, gullsFish.x).
+- **Description**: Which Gulls executable to run (gulls_std.x, gulls_croin.x, gullsFish.x).
 
 Input Directories
 -----------------

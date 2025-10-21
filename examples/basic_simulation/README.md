@@ -1,6 +1,6 @@
 # Basic Simulation Example
 
-This example demonstrates how to run a simple microlensing simulation with GULLS.
+This example demonstrates how to run a simple microlensing simulation with Gulls.
 
 ## Files
 
@@ -10,7 +10,7 @@ This example demonstrates how to run a simple microlensing simulation with GULLS
 
 ## Quick Start
 
-1. Build GULLS (see main README)
+1. Build Gulls (see main README)
 2. Run the simulation:
    ```bash
    ./run.sh

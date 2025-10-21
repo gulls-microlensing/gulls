@@ -19,7 +19,7 @@ Getting Started
 
    This checks for common catalog issues before running simulations.
 
-4. **Run Simulation**: See :doc:`Running GULLS <run_overview>` for execution details
+4. **Run Simulation**: See :doc:`Running Gulls <run_overview>` for execution details
 
 .. tip::
    Start with the smoke test examples in ``smoke_test/parameterfiles/`` to understand

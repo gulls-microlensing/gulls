@@ -1,7 +1,7 @@
 Input File Formats
 ==================
 
-This document describes the required formats for GULLS input files.
+This document describes the required formats for Gulls input files.
 
 .. tip::
    Validate your input catalogs before running simulations:
@@ -438,7 +438,7 @@ Format
 Validation
 ----------
 
-GULLS provides comprehensive validation tools to check your input files before running simulations. This catches common configuration errors and data format issues early, saving time and preventing failed runs.
+Gulls provides comprehensive validation tools to check your input files before running simulations. This catches common configuration errors and data format issues early, saving time and preventing failed runs.
 
 Basic Usage
 ~~~~~~~~~~~

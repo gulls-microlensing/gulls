@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Extract all GULLS parameters from readParamfile.cpp for documentation."""
+"""Extract all Gulls parameters from readParamfile.cpp for documentation."""
 
 import re
 import sys
@@ -28,9 +28,9 @@ def extract_parameters():
     type_pattern = r'Paramfile->(\w+)\s*=\s*(stod|stoi|stof)\([^)]+\)'
     types = dict(re.findall(type_pattern, content))
     
-    print("# GULLS Parameter Reference")
+    print("# Gulls Parameter Reference")
     print()
-    print("This document lists all parameters available in GULLS parameter files.")
+    print("This document lists all parameters available in Gulls parameter files.")
     print()
     
     # Group parameters by category

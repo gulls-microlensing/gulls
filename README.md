@@ -1,6 +1,6 @@
-# GULLS: Gravitational Microlensing Simulation Suite
+# Gulls: Gravitational Microlensing Simulation Suite
 
-GULLS (Gravitational microlensing simULationS) is a comprehensive simulation framework for modeling gravitational microlensing events with realistic observing conditions.
+Gulls is a comprehensive simulation framework for modeling gravitational microlensing events with realistic observing conditions.
 
 ## Quick Start
 
@@ -33,9 +33,9 @@ python3 scripts/validate_inputs.py parameter_file.prm
 python3 smoke_test/run_smoke_test.py --ci
 ```
 
-## What GULLS Does
+## What Gulls Does
 
-GULLS simulates gravitational microlensing events with:
+Gulls simulates gravitational microlensing events with:
 - **Single and binary sources/lenses**
 - **Realistic observing conditions** (weather, seeing, detector effects)
 - **Multiple observatories** and filter systems
@@ -52,7 +52,7 @@ GULLS simulates gravitational microlensing events with:
 
 ## Input Files
 
-GULLS requires several input files specified in your parameter file:
+Gulls requires several input files specified in your parameter file:
 
 - **Sources**: Star catalogs with positions, magnitudes, and properties
 - **Lenses**: Lens catalogs with masses, distances, and proper motions  
@@ -103,5 +103,5 @@ The `smoke_test/` directory contains working examples:
 
 ## Citation
 
-If you use GULLS in your research, please cite:
+If you use Gulls in your research, please cite:
 [Citation information]

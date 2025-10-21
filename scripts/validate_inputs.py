@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Validate GULLS input files before running simulations.
+Validate Gulls input files before running simulations.
 
 This script checks:
 - Parameter file format and required parameters
@@ -263,7 +263,7 @@ def validate_with_smoke_test(param_file: Path) -> List[str]:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Validate GULLS input files",
+        description="Validate Gulls input files",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__
     )

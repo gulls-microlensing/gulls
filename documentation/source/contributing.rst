@@ -1,7 +1,7 @@
-Contributing to GULLS
+Contributing to Gulls
 =====================
 
-Thank you for your interest in contributing to GULLS! This document provides guidelines for contributing to the project.
+Thank you for your interest in contributing to Gulls! This document provides guidelines for contributing to the project.
 
 Getting Started
 ---------------
@@ -16,7 +16,7 @@ Getting Started
 Development Workflow
 --------------------
 
-Building GULLS
+Building Gulls
 ~~~~~~~~~~~~~~
 
 .. code-block:: bash
@@ -54,7 +54,7 @@ Bug Reports
 
 When reporting bugs, please include:
 
-- GULLS version/commit
+- Gulls version/commit
 - Operating system
 - Steps to reproduce
 - Expected vs actual behavior

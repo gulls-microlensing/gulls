@@ -3,11 +3,11 @@
 
 set -e  # Exit on any error
 
-echo "Running basic GULLS simulation example..."
+echo "Running basic Gulls simulation example..."
 
-# Check if GULLS is built
+# Check if Gulls is built
 if [ ! -f "../../build/bin/gulls_std.x" ]; then
-    echo "Error: GULLS not built. Run 'cmake --build build' from the main directory."
+    echo "Error: Gulls not built. Run 'cmake --build build' from the main directory."
     exit 1
 fi
 

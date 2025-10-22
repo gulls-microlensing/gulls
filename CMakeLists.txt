@@ -163,21 +163,6 @@ target_link_libraries(txt2fits
     gulls_core
 )
 
-# Custom PSF text to binary converter with configurable pixel scale
-add_executable(txt2fits_custom
-  "${SRC_DIR}/images/txt2fits_custom.cpp"
-)
-target_include_directories(txt2fits_custom
-  PRIVATE
-    "${SRC_DIR}"
-    "${HEADERS_DIR}"
-    "${CLASSES_DIR}"
-)
-target_link_libraries(txt2fits_custom
-  PRIVATE
-    gulls_core
-)
-
 # PSF precomputation utility (generates full PSF with subpixel sampling)
 add_executable(precompute_psf
   "${SRC_DIR}/images/precompute_psf.cpp"

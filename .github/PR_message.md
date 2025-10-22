@@ -1,7 +1,9 @@
 # Add CI/CD, Documentation, and Testing Infrastructure
 
 ## Summary
-This PR adds modern development infrastructure to Gulls while maintaining full backward compatibility. All existing workflows, parameter files, and scripts continue to work unchanged.
+This PR adds modern development infrastructure to Gulls while maintaining full backward compatibility. All existing workflows, parameter files, and scripts continue to work unchanged. It looks like a scary number of changes but it is mostly just removal of documentation build artifacts. Change to the source code are **very** minimal. Changes to the documentation are more extensive. Basic testing suite is new. These changes should lower the barrier to entry for new Gulls users and create more traceable versioning.
+
+> *Yes, I did do this to avoid my real problems.*
 
 ## What's New
 
@@ -18,12 +20,13 @@ This PR adds modern development infrastructure to Gulls while maintaining full b
 ### 🧪 **Testing & Validation**
 - **Smoke test suite** - Automated testing of core functionality
 - **Input validation** - `python scripts/validate_inputs.py your_file.prm`
-- **Version management** - `python scripts/bump_version.py patch/minor/major`
+- **Version management** - `python scripts/bump_version.py patch/minor/major/release --revert`
 
 ### 🔄 **Version Management**
 - **Semantic versioning** - Proper v2.0.0 instead of hardcoded dates
 - **Automated bumping** - Updates version in both `gulls.cpp` and documentation
 - **Release automation** - Creates GitHub releases with archives
+- **Visual release notes** - Automatically includes smoke test plots showing the release works
 
 ## Usage Instructions
 
@@ -47,7 +50,7 @@ python scripts/bump_version.py release  # Commit, tag, and push automatically
 # 2. Bump version
 python scripts/bump_version.py patch
 
-# 3. Edit CHANGELOG.md (add your changes)
+# 3. Edit CHANGELOG.md (describe your changes)
 # 4. Create release (handles everything automatically)
 python scripts/bump_version.py release
 ```
@@ -81,7 +84,7 @@ python scripts/bump_version.py release
 ### Documentation Workflow (`.github/workflows/docs.yml`)
 - **Triggers**: Push to `main` branch
 - **What it does**: Builds Sphinx documentation
-- **Note**: May be redundant with separate `gulls-microlensing.github.io` repo
+- **Note**: May be redundant with separate `gulls-microlensing.github.io` repo. Untested.
 
 ## Open Questions for Review
 
@@ -92,14 +95,24 @@ python scripts/bump_version.py release
 
 2. **Version strategy**: The version bumping script creates Git tags. Do you want to:
    - Use it for official releases?
-   - Keep manual version management?
+   - Keep manual/no version management?
 
-## Technical Changes
+## Technical Changes (Changes to the source code)
 - **Buffer size fixes** - Required for CI environment (long paths)
 - **Version updates** - v2.0.0 with proper date (October 2025)
 - **Stub implementations** - GSL fallbacks for CI (Numerical Recipes preferred for production)
+- **Release warnings** - Clear notices about GSL fallbacks in binary releases
 
 ## Files Changed
 - Added: CI workflows, documentation, validation scripts, version management
 - Removed: Build artifacts (hundreds of files - makes diff look larger than it is)
 - Modified: Buffer sizes, version numbers, added stubs
+
+## [Example Automated Release](https://github.com/AmberLee2427/gulls_mp/releases)
+
+---
+
+| ![https://github.com/user-attachments/assets/1d336d37-b768-4d1d-bbbf-ffaf42a97128](https://github.com/user-attachments/assets/1d336d37-b768-4d1d-bbbf-ffaf42a97128) |
+| :-: |
+
+---

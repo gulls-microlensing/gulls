@@ -177,3 +177,33 @@ target_link_libraries(precompute_psf
   PRIVATE
     gulls_core
 )
+
+# PSF generation utility (converts text PSF to binary with subpixel sampling)
+add_executable(generate_psf_from_text
+  "${SRC_DIR}/images/generate_psf_from_text.cpp"
+)
+target_include_directories(generate_psf_from_text
+  PRIVATE
+    "${SRC_DIR}"
+    "${HEADERS_DIR}"
+    "${CLASSES_DIR}"
+)
+target_link_libraries(generate_psf_from_text
+  PRIVATE
+    gulls_core
+)
+
+# PSF generation utility using PSF class with Moffat function
+add_executable(generateMoffatPSF
+  "${SRC_DIR}/images/generateMoffatPSF.cpp"
+)
+target_include_directories(generateMoffatPSF
+  PRIVATE
+    "${SRC_DIR}"
+    "${HEADERS_DIR}"
+    "${CLASSES_DIR}"
+)
+target_link_libraries(generateMoffatPSF
+  PRIVATE
+    gulls_core
+)

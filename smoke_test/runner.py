@@ -134,19 +134,18 @@ def _generate_psf_files(build_bin: Path) -> None:
         print(f"Using existing PSF file: {psf_binary_file} ({psf_binary_file.stat().st_size:,} bytes)")
         return
     
-    # Use precompute_psf utility to generate PSF from detector file
-    precompute_psf = build_bin / "precompute_psf"
-    detector_file = psf_dir / "smoke.detector"
+    # Generate PSF using PSF class with Moffat function
+    generate_moffat_psf = build_bin / "generateMoffatPSF"
     
-    if not precompute_psf.exists():
-        raise SmokeTestError(f"PSF generator not found: {precompute_psf}")
-    if not detector_file.exists():
-        raise SmokeTestError(f"Detector file not found: {detector_file}")
+    if not generate_moffat_psf.exists():
+        raise SmokeTestError(f"PSF generator not found: {generate_moffat_psf}")
     
-    print("Generating PSF from detector file...")
+    # Generate binary PSF with subpixel sampling
+    print("Generating PSF with subpixel sampling using PSF class...")
     cmd = [
-        str(precompute_psf),
-        str(detector_file),
+        str(generate_moffat_psf),
+        "0.2",    # fwhm (arcsec) - matches PSFFWHM
+        "0.11",   # pixel_scale (arcsec) - matches PIXELSCALE
         str(psf_binary_file)
     ]
     

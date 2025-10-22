@@ -124,6 +124,42 @@ def _prepare_environment(keep_output: bool, prepared_cases: Sequence[PreparedCas
             root.mkdir(parents=True, exist_ok=True)
 
 
+def _generate_psf_files(build_bin: Path) -> None:
+    """Generate PSF files needed for smoke tests."""
+    psf_dir = REPO_ROOT / "smoke_test" / "assets" / "observatories"
+    psf_binary_file = psf_dir / "WFI_PSF.psf"
+    
+    # Check if we already have a valid PSF file (should be ~68MB for subpixel sampling)
+    if psf_binary_file.exists() and psf_binary_file.stat().st_size > 10_000_000:  # > 10MB
+        print(f"Using existing PSF file: {psf_binary_file} ({psf_binary_file.stat().st_size:,} bytes)")
+        return
+    
+    # Generate PSF using precompute_psf utility
+    precompute_psf = build_bin / "precompute_psf"
+    detector_file = psf_dir / "smoke.detector"
+    
+    if not precompute_psf.exists():
+        raise SmokeTestError(f"PSF precomputation utility not found: {precompute_psf}")
+    if not detector_file.exists():
+        raise SmokeTestError(f"Detector file not found: {detector_file}")
+    
+    print("Generating PSF with subpixel sampling...")
+    cmd = [
+        str(precompute_psf),
+        str(detector_file),
+        str(psf_binary_file)
+    ]
+    
+    result = subprocess.run(cmd, capture_output=True, text=True, cwd=REPO_ROOT)
+    if result.returncode != 0:
+        raise SmokeTestError(f"PSF generation failed: {result.stderr}")
+    
+    if not psf_binary_file.exists():
+        raise SmokeTestError(f"PSF file was not created: {psf_binary_file}")
+    
+    print(f"Generated PSF file: {psf_binary_file} ({psf_binary_file.stat().st_size:,} bytes)")
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
     build_bin = args.build_bin.resolve()
@@ -138,6 +174,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     espl_table = REPO_ROOT / "src" / "ESPL.tbl"
     if not espl_table.is_file():
         raise SmokeTestError(f"Missing ESPL.tbl at {espl_table}; copy it before running the smoke test.")
+
+    # Generate PSF files needed for smoke tests
+    _generate_psf_files(build_bin)
 
     prepared_cases, prep_failures = prepare_cases(build_bin, selected)
     if prep_failures:

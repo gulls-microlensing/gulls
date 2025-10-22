@@ -72,3 +72,6 @@ Thumbs.db
 # Documentation build artifacts
 documentation/_build/
 documentation/build/
+
+# PSF files (generated in workflow/smoke tests)
+smoke_test/assets/observatories/WFI_PSF.psf

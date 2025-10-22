@@ -26,7 +26,8 @@ This PR adds modern development infrastructure to Gulls while maintaining full b
 - **Semantic versioning** - Proper v2.0.0 instead of hardcoded dates
 - **Automated bumping** - Updates version in both `gulls.cpp` and documentation
 - **Release automation** - Creates GitHub releases with archives
-- **Visual release notes** - Automatically includes smoke test plots showing the release works
+- **Smart release notes** - Auto-generates `RELEASE_NOTES.md` from `CHANGELOG.md` entries
+- **Visual proof** - Automatically includes smoke test plots showing the release works
 
 ## Usage Instructions
 
@@ -47,11 +48,11 @@ python scripts/bump_version.py release  # Commit, tag, and push automatically
 ### For Matt's Workflow
 ```bash
 # 1. Make your changes
-# 2. Bump version
+# 2. Bump version (creates blank changelog entry)
 python scripts/bump_version.py patch
 
 # 3. Edit CHANGELOG.md (describe your changes)
-# 4. Create release (handles everything automatically)
+# 4. Create release (auto-generates RELEASE_NOTES.md from CHANGELOG.md)
 python scripts/bump_version.py release
 ```
 
@@ -71,6 +72,11 @@ python scripts/bump_version.py release
 ### Release Workflow (`.github/workflows/release.yml`)
 - **Triggers**: Push tags matching `v*` (e.g., `v2.0.0`, `v2.0.1`)
 - **What it does**: Builds, tests, creates GitHub release with source/binary archives
+- **Release notes**: 
+  - Auto-generates `RELEASE_NOTES.md` from `CHANGELOG.md` entries during `release` command
+  - Prompts before replacing existing `RELEASE_NOTES.md` with different version
+  - If `RELEASE_NOTES.md` exists → Uses your content + appends smoke test plots
+  - If no `RELEASE_NOTES.md` → Generates from changelog + smoke test plots
 - **How to trigger**: 
   ```bash
   # Manual (old way)

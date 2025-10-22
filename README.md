@@ -119,7 +119,7 @@ Inspect images in ds9 using zscale to check for:
 - **Comprehensive documentation** - Detailed guides at [Read the Docs](https://gulls.readthedocs.io)
 - **Automated testing** - CI runs tests automatically
 - **Better error messages** - Clear feedback when things go wrong
-- **Version management** - Proper semantic versioning and releases
+- **Version management** - Automated releases with smart release notes (uses `RELEASE_NOTES.md` if present)
 
 **See [CONTRIBUTING.md](CONTRIBUTING.md) for a gradual adoption guide.**
 

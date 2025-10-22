@@ -6,17 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [2.0.1] - 2025-10-21
+## [2.0.1] - 2025-10-22
 
 ### Added
 - Missing docs build requirements in the `environment.yml`
 - Smoke test output figures in Release Notes
+- PSF generation utilities (`generateMoffat`, `txt2fits_custom`, `precompute_psf`) to CMake build
+- On-demand PSF file generation for smoke tests (no more 68MB files in git)
+- Smart PSF caching system that reuses existing files when available
 
 ### Changed
 - Simplified release workflow: patch > edit changelog > release
+- PSF generation now uses proper subpixel sampling (9×9 = 81 variations)
+- Smoke tests generate PSF files on-demand instead of requiring pre-committed files
 
 ### Fixed
 - Failure to build docs in the release workflow on GitHub
+- PSF generation in CI environments (removed hardcoded local machine paths)
+- PSF file size issues (now generates proper 68MB files with subpixel sampling)
+- Simulation crashes due to missing or malformed PSF files
 
 ## [2.0.0] - 2025-10-20
 

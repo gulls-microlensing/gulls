@@ -3,7 +3,8 @@
 Version bumping script for Gulls.
 
 This script updates version numbers across the codebase and creates
-release commits with proper tagging.
+release commits with proper tagging. It also auto-generates RELEASE_NOTES.md
+from CHANGELOG.md entries.
 
 Usage:
     python3 scripts/bump_version.py patch    # 2.0.0 -> 2.0.1
@@ -11,6 +12,13 @@ Usage:
     python3 scripts/bump_version.py major    # 2.1.0 -> 3.0.0
     python3 scripts/bump_version.py release  # Create release commit and tag
     python3 scripts/bump_version.py patch --revert  # 2.0.1 -> 2.0.0
+
+Features:
+- Updates version in src/gulls.cpp, CHANGELOG.md, and documentation/conf.py
+- Auto-generates RELEASE_NOTES.md from CHANGELOG.md entries
+- Prompts before replacing existing RELEASE_NOTES.md with different version
+- Creates release commits and tags automatically
+- Handles unstaged changes intelligently
 """
 
 import argparse
@@ -142,6 +150,133 @@ def update_conf_py(new_version):
     conf_py.write_text(content)
     print(f"Updated documentation/conf.py to version {new_version}")
 
+def extract_changelog_entry(version):
+    """Extract the changelog entry for a specific version."""
+    changelog = Path("CHANGELOG.md")
+    if not changelog.exists():
+        return None
+    
+    content = changelog.read_text()
+    lines = content.split('\n')
+    
+    # Find the version entry
+    start_index = None
+    end_index = None
+    
+    for i, line in enumerate(lines):
+        if line.startswith(f"## [{version}]"):
+            start_index = i
+            break
+    
+    if start_index is None:
+        return None
+    
+    # Find the end of this entry (next ## [version] or end of file)
+    for i in range(start_index + 1, len(lines)):
+        if lines[i].startswith("## [") and "] -" in lines[i]:
+            end_index = i
+            break
+    
+    if end_index is None:
+        end_index = len(lines)
+    
+    # Extract the entry
+    entry_lines = lines[start_index:end_index]
+    return '\n'.join(entry_lines).strip()
+
+def generate_release_notes_from_changelog(version):
+    """Generate RELEASE_NOTES.md from CHANGELOG.md entry."""
+    changelog_entry = extract_changelog_entry(version)
+    if not changelog_entry:
+        print(f"Warning: No changelog entry found for version {version}")
+        return False
+    
+    # Convert changelog format to release notes format
+    lines = changelog_entry.split('\n')
+    release_lines = []
+    
+    # Replace the header
+    for line in lines:
+        if line.startswith(f"## [{version}]"):
+            date_match = re.search(r'\] - (\d{4}-\d{2}-\d{2})', line)
+            date = date_match.group(1) if date_match else "TBD"
+            release_lines.append(f"# Gulls v{version} Release Notes")
+            release_lines.append("")
+            release_lines.append(f"**Release Date:** {date}")
+            release_lines.append("")
+            # Determine release type based on version
+            if version.startswith(("3.", "2.0")):
+                release_lines.append("## Major Release")
+            elif version.endswith(".0"):
+                release_lines.append("## Minor Release")
+            else:
+                release_lines.append("## Patch Release")
+            release_lines.append("")
+        else:
+            release_lines.append(line)
+    
+    # Add some standard sections if they don't exist
+    content = '\n'.join(release_lines)
+    if "## What's New" not in content and "## What's Included" not in content:
+        release_lines.append("## What's New")
+        release_lines.append("")
+        release_lines.append("This release includes the following changes:")
+        release_lines.append("")
+        release_lines.append("## What's Included")
+        release_lines.append("")
+        release_lines.append("- **Source code**: Complete Gulls source with CMake build system")
+        release_lines.append("- **Binaries**: Linux executables (GSL fallbacks - testing only)")
+        release_lines.append("- **Documentation**: Built HTML documentation")
+        release_lines.append("- **Smoke test plots**: Visual proof that the release works")
+        release_lines.append("")
+        release_lines.append("## Getting Started")
+        release_lines.append("")
+        release_lines.append("1. **Install Gulls** - See the [Installation Guide](https://gulls.readthedocs.io/en/latest/install_gulls.html)")
+        release_lines.append("2. **Validate your inputs** - Use `python scripts/validate_inputs.py your_file.prm`")
+        release_lines.append("3. **Run simulations** - See the [Running Guide](https://gulls.readthedocs.io/en/latest/run_simulations.html)")
+        release_lines.append("")
+        release_lines.append("## Full Changelog")
+        release_lines.append("")
+        release_lines.append(f"See [CHANGELOG.md](CHANGELOG.md) for the complete list of changes.")
+        release_lines.append("")
+        release_lines.append("---")
+        release_lines.append("")
+        release_lines.append(f"**Previous Release:** v{'.'.join(version.split('.')[:-1])}.{int(version.split('.')[-1])-1 if int(version.split('.')[-1]) > 0 else '0'}")
+    
+    return '\n'.join(release_lines)
+
+def update_release_notes(new_version):
+    """Update or create RELEASE_NOTES.md from CHANGELOG.md."""
+    release_notes_path = Path("RELEASE_NOTES.md")
+    
+    # Check if RELEASE_NOTES.md exists and has the right version
+    if release_notes_path.exists():
+        content = release_notes_path.read_text()
+        if f"v{new_version}" in content:
+            print(f"RELEASE_NOTES.md already exists for version {new_version}")
+            return
+        
+        # Check if it has a different version
+        version_match = re.search(r'# Gulls v(\d+\.\d+\.\d+)', content)
+        if version_match:
+            existing_version = version_match.group(1)
+            print(f"RELEASE_NOTES.md exists for version {existing_version}, but we're releasing {new_version}")
+            response = input(f"Replace RELEASE_NOTES.md with new version {new_version}? (y/N): ")
+            if response.lower() not in ['y', 'yes']:
+                print("Keeping existing RELEASE_NOTES.md")
+                return
+    
+    # Generate new release notes from changelog
+    print(f"Generating RELEASE_NOTES.md for version {new_version} from CHANGELOG.md...")
+    release_content = generate_release_notes_from_changelog(new_version)
+    
+    if release_content:
+        release_notes_path.write_text(release_content)
+        print(f"Created/updated RELEASE_NOTES.md for version {new_version}")
+        print("You can edit RELEASE_NOTES.md to customize the release notes before creating the release")
+    else:
+        print("Could not generate release notes from changelog")
+
 def create_release_commit(new_version):
     """Create a release commit and tag."""
     try:
@@ -255,7 +390,9 @@ def main():
         update_gulls_cpp(new_version)
         update_conf_py(new_version)
         
+        # Only generate release notes when creating a release
         if args.bump_type == "release":
+            update_release_notes(new_version)
             create_release_commit(new_version)
         
         print(f"\nVersion bump complete: {current_version} -> {new_version}")

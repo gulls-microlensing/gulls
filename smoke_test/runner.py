@@ -134,30 +134,78 @@ def _generate_psf_files(build_bin: Path) -> None:
         print(f"Using existing PSF file: {psf_binary_file} ({psf_binary_file.stat().st_size:,} bytes)")
         return
     
-    # Generate PSF using precompute_psf utility
+    # Try precompute_psf first, fall back to two-step approach if it fails
     precompute_psf = build_bin / "precompute_psf"
     detector_file = psf_dir / "smoke.detector"
     
-    if not precompute_psf.exists():
-        raise SmokeTestError(f"PSF precomputation utility not found: {precompute_psf}")
-    if not detector_file.exists():
-        raise SmokeTestError(f"Detector file not found: {detector_file}")
+    if precompute_psf.exists() and detector_file.exists():
+        print("Trying precompute_psf utility...")
+        cmd = [
+            str(precompute_psf),
+            str(detector_file),
+            str(psf_binary_file)
+        ]
+        
+        result = subprocess.run(cmd, capture_output=True, text=True, cwd=REPO_ROOT)
+        if result.returncode == 0 and psf_binary_file.exists() and psf_binary_file.stat().st_size > 10_000_000:
+            print(f"Generated PSF file with precompute_psf: {psf_binary_file} ({psf_binary_file.stat().st_size:,} bytes)")
+            return
+        else:
+            print(f"precompute_psf failed or generated small file, trying fallback approach...")
+            if psf_binary_file.exists():
+                psf_binary_file.unlink()  # Remove the small file
     
-    print("Generating PSF with subpixel sampling...")
-    cmd = [
-        str(precompute_psf),
-        str(detector_file),
+    # Fallback: Use two-step approach (generateMoffat + txt2fits_custom)
+    print("Using two-step PSF generation (generateMoffat + txt2fits_custom)...")
+    generate_moffat = build_bin / "generateMoffat"
+    txt2fits_custom = build_bin / "txt2fits_custom"
+    
+    if not generate_moffat.exists():
+        raise SmokeTestError(f"PSF generator not found: {generate_moffat}")
+    if not txt2fits_custom.exists():
+        raise SmokeTestError(f"PSF converter not found: {txt2fits_custom}")
+    
+    psf_text_file = psf_dir / "WFI_PSF.txt"
+    
+    # Step 1: Generate text PSF using generateMoffat utility
+    print("Generating text PSF file...")
+    cmd1 = [
+        str(generate_moffat),
+        "0.11",   # sampling (arcsec) - matches PIXELSCALE
+        "145",    # nsamples (145x145 pixels) - matches KERNSIZE
+        "0.2",    # fwhm (arcsec) - matches PSFFWHM
+        "4.0",    # beta (Moffat parameter)
+        str(psf_text_file)
+    ]
+    
+    result1 = subprocess.run(cmd1, capture_output=True, text=True, cwd=REPO_ROOT)
+    if result1.returncode != 0:
+        raise SmokeTestError(f"Text PSF generation failed: {result1.stderr}")
+    
+    if not psf_text_file.exists():
+        raise SmokeTestError(f"Text PSF file was not created: {psf_text_file}")
+    
+    # Step 2: Convert text PSF to binary format using txt2fits_custom
+    print("Converting text PSF to binary format...")
+    cmd2 = [
+        str(txt2fits_custom),
+        str(psf_text_file),
+        "0.11",   # pixel_scale (arcsec) - matches PIXELSCALE
         str(psf_binary_file)
     ]
     
-    result = subprocess.run(cmd, capture_output=True, text=True, cwd=REPO_ROOT)
-    if result.returncode != 0:
-        raise SmokeTestError(f"PSF generation failed: {result.stderr}")
+    result2 = subprocess.run(cmd2, capture_output=True, text=True, cwd=REPO_ROOT)
+    if result2.returncode != 0:
+        raise SmokeTestError(f"PSF conversion failed: {result2.stderr}")
     
     if not psf_binary_file.exists():
-        raise SmokeTestError(f"PSF file was not created: {psf_binary_file}")
+        raise SmokeTestError(f"Binary PSF file was not created: {psf_binary_file}")
+    
+    # Clean up the temporary text file
+    psf_text_file.unlink()
     
     print(f"Generated PSF file: {psf_binary_file} ({psf_binary_file.stat().st_size:,} bytes)")
+    print("Warning: This PSF lacks subpixel sampling and may cause simulation issues")
 
 
 def main(argv: Sequence[str] | None = None) -> int:

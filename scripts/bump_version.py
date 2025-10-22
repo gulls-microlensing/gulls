@@ -382,7 +382,7 @@ def main():
             else:
                 print(f"New version: {new_version}")
         
-        if args.dry_run:
+        if args.dry_run and not args.bump_type == "release":
             print("Dry run - no changes made")
             return
         
@@ -393,6 +393,10 @@ def main():
         # Only generate release notes when creating a release
         if args.bump_type == "release":
             update_release_notes(new_version)
+            if args.dry_run:
+                print("Dry run - release notes were created without git operations")
+                print("You can now edit RELEASE_NOTES.md to customize the release notes")
+                return
             create_release_commit(new_version)
         
         print(f"\nVersion bump complete: {current_version} -> {new_version}")

@@ -113,29 +113,7 @@ jobs:
         else
           echo "No RELEASE_NOTES.md found, creating default release body"
           # Create the full release body
-          python - <<'PY'
-from pathlib import Path
-from textwrap import dedent
-
-body = dedent("""\
-## ⚠️ Important Notice
-
-**Binary releases include GSL fallback implementations and are NOT suitable for production science.**
-
-- **For production use**: Download source code and compile with licensed Numerical Recipes
-- **For testing/development**: Binary releases are fine for testing workflows
-- **See documentation**: Details on replacing GSL stubs with Numerical Recipes
-
-## What's Included
-
-- **Source code**: Complete Gulls source with CMake build system
-- **Binaries**: Linux executables (GSL fallbacks - testing only)
-- **Documentation**: Built HTML documentation
-- **Smoke test plots**: Visual proof that the release works (see below)
-""")
-
-Path("RELEASE_BODY.md").write_text(body, encoding="utf-8")
-PY
+          python -c "from pathlib import Path; Path('RELEASE_BODY.md').write_text('## ⚠️ Important Notice\n\n**Binary releases include GSL fallback implementations and are NOT suitable for production science.**\n\n- **For production use**: Download source code and compile with licensed Numerical Recipes\n- **For testing/development**: Binary releases are fine for testing workflows\n- **See documentation**: Details on replacing GSL stubs with Numerical Recipes\n\n## What's Included\n\n- **Source code**: Complete Gulls source with CMake build system\n- **Binaries**: Linux executables (GSL fallbacks - testing only)\n- **Documentation**: Built HTML documentation\n- **Smoke test plots**: Visual proof that the release works (see below)\n', encoding='utf-8')"
           
           # Append the plot notes to the release body
           cat PLOT_NOTES.md >> RELEASE_BODY.md

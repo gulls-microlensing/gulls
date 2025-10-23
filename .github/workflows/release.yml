@@ -105,19 +105,10 @@ jobs:
         # Use RELEASE_NOTES.md if it exists, otherwise create default release body
         if [ -f "RELEASE_NOTES.md" ]; then
           echo "Using existing RELEASE_NOTES.md file"
-          cp RELEASE_NOTES.md RELEASE_BODY.md
-          
-          # Append the plot notes to the release body
-          echo "" >> RELEASE_BODY.md
-          cat PLOT_NOTES.md >> RELEASE_BODY.md
         else
-          echo "No RELEASE_NOTES.md found, creating default release body"
-          # Create the full release body
-          python -c "from pathlib import Path; Path('RELEASE_BODY.md').write_text('## ⚠️ Important Notice\n\n**Binary releases include GSL fallback implementations and are NOT suitable for production science.**\n\n- **For production use**: Download source code and compile with licensed Numerical Recipes\n- **For testing/development**: Binary releases are fine for testing workflows\n- **See documentation**: Details on replacing GSL stubs with Numerical Recipes\n\n## What's Included\n\n- **Source code**: Complete Gulls source with CMake build system\n- **Binaries**: Linux executables (GSL fallbacks - testing only)\n- **Documentation**: Built HTML documentation\n- **Smoke test plots**: Visual proof that the release works (see below)\n', encoding='utf-8')"
-          
-          # Append the plot notes to the release body
-          cat PLOT_NOTES.md >> RELEASE_BODY.md
+          echo "No RELEASE_NOTES.md found, falling back to default release body"
         fi
+        python scripts/build_release_body.py --release-notes RELEASE_NOTES.md --plots PLOT_NOTES.md --output RELEASE_BODY.md
     
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1

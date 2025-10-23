@@ -22,9 +22,9 @@ double moffat_psf(double x, double y, void* params)
 
 int main(int argc, char* argv[])
 {
-  if(argc!=4)
+  if(argc < 4 || argc > 5)
     {
-      cerr << "Usage: ./generateMoffatPSF <fwhm> <pixel_scale> <output>" << endl;
+      cerr << "Usage: ./generateMoffatPSF <fwhm> <pixel_scale> <output> {<Nkern>}" << endl;
       cerr << "\nOutput file must have a .psf extension" << endl;
       exit(1);
     }
@@ -32,10 +32,20 @@ int main(int argc, char* argv[])
   double fwhm = atof(argv[1]);
   double pixel_scale = atof(argv[2]);
   string output = string(argv[3]);
+  int Nkern = 145; // Backwards-compatible default matches historical Roman kernel
+  if(argc == 5)
+    {
+      Nkern = atoi(argv[4]);
+      if(Nkern <= 0)
+	{
+	  cerr << "Nkern must be a positive integer (received " << Nkern << ")" << endl;
+	  exit(1);
+	}
+    }
 
   // Create PSF with correct subpixel sampling (9x9 grid)
-  // Use KERNSIZE=145 from detector file (Nkern = (KERNSIZE-1)/2 = 72)
-  PSF psf(72, 9, pixel_scale); // Nkern=72, Nsub=9, pixscale=pixel_scale
+  // Default Nkern=145 matches smoke_test detector configuration (kernelside=291 pix)
+  PSF psf(Nkern, 9, pixel_scale);
   
   // Set up PSF parameters
   double beta = 4.0; // Moffat beta parameter

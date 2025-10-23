@@ -113,8 +113,10 @@ jobs:
         else
           echo "No RELEASE_NOTES.md found, creating default release body"
           # Create the full release body
-          cat <<'EOF' > RELEASE_BODY.md
-## ⚠️ Important Notice
+          python - <<'PY'
+from pathlib import Path
+
+body = """## ⚠️ Important Notice
 
 **Binary releases include GSL fallback implementations and are NOT suitable for production science.**
 
@@ -128,7 +130,10 @@ jobs:
 - **Binaries**: Linux executables (GSL fallbacks - testing only)
 - **Documentation**: Built HTML documentation
 - **Smoke test plots**: Visual proof that the release works (see below)
-EOF
+"""
+
+Path("RELEASE_BODY.md").write_text(body, encoding="utf-8")
+PY
           
           # Append the plot notes to the release body
           cat PLOT_NOTES.md >> RELEASE_BODY.md

@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Example configurations and troubleshooting guides
 - Missing docs build requirements in the `environment.yml`
 - Smoke test output figures in Release Notes
-- PSF generation utilities (`generateMoffat`, `precompute_psf`) to CMake build
+- PSF generation utilities (`generateMoffat`, `precompute_psf`, `generateMoffatPSF`) to CMake build
 - On-demand PSF file generation for smoke tests (no more 68MB files in git)
 - Smart PSF caching system that reuses existing files when available
 

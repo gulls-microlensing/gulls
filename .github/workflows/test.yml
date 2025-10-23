@@ -46,7 +46,7 @@ jobs:
       shell: bash -l {0}
       run: |
         conda activate gulls
-        python3 smoke_test/run_smoke_test.py --ci --exec-timeout 610 --build-bin build/bin
+        python3 smoke_test/run_smoke_test.py --ci --exec-timeout 610
     
     - name: Upload test artifacts on failure
       if: failure()

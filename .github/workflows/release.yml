@@ -113,23 +113,22 @@ jobs:
         else
           echo "No RELEASE_NOTES.md found, creating default release body"
           # Create the full release body
-          cat > RELEASE_BODY.md << 'EOF'
-            ## ⚠️ Important Notice
-            
-            **Binary releases include GSL fallback implementations and are NOT suitable for production science.**
-            
-            - **For production use**: Download source code and compile with licensed Numerical Recipes
-            - **For testing/development**: Binary releases are fine for testing workflows
-            - **See documentation**: Details on replacing GSL stubs with Numerical Recipes
-            
-            ## What's Included
-            
-            - **Source code**: Complete Gulls source with CMake build system
-            - **Binaries**: Linux executables (GSL fallbacks - testing only)
-            - **Documentation**: Built HTML documentation
-            - **Smoke test plots**: Visual proof that the release works (see below)
-            
-          EOF
+          cat <<'EOF' > RELEASE_BODY.md
+## ⚠️ Important Notice
+
+**Binary releases include GSL fallback implementations and are NOT suitable for production science.**
+
+- **For production use**: Download source code and compile with licensed Numerical Recipes
+- **For testing/development**: Binary releases are fine for testing workflows
+- **See documentation**: Details on replacing GSL stubs with Numerical Recipes
+
+## What's Included
+
+- **Source code**: Complete Gulls source with CMake build system
+- **Binaries**: Linux executables (GSL fallbacks - testing only)
+- **Documentation**: Built HTML documentation
+- **Smoke test plots**: Visual proof that the release works (see below)
+EOF
           
           # Append the plot notes to the release body
           cat PLOT_NOTES.md >> RELEASE_BODY.md

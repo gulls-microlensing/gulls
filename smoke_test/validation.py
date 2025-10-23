@@ -1,12 +1,20 @@
 """Output and catalog validation helpers."""
 from __future__ import annotations
 
+import hashlib
 import math
+import struct
 from pathlib import Path
 from typing import Dict, List, Sequence, Tuple
 
 from .constants import CATALOG_ABS_TOL, CATALOG_REL_TOL, REPO_ROOT
 from .errors import SmokeTestError
+
+
+_CANONICAL_PSF_HASHES: Dict[str, str] = {
+    # Canonical Roman-like PSF used by smoke tests (Nkern=145, Nsub=9, pixscale=0.11)
+    "smoke_test/assets/observatories/WFI_PSF.psf": "ea9c8b2a2d3b0687487f8283661fd491fad492bb5e012776b8cf17324d65222b",
+}
 
 
 def verify_outputs(output_dir: Path) -> List[Path]:
@@ -29,6 +37,64 @@ def _resolve_param_path(raw: str, role: str) -> Path:
     if role.endswith("directory") and not resolved.is_dir():
         raise SmokeTestError(f"{role.capitalize()} '{resolved}' does not exist or is not a directory")
     return resolved
+
+
+def _parse_key_value_file(path: Path) -> Dict[str, str]:
+    """Parse simple key/value configuration files used for observatory and detector data."""
+    result: Dict[str, str] = {}
+    lines = path.read_text(encoding="utf-8").splitlines()
+    for raw_line in lines:
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split(None, 1)
+        key = parts[0]
+        value = parts[1].strip() if len(parts) > 1 else ""
+        result[key] = value
+    return result
+
+
+def _safe_int(value: str | None) -> int | None:
+    if value is None or value == "":
+        return None
+    try:
+        return int(float(value))
+    except ValueError:
+        return None
+
+
+def _safe_float(value: str | None) -> float | None:
+    if value is None or value == "":
+        return None
+    try:
+        return float(value)
+    except ValueError:
+        return None
+
+
+def _read_psf_header(psf_bytes: bytes) -> Tuple[int, Tuple[int, ...], Tuple[float, ...], int, int]:
+    """Read the PSF binary header and return metadata."""
+    offset = 0
+
+    def take(fmt: str):
+        nonlocal offset
+        size = struct.calcsize(fmt)
+        if offset + size > len(psf_bytes):
+            raise SmokeTestError("PSF file truncated before header could be read")
+        values = struct.unpack_from(fmt, psf_bytes, offset)
+        offset += size
+        return values
+
+    version, = take("<i")
+    nints, = take("<i")
+    ivars = take(f"<{nints}i")
+    ndoub, = take("<i")
+    dvars = take(f"<{ndoub}d")
+    nlong, = take("<i")
+    if nlong:
+        take(f"<{nlong}q")  # discard optional longs
+    header_bytes = offset
+    return version, ivars, dvars, header_bytes, len(psf_bytes)
 
 
 def _load_catalog_paths(directory: Path, list_file: str, role: str) -> List[Path]:
@@ -671,10 +737,151 @@ def verify_input_files_exist(params: Dict[str, str]) -> None:
     
     if missing_files:
         raise SmokeTestError(
-            f"Missing input files:\n" + 
-            "\n".join(f"  - {f}" for f in missing_files) + 
+            f"Missing input files:\n" +
+            "\n".join(f"  - {f}" for f in missing_files) +
             "\n\nCheck that all file paths in your parameter file are correct."
         )
+
+
+def verify_psf_files(params: Dict[str, str]) -> None:
+    """Validate that detector PSF binaries are present and match detector expectations."""
+    obs_dir_str = params.get("OBSERVATORY_DIR")
+    obs_list_str = params.get("OBSERVATORY_LIST")
+    if not obs_dir_str or not obs_list_str:
+        return
+
+    obs_dir = _resolve_param_path(obs_dir_str, "observatory directory")
+    obs_list = _resolve_param_path(f"{obs_dir_str}/{obs_list_str}", "observatory list")
+    if not obs_list.exists():
+        raise SmokeTestError(f"Observatory list not found: {obs_list}")
+
+    for raw_entry in obs_list.read_text(encoding="utf-8").splitlines():
+        entry = raw_entry.strip()
+        if not entry or entry.startswith("#"):
+            continue
+
+        observatory_path = (obs_dir / entry).resolve()
+        if not observatory_path.is_file():
+            raise SmokeTestError(
+                f"Observatory configuration '{entry}' referenced in {obs_list.name} "
+                f"was not found at {observatory_path}"
+            )
+
+        observatory_cfg = _parse_key_value_file(observatory_path)
+        detector_rel = observatory_cfg.get("DETECTOR")
+        if not detector_rel:
+            # Some observatories embed detector parameters directly.
+            continue
+
+        detector_path = (obs_dir / detector_rel).resolve()
+        if not detector_path.is_file():
+            raise SmokeTestError(
+                f"Detector file '{detector_rel}' referenced in {observatory_path.name} "
+                f"was not found at {detector_path}"
+            )
+
+        detector_cfg = _parse_key_value_file(detector_path)
+        psf_value = detector_cfg.get("PSFFILE", "").strip()
+        if not psf_value:
+            # Detector uses an analytic PSF; nothing to validate.
+            continue
+
+        psf_path = Path(psf_value)
+        if not psf_path.is_absolute():
+            psf_path = (REPO_ROOT / psf_value).resolve()
+        if not psf_path.is_file():
+            raise SmokeTestError(
+                f"PSF file '{psf_value}' referenced in detector {detector_path.name} "
+                f"was not found at {psf_path}"
+            )
+
+        try:
+            psf_bytes = psf_path.read_bytes()
+        except OSError as exc:
+            raise SmokeTestError(f"Unable to read PSF file {psf_path}: {exc}") from exc
+
+        try:
+            version, ivars, dvars, header_bytes, total_size = _read_psf_header(psf_bytes)
+        except struct.error as exc:
+            raise SmokeTestError(f"PSF file {psf_path} is not a valid binary PSF: {exc}") from exc
+
+        Nkern, nsub, psf_size, spsf_size, ipsf_size = ivars
+        pixscale, _, _, psfh = dvars
+
+        if version != 101:
+            raise SmokeTestError(
+                f"PSF file {psf_path} was produced with PSF class version {version}; "
+                "expected version 101. Regenerate it with the current software."
+            )
+
+        expected_nkern = _safe_int(detector_cfg.get("KERNSIZE"))
+        if expected_nkern is not None and Nkern != expected_nkern:
+            raise SmokeTestError(
+                f"PSF file {psf_path} reports Nkern={Nkern}, but detector {detector_path.name} "
+                f"expects KERNSIZE={expected_nkern}. Regenerate the PSF with matching kernel size."
+            )
+
+        expected_nsub = _safe_int(detector_cfg.get("SUBPIX"))
+        if expected_nsub is not None and nsub != expected_nsub:
+            raise SmokeTestError(
+                f"PSF file {psf_path} reports Nsub={nsub}, but detector {detector_path.name} "
+                f"expects SUBPIX={expected_nsub}. Regenerate the PSF with matching subpixel sampling."
+            )
+
+        expected_pixscale = _safe_float(detector_cfg.get("PIXELSCALE"))
+        if expected_pixscale is not None and not math.isclose(
+            pixscale, expected_pixscale, rel_tol=1e-8, abs_tol=1e-10
+        ):
+            raise SmokeTestError(
+                f"PSF file {psf_path} encodes PIXSCALE={pixscale}, but detector {detector_path.name} "
+                f"expects PIXELSCALE={expected_pixscale}. Regenerate the PSF to match the detector."
+            )
+
+        if expected_pixscale is not None and expected_nsub is not None:
+            expected_psfh = expected_pixscale / expected_nsub
+            if not math.isclose(psfh, expected_psfh, rel_tol=1e-8, abs_tol=1e-10):
+                raise SmokeTestError(
+                    f"PSF file {psf_path} encodes step size {psfh}, but PIXELSCALE/SUBPIX = {expected_psfh}. "
+                    "This usually indicates the PSF was generated with inconsistent inputs."
+                )
+
+        if expected_nkern is not None and expected_nsub is not None:
+            expected_psf_size = (2 * expected_nkern + 1) ** 2 * (expected_nsub ** 2)
+            if psf_size != expected_psf_size:
+                raise SmokeTestError(
+                    f"PSF file {psf_path} contains {psf_size} kernel samples, but detector {detector_path.name} "
+                    f"requires {(2 * expected_nkern + 1)}×{(2 * expected_nkern + 1)} "
+                    f"pixels with {expected_nsub}×{expected_nsub} subpixel sampling "
+                    f"({expected_psf_size} samples). Regenerate the PSF."
+                )
+
+            small_nkern = expected_nkern // 2
+            expected_spsf_size = (2 * small_nkern + 1) ** 2 * (expected_nsub ** 2)
+            if spsf_size != expected_spsf_size:
+                raise SmokeTestError(
+                    f"PSF file {psf_path} has {spsf_size} samples in its small-kernel array, "
+                    f"but detector {detector_path.name} expects {expected_spsf_size}."
+                )
+
+        expected_bytes = header_bytes + 8 * (psf_size + spsf_size + ipsf_size)
+        if total_size != expected_bytes:
+            raise SmokeTestError(
+                f"PSF file {psf_path} has size {total_size:,} bytes, but its header implies "
+                f"{expected_bytes:,} bytes. The file may be truncated or corrupted."
+            )
+
+        try:
+            rel_path = psf_path.relative_to(REPO_ROOT).as_posix()
+        except ValueError:
+            rel_path = psf_path.as_posix()
+        expected_hash = _CANONICAL_PSF_HASHES.get(rel_path)
+        if expected_hash:
+            digest = hashlib.sha256(psf_bytes).hexdigest()
+            if digest != expected_hash:
+                raise SmokeTestError(
+                    f"PSF file {psf_path} does not match the canonical binary (expected SHA256 {expected_hash}). "
+                    "Regenerate it with generateMoffatPSF or update the hash registry if the canonical PSF changes."
+                )
 
 
 def verify_sequence_has_observations(params: Dict[str, str]) -> None:
@@ -761,6 +968,7 @@ __all__ = [
     "verify_catalog_alignment", 
     "verify_catalog_columns",
     "verify_input_files_exist",
+    "verify_psf_files",
     "verify_nfilters_matches_catalogs",
     "verify_outputs",
     "verify_rates_file",

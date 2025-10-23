@@ -39,6 +39,7 @@ try:
         verify_binary_source_columns,
         verify_catalog_columns,
         verify_input_files_exist,
+        verify_psf_files,
         verify_nfilters_matches_catalogs,
         verify_rates_file,
         verify_sequence_has_observations,
@@ -220,16 +221,20 @@ def validate_with_smoke_test(param_file: Path) -> List[str]:
             verify_input_files_exist(params)
             print("   ✓ All input files found")
             
-            print("\n3. Checking required catalog columns...")
+            print("\n3. Validating detector PSF binaries...")
+            verify_psf_files(params)
+            print("   ✓ Detector PSF binaries match their detector settings")
+            
+            print("\n4. Checking required catalog columns...")
             verify_catalog_columns(params)
             print("   ✓ All required columns present")
             
-            print("\n4. Checking source/lens compatibility...")
+            print("\n5. Checking source/lens compatibility...")
             verify_source_lens_compatibility(params)
             print("   ✓ Valid source/lens pairs exist")
             print("   ✓ Distance values are reasonable")
             
-            print("\n5. Checking binary source requirements...")
+            print("\n6. Checking binary source requirements...")
             multiple_sources = params.get("MULTIPLE_SOURCES", "0").strip()
             if multiple_sources in ("1", "1.0"):
                 verify_binary_source_columns(params)
@@ -237,19 +242,19 @@ def validate_with_smoke_test(param_file: Path) -> List[str]:
             else:
                 print("   ⊘ Skipped (MULTIPLE_SOURCES not enabled)")
             
-            print("\n6. Checking NFILTERS matches catalog format...")
+            print("\n7. Checking NFILTERS matches catalog format...")
             verify_nfilters_matches_catalogs(params)
             print("   ✓ NFILTERS matches magnitude columns")
             
-            print("\n7. Checking weather file coverage...")
+            print("\n8. Checking weather file coverage...")
             verify_weather_coverage(params)
             print("   ✓ Weather file covers simulation duration")
             
-            print("\n8. Checking rates file validity...")
+            print("\n9. Checking rates file validity...")
             verify_rates_file(params)
             print("   ✓ Rates file parameters are valid")
             
-            print("\n9. Checking observing sequence has observations...")
+            print("\n10. Checking observing sequence has observations...")
             verify_sequence_has_observations(params)
             print("   ✓ Sequence file contains observations")
         

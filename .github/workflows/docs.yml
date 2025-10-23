@@ -2,9 +2,9 @@ name: Build Documentation
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, dev ]
+    branches: [ main ]
 
 jobs:
   build-docs:
@@ -32,7 +32,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: documentation
-        path: documentation/_build/html/
+        path: documentation/build/html/
         retention-days: 7
 
   deploy-docs:
@@ -62,4 +62,4 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./documentation/_build/html
+        publish_dir: ./documentation/build/html

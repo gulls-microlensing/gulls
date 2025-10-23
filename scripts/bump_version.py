@@ -204,13 +204,14 @@ def generate_release_notes_from_changelog(version):
             release_lines.append("")
             release_lines.append(f"**Release Date:** {date}")
             release_lines.append("")
-            # Determine release type based on version
-            if version.startswith(("3.", "2.0")):
-                release_lines.append("## Major Release")
-            elif version.endswith(".0"):
+            # Determine release type based on semantic version components
+            _, minor, patch = version.split(".")
+            if patch != "0":
+                release_lines.append("## Patch Release")
+            elif minor != "0":
                 release_lines.append("## Minor Release")
             else:
-                release_lines.append("## Patch Release")
+                release_lines.append("## Major Release")
             release_lines.append("")
         else:
             release_lines.append(line)

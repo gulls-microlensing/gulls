@@ -1,141 +1,197 @@
-# gulls
+# Gulls: Gravitational Microlensing Simulation Suite
 
-A microlensing simulator optimized for space-based microlensing
-surveys, but also supporting ground-based observatory simulations.   
+Gulls is a comprehensive simulation framework for modeling gravitational microlensing events with realistic observing conditions.
 
-## Requirements
+## Quick Start
 
-1. A C++ compiler with C++17 support (e.g. `g++`, `clang++`, `icpx`)
-1. A Fortran compiler (e.g. `gfortran`, `ifx`)
-1. [CMake ≥ 3.20](https://cmake.org/download/)
-1. [GNU Scientific Library](https://www.gnu.org/software/gsl/)
-1. [CFITSIO](https://heasarc.gsfc.nasa.gov/fitsio/)
-1. `ESPL.tbl` from the
-   [VBMicrolensing data directory](https://github.com/valboz/VBMicrolensing/tree/master/VBMicrolensing/data)
+### For Existing Users
+**Everything you know still works!** Your existing workflow, parameter files, and scripts are unchanged.
 
-> **Heads-up:** the repository now vendors the latest
-> `VBMicrolensingLibrary.cpp`/`.h`, so you no longer need a pre-built
-> `libVBB.a` to link against. You only need the `ESPL.tbl` lookup table.
+### For New Users
+Choose your preferred build method:
 
-## Building with CMake (recommended)
-
-1. Install the requirements above. On macOS you can use Homebrew:
-   ```bash
-   brew install cmake gsl cfitsio gcc
-   ```
-   On Linux, your package manager typically provides the same
-   dependencies.
-1. Clone this repository (and optionally place the
-   [`VBMicrolensing`](https://github.com/valboz/VBMicrolensing)
-   repository alongside it so you can copy `ESPL.tbl`).
-1. Copy `ESPL.tbl` into `gulls_mp/src/`.
-1. Configure and build:
-   ```bash
-   cmake -S gulls_mp -B gulls_mp/build
-   cmake --build gulls_mp/build
-   ```
-   This produces `gulls_std`, `gulls_croin`, and `gullsFish` in
-   `gulls_mp/build/bin/`.
-1. (Optional) Install the binaries anywhere you like with
-   `cmake --install build --prefix <path>`.
-
-## Running the executables
-
-After building, the executables are located in `build/bin/`:
-
+**Option 1: CMake (recommended)**
 ```bash
-# Run directly from the project root directory
-./build/bin/gulls_std <parameter_file> [options]
-./build/bin/gulls_croin <parameter_file> [options]
-./build/bin/gullsFish <parameter_file> [options]
-```
-
-Or add the build directory to your PATH for easier access:
-
-```bash
-export PATH="$PWD/build/bin:$PATH"
-gulls_std <parameter_file> [options]
-```
-
-Use the `-d` flag for debug output (repeat for more verbosity: `-d`, `-dd`, `-ddd`).
-
-### Selecting a build type
-
-By default the project configures in `Release` mode. To switch to
-`Debug` (with symbols and runtime checks) pass
-
-```bash
-cmake -S gulls_mp -B build -DCMAKE_BUILD_TYPE=Debug
-```
-
-### Compiler warnings
-
-By default, compiler warnings are **disabled** for a cleaner build output. 
-To enable warnings (useful when fixing code issues):
-
-```bash
-cmake -B build -DENABLE_WARNINGS=ON && cmake --build build
-```
-
-To disable warnings again:
-
-```bash
-cmake -B build -DENABLE_WARNINGS=OFF && cmake --build build
-```
-
-For quick rebuilds with the current warning setting, just use:
-
-```bash
+git clone <repository-url>
+cd gulls
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
 
-### Legacy Makefile workflow
+**Option 2: Traditional Makefile**
+```bash
+git clone <repository-url>
+cd gulls
+./configure.sh  # Required: sets up paths and environment
+make clean
+make
+```
 
-The historical Makefiles remain in `src/` for anyone who relies on the
-old process. They still expect a lot of manual setup (absolute paths,
-Intel compilers, etc.) and are **no longer recommended**. If you must
-use them, run `./configure.sh` to rewrite hard-coded paths and then
-`make <target>` inside `src/`.
+**Both methods produce identical executables!**
 
-> Known gaps: a handful of older targets reference Fortran sources such
-> as `findTrack.f`, `magTrack.f`, `extend.f`, and `readData.f` that are
-> not present in the repository. Only the `gulls_std`, `gulls_croin`,
-> and `gullsFish` executables currently build successfully.
+### Legacy Makefile Workflow
 
-## (Incomplete) Checklist/Troubleshooting for regular gulls runs
+The historical Makefiles remain in `src/` for anyone who relies on the old process. They still expect manual setup (absolute paths, environment variables, etc.) and are **no longer recommended** for new users.
 
-- When preparing a run it's a good idea to do a short run with 
-    ```
-    PRETTY_PICS=1
-    PRETTY_PICS_DIMENSIONS=128 #Or bigger if you'd like
-    OUTPUT_LC=1 #If this is less than 1, it represents a probability of output
-    OUTPUT_IMAGES=1
-    OUTPUT_ONALL=1
-    ```
-    This should produce the maximum amount of diagnostic
-    output. `OUTPUT_LC` determines the frequency with which lightcurves
-    are output; `OUTPUT_ONALL` will output every event generated, but if
-    set to zero, `OUTPUT_ONDET` will only output when a detection occurs
-    (definition of detection depends on the type of run). `OUTPUT_IMAGES`
-    saves images each time a lightcurve is output - one at peak
-    magnification, one at baseline for each filter. Inspect both the
-    images and the lightcurves. .det.lc files should show some level of
-    detectable microlensing event in the lightcurve, .all.lc may
-    not. Images should show a starfield, and depending on the peak
-    magnification, blinking between peak and base images should show the
-    microlensing event (requires Fpeak>~1.3 to be easily visible).
+> **Note**: Some older Makefile targets reference Fortran sources that are not present in the repository. Only the `gulls_std`, `gulls_croin`, and `gullsFish` executables currently build successfully.
 
-    - If the image is a white square, first make sure you select zscale in
-ds9, and if that doesn't reveal stars it might indicate the presence
-of bad magnitudes in the star, source, or lens catalog(s), or it's
-possible that you just got unlucky and had a super-bright star land in
-the image - the larger the PRETTY_PIC, the less likely it is that such
-a star will blow out the image. Try generating a very large pretty pic
-and see how many super-bright stars there are (they will look like
-white squares) -- too many of these and its probably worth looking at
-the color magnitude diagrams of the star lists to see that there's
-nothing weird in there. 
-- You can run with different levels of debug information by repeating -d flags
-    - If you get an message about no valid stars, check that you have
-	`NFILTERS` set correctly. 
+### Prerequisites
+- **C++17** compatible compiler (GCC, Clang, or MSVC)
+- **Fortran** compiler (gfortran recommended)
+- **CMake** 3.10+ (for CMake build) or **Make** (for traditional build)
+- **Python 3.7+** (for validation and testing - optional)
 
+### Run a Simulation
+```bash
+# Your existing workflow (unchanged)
+./bin/gulls_std.x -i parameter_file.prm -s 0 -f 0
+
+# Or with CMake build
+./build/bin/gulls_std.x -i parameter_file.prm -s 0 -f 0
+```
+
+### Optional: Validate Your Input Catalogs
+```bash
+# Check your input files before running (catches common errors)
+python scripts/validate_inputs.py parameter_file.prm
+```
+
+### Optional: Test the Installation
+```bash
+# Run automated tests to verify everything works
+python smoke_test/run_smoke_test.py --ci
+```
+
+## 🔧 Diagnostic Runs and Troubleshooting
+
+### Diagnostic Configuration
+
+For initial testing and debugging, use these settings in your parameter file:
+
+```bash
+PRETTY_PICS=1
+PRETTY_PICS_DIMENSIONS=128  # Or larger for better diagnostics
+OUTPUT_LC=1                 # Output every lightcurve
+OUTPUT_IMAGES=1             # Save baseline and peak images
+OUTPUT_ONALL=1              # Output all events (not just detections)
+```
+
+This produces maximum diagnostic output:
+- **Lightcurves** (`.lc` files): `.det.lc` shows detectable events, `.all.lc` shows all events
+- **Images**: One at peak magnification, one at baseline for each filter
+- **Debug information**: Use `-d` flags for increasing verbosity
+
+### Troubleshooting Common Issues
+
+**White square images in ds9:**
+1. Select "zscale" scaling in ds9
+2. If still white, check for bad magnitudes in star/source/lens catalogs
+3. Try larger `PRETTY_PICS_DIMENSIONS` (e.g., 512) to reduce impact of bright stars
+4. Inspect color-magnitude diagrams of catalogs for anomalies
+
+**"No valid fields were loaded":**
+- Check that `NFILTERS` matches your observatory configuration
+- Verify observatory files are in correct paths
+
+**Simulation hangs or times out:**
+- Check `LC_TIMEOUT` parameter (default 10 seconds may be too short for complex events)
+- Increase for challenging binary configurations (e.g., `LC_TIMEOUT=600`)
+- Review validation warnings about catalog issues
+
+**GSL fallback warnings:**
+- For production science, replace `src/classes/random.cpp` and `src/classes/zroots2.cpp` with licensed Numerical Recipes implementations
+- GSL fallbacks are for CI/testing only
+- **Binary releases include GSL fallbacks and are NOT suitable for production science**
+
+### Image Analysis
+
+Inspect images in ds9 using zscale to check for:
+- **Realistic starfields** - Should show proper stellar distribution
+- **Visible microlensing events** - Blink between peak and baseline images for F_peak > ~1.3
+- **Proper scaling** - No white squares or completely black images
+
+## 🆕 What's New (v2.0.0)
+
+**For existing users:** All your workflows, parameter files, and scripts work exactly the same!
+
+**New optional features:**
+- **Input validation** - Catch configuration errors before running simulations
+- **Comprehensive documentation** - Detailed guides at [Read the Docs](https://gulls.readthedocs.io)
+- **Automated testing** - CI runs tests automatically
+- **Better error messages** - Clear feedback when things go wrong
+- **Version management** - Automated releases with smart release notes (uses `RELEASE_NOTES.md` if present)
+
+**See [CONTRIBUTING.md](CONTRIBUTING.md) for a gradual adoption guide.**
+
+## What Gulls Does
+
+Gulls simulates gravitational microlensing events with:
+- **Single and binary sources/lenses**
+- **Realistic observing conditions** (weather, seeing, detector effects)
+- **Multiple observatories** and filter systems
+- **Astrometric and photometric** signal generation
+- **Detection statistics** and survey planning
+
+## Executables
+
+| Executable | Purpose |
+|------------|---------|
+| `gulls_std.x` | Standard microlensing simulation |
+| `gulls_croin.x` | Crowding analysis and detection |
+| `gullsFish.x` | Fisher matrix analysis |
+
+## Input Files
+
+Gulls requires several input files specified in your parameter file:
+
+- **Sources**: Star catalogs with positions, magnitudes, and properties
+- **Lenses**: Lens catalogs with masses, distances, and proper motions  
+- **Observatories**: Telescope configurations, filters, and observing sequences
+- **Starfields**: Background star distributions
+- **Weather**: Observing conditions and weather profiles
+
+See [PARAMETER_REFERENCE.md](PARAMETER_REFERENCE.md) for complete parameter documentation.
+
+## Validating Your Input Files
+
+Before running a simulation, validate your input catalogs to catch common issues:
+
+```bash
+python scripts/validate_inputs.py your_parameter_file.prm
+```
+
+This checks:
+- Required column headers in source and lens catalogs
+- Valid source/lens distance pairs (sources must be farther than lenses)
+- Reasonable distance ranges (positive, < 50 kpc, not NaN/Inf)
+- Binary source column requirements (when `MULTIPLE_SOURCES=1`)
+
+The validation uses the same checks as CI, catching issues before you start long simulations.
+
+## Examples
+
+The `smoke_test/` directory contains working examples:
+- `smoke_test/parameterfiles/` - Example parameter files
+- `smoke_test/assets/` - Sample input catalogs and configurations
+
+## Documentation
+
+- [Parameter Reference](PARAMETER_REFERENCE.md) - Complete parameter documentation
+- [Input File Formats](INPUT_FORMATS.md) - Catalog and configuration file specifications
+- [Examples](examples/) - Working example configurations
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Run smoke tests: `python smoke_test/run_smoke_test.py`
+4. Submit a pull request
+
+## License
+
+[License information]
+
+## Citation
+
+If you use Gulls in your research, please cite:
+[Citation information]

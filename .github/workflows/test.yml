@@ -1,0 +1,57 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [ main, dev, feature/documentation-and-testing ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        build_type: [Debug, Release]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Conda
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        auto-update-conda: true
+        python-version: 3.9
+    
+    - name: Install dependencies
+      shell: bash -l {0}
+      run: |
+        conda env create -f environment.yml
+        conda activate gulls
+        conda list
+    
+    - name: Configure CMake
+      shell: bash -l {0}
+      run: |
+        conda activate gulls
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+    
+    - name: Build
+      shell: bash -l {0}
+      run: |
+        conda activate gulls
+        cmake --build build --parallel
+    
+    - name: Run smoke tests (CI subset)
+      shell: bash -l {0}
+      run: |
+        conda activate gulls
+        python3 smoke_test/run_smoke_test.py --ci --exec-timeout 610
+    
+    - name: Upload test artifacts on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-outputs-${{ matrix.os }}-${{ matrix.build_type }}
+        path: smoke_test/output/
+        retention-days: 7

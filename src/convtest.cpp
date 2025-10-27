@@ -15,7 +15,7 @@ extern "C"
 
 void fisherMatrix(struct filekeywords* Paramfile, struct event *Event, struct obsfilekeywords World[], struct slcat *Sources, struct slcat *Lenses)
 {
-  char str[100];
+  char str[512];
 
   double m1, a;
   double xsCenter, ysCenter, rs, Gamma;

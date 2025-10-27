@@ -44,7 +44,7 @@ void printEpochs(struct obsfilekeywords World[], int obsidx)
 void writeHeader(struct filekeywords* Paramfile, struct event *Event, struct slcat* Sources, struct slcat* Lenses, ofstream& ofile)
 {
 
-  char paramstr[100];
+  char paramstr[512];
   //position and event data - +6+1 = 1
   ofile << "EventID" << " " << "SubRun" << " ";
   ofile << "Field" << " ";

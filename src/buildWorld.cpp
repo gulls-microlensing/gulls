@@ -52,8 +52,8 @@ void buildWorld(struct filekeywords *Paramfile, struct obsfilekeywords World[], 
   void collectingArea(struct obsfilekeywords World[], int numobservatories);
   string listfile;
   FILE* obslistfile_ptr; 
-  char str[100];
-  char tmp[100];
+  char str[512];
+  char tmp[512];
   string obsfile;
   int obsctr = 0;
   int allspace=1;
@@ -956,7 +956,7 @@ void loadObsSequence(struct obsfilekeywords World[], struct filekeywords *Paramf
 /*! Define error messages for buildWorld function */
 void buildWorldErr(int err, int line, const char msg[])
 {
-  char str[100];
+  char str[512];
   
   sprintf(str,"Error in buildWorld.c at line: %d", line); 
   fmtline(str,50,"(BuildWorldErr)");

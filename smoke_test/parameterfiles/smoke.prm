@@ -1,0 +1,13 @@
+### Smoke test parameter templates moved
+#
+# This file intentionally left as documentation. Use the
+# per-executable configurations located alongside this file:
+#   - smoke_std.prm
+#   - smoke_croin.prm
+#   - smoke_fish.prm
+# Each of those files points to the shared assets under
+# `smoke_test/assets/` and writes outputs into a dedicated
+# subdirectory inside `smoke_test/output/`.
+
+# This placeholder keeps legacy references from breaking but
+# does not contain a runnable configuration on its own.

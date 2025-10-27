@@ -1,0 +1,17 @@
+name: gulls
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.9
+  - cmake
+  - gsl
+  - cfitsio
+  - compilers
+  - matplotlib
+  - pandas
+  - astropy
+  - numpy
+  - sphinx
+  - sphinx_rtd_theme
+  - pip:
+      - VBMicrolensing

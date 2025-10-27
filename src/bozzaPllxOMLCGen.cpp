@@ -18,7 +18,7 @@
 
 void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, struct obsfilekeywords World[], struct slcat *Sources, struct slcat *Lenses, ofstream& logfile_ptr)
 {
-  char str[100];
+  char str[512];
 
   double xsCenter, ysCenter, rs, Gamma=0.4;
   double amp, eps=1.0e-3;

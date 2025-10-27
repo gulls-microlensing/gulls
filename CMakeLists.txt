@@ -137,3 +137,58 @@ add_gulls_executable(gullsFish.x
   "${SRC_DIR}/croinPlanet.cpp"
   "${CLASSES_DIR}/fisherinversion.cpp"
 )
+
+# PSF generation utility (standalone, minimal dependencies)
+add_executable(generateMoffat
+  "${SRC_DIR}/images/generateMoffat.cpp"
+)
+target_include_directories(generateMoffat
+  PRIVATE
+    "${SRC_DIR}"
+    "${HEADERS_DIR}"
+)
+
+# PSF text to binary converter
+add_executable(txt2fits
+  "${SRC_DIR}/images/txt2fits.cpp"
+)
+target_include_directories(txt2fits
+  PRIVATE
+    "${SRC_DIR}"
+    "${HEADERS_DIR}"
+    "${CLASSES_DIR}"
+)
+target_link_libraries(txt2fits
+  PRIVATE
+    gulls_core
+)
+
+# PSF precomputation utility (generates full PSF with subpixel sampling)
+add_executable(precompute_psf
+  "${SRC_DIR}/images/precompute_psf.cpp"
+)
+target_include_directories(precompute_psf
+  PRIVATE
+    "${SRC_DIR}"
+    "${HEADERS_DIR}"
+    "${CLASSES_DIR}"
+)
+target_link_libraries(precompute_psf
+  PRIVATE
+    gulls_core
+)
+
+# PSF generation utility using PSF class with Moffat function
+add_executable(generateMoffatPSF
+  "${SRC_DIR}/images/generateMoffatPSF.cpp"
+)
+target_include_directories(generateMoffatPSF
+  PRIVATE
+    "${SRC_DIR}"
+    "${HEADERS_DIR}"
+    "${CLASSES_DIR}"
+)
+target_link_libraries(generateMoffatPSF
+  PRIVATE
+    gulls_core
+)

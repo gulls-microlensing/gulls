@@ -38,9 +38,40 @@ src/classes/random.cpp
 src/classes/zroots2.cpp
 
 # VBM files
-src/ESPL.tbl
+# src/ESPL.tbl  # Now included in repo with Matt's permission
 
 # CMake artifacts
 build/
 build/CMakeFiles/
 build/.cmake
+
+# Smoke Tests
+smoke_test/output/
+smoke_test/__pycache__/
+smoke_test/parameterfiles/__generated__/
+
+# Documentation build artifacts
+docs/_build/
+docs/build/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation build artifacts
+documentation/_build/
+documentation/build/
+
+# PSF files (generated in workflow/smoke tests)
+smoke_test/assets/observatories/WFI_PSF.psf

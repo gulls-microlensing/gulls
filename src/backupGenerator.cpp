@@ -17,7 +17,7 @@ void backupGenerator(struct filekeywords* Paramfile, struct event *Event, struct
   //A slower, but potentially more robust lightcurve generator for use when
   //the main generator fails
 
-  char str[100];
+  char str[512];
 
   double m1, a;
   double xsCenter, ysCenter, rs, Gamma, z1, z2;

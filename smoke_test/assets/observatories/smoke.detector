@@ -1,0 +1,37 @@
+# Roman-like detector model for smoke testing
+# Based on Parameterfiles/general_input/filter_selection_AUG2025/roman0624_F087.detector
+# PSF: WFI_PSF_F184_SCA01_x2048_y2048_j008mas_os9_M0V_o.psf
+
+BIAS          1000.0
+READOUT       12.0
+THERMAL       0.003
+DARKCURRENT   0.002
+
+PIXELSCALE    0.11
+PSFFWHM       0.2
+PSFFILE       smoke_test/assets/observatories/WFI_PSF.psf
+PSFSCALE      0.01222222222
+KERNSIZE      145
+SUBPIX        9
+
+SYSTEMATIC    0.001
+BITDEPTH      679000
+FULLWELL      679000
+GAIN          1.0
+BLEEDING      0.0
+BLEEDACROSS   0.0
+
+DIAMETER      2.36
+BLOCKAGE      0.3
+
+ZEROMAG       26.2832
+ZEROFLUX      1.0
+
+BACKGROUND    999.0
+APERTURE      0.2
+
+PIXELSIZE     18.0
+CRFLUX        0.0
+
+# Preserve a reasonable floor for astrometric simulations
+ASTROMETRY_ERROR_FLOOR_MAS 0.1

@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to GULLS's documentation!
+Welcome to Gulls's documentation!
 =================================
 
 The gulls simulator is a powerfull tool for generating gravitational microlensing events. gulls simulates large numbers of individual microlensing events involving source and lens stars that are drawn from star catalogs produced by a population synthesis Galactic model. 
@@ -38,3 +38,16 @@ Table of Content
    run_simulations
    run_input
    run_output
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Reference:
+
+   parameter_reference
+   input_formats
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Contributing:
+
+   contributing

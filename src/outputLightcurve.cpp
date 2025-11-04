@@ -295,15 +295,14 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
   {
     static const char* baseCols[] = {
       "Simulation_time", "measured_relative_flux", "measured_relative_flux_error",
-      "true_relative_flux",  "true_relative_flux_error",    "observatory_code",
+      "true_relative_flux",  "true_relative_flux_error", "source1_relative_flux", "source2_relative_flux","observatory_code",
       "saturation_flag",     "best_single_lens_fit",
       "x_centroid", "x_centroid_error","y_centroid", "y_centroid_error",
       "true_x_centroid", "true_x_centroid_error","true_y_centroid", "true_y_centroid_error",
-      "parallax_shift_t",
-      "parallax_shift_u",    "BJD",                         "source_x",
-      "source_y",            "source2_x", "source2_y", "lens1_x",                     "lens1_y",
-      "lens2_x",             "lens2_y",                     "parallax_shift_x",
-      "parallax_shift_y",    "parallax_shift_z"
+      "parallax_shift_t","parallax_shift_u",    "BJD",                         
+      "source_x", "source_y",  "source2_x", "source2_y", 
+      "lens1_x",  "lens1_y", "lens2_x",  "lens2_y",                     
+      "parallax_shift_x", "parallax_shift_y", "parallax_shift_z"
     };
     int nBase = sizeof(baseCols) / sizeof(baseCols[0]);
     for(int i = 0; i < nBase; ++i) {
@@ -346,40 +345,68 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
     }
     // finish the header line
     fprintf(lcfile_ptr, "\n");
-  }
-  //output the lightcurve
-  int shiftedidx;
+    }
+    //output the lightcurve
+    int shiftedidx;
 
-  if(lcfile_ptr!=NULL && fileOpen==1)
+    if(lcfile_ptr!=NULL && fileOpen==1)
     {
-      for(i=0;i<Event->nepochs;i++)
-	{
+        for(i=0;i<Event->nepochs;i++)
+    {
 	  t=Event->epoch[i];
 	  obsidx=Event->obsidx[i];
 	  shiftedidx = i-Event->nepochsvec[obsidx];
-	  
-	  fprintf(lcfile_ptr, "%.12g %.8g %g %.12g %g %d %d %.8g %.8g %.8g %.8g %.8g %.8g %.8g %.8g %.8g %.6g %.6g %16.7f %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g ",
+		
+    // compute per-source relative fluxes (fractions of baseline)
+	  double src1_rel = 0.0, src2_rel = 0.0;
+	  int sc_local = -1;
+	  if(Event->scompanions.size()>0) sc_local = Event->scompanions[0];
+	  if(Paramfile->multiple_sources && sc_local>-1)
+	  {
+	      // filter for this epoch
+	      int filt = World[obsidx].filter;
+	      double r = 0.0;  // because it's zero is there's no companion?
+        // if the event structure has the flux ratio and it's the right size for the number of filters
+	      if(Event->scomp_fsofs1.size()>0 && Event->scomp_fsofs1[0].size()>filt)
+		    // r is the flux ratio for the current filter
+        r = Event->scomp_fsofs1[0][filt]; //fs2/fs1
+	      double FS1 = Event->fs[obsidx];  // is this fs1 or fs1+fs2? It's fs1
+	      double FS2 = FS1 * r;
+	      // Use stored magnifications from lightcurve generation
+	      src1_rel = FS1 * Event->Asrc1[i];
+	      src2_rel = FS2 * Event->Asrc2[i];
+	  }
+	  fprintf(lcfile_ptr, 
+      "%.12g %.8g %g " 
+      "%.12g %g %.8g %.8g %d" 
+      "%d %.8g "
+      "%.8g %.8g %.8g %.8g "
+      "%.8g %.8g %.8g %.8g "
+      "%.6g %.6g %16.7f "
+      "%.6g %.6g %.6g %.6g "
+      "%.6g %.6g %.6g %.6g "
+      "%.6g %.6g %.6g ",
 		  Event->epoch[i], Event->Aobs[i], Event->Aerr[i], //0, 1, 2
-		  Event->Atrue[i], Event->Atrueerr[i], obsidx, //3, 4, 5
-		  (Event->nosat[i]?0:1), Event->Afit[i], //6, 7
-		  Event->xc[i], Event->xcerr[i], Event->yc[i], Event->ycerr[i],
-		  Event->xctrue[i], Event->xctrueerr[i], Event->yctrue[i], Event->yctrueerr[i],
+		  Event->Atrue[i], Event->Atrueerr[i], src1_rel, src2_rel, obsidx, //3, 4, 5, 6, 7
+		  (Event->nosat[i]?0:1), Event->Afit[i], //8, 9
+		  Event->xc[i], Event->xcerr[i], Event->yc[i], Event->ycerr[i], //10, 11, 12, 13
+		  Event->xctrue[i], Event->xctrueerr[i], Event->yctrue[i], Event->yctrueerr[i], //14, 15, 16, 17
 		  //Event->pllx[obsidx].tshift(Event->jdepoch[i]), //8
 		  //Event->pllx[obsidx].ushift(Event->jdepoch[i]), //9
 		  //Event->pllx[obsidx].epochs[Event->jdepoch[i]],  //10
-		  Event->pllx[obsidx].tshift[shiftedidx],
-		  Event->pllx[obsidx].ushift[shiftedidx],
-		  Event->pllx[obsidx].epochs[shiftedidx],
-		  Event->xs[i], Event->ys[i],
-		  Event->xs2[i], Event->ys2[i],
-		  Event->xl1[i], Event->yl1[i],
-		  Event->xl2[i], Event->yl2[i], //14, 15, 16
+		  Event->pllx[obsidx].tshift[shiftedidx], //18
+		  Event->pllx[obsidx].ushift[shiftedidx], //19
+		  Event->pllx[obsidx].epochs[shiftedidx], //20
+		  Event->xs[i], Event->ys[i], //21, 22
+		  Event->xs2[i], Event->ys2[i], //23, 24
+		  Event->xl1[i], Event->yl1[i], //25, 26
+		  Event->xl2[i], Event->yl2[i], //27, 28
 		  //Event->pllx[obsidx].sslocation[Event->jdepoch[i]][0], //17
 		  //Event->pllx[obsidx].sslocation[Event->jdepoch[i]][1], //18
 		  //Event->pllx[obsidx].sslocation[Event->jdepoch[i]][2]); //19
-		  Event->pllx[obsidx].sslocation[shiftedidx][0], //17
-		  Event->pllx[obsidx].sslocation[shiftedidx][1], //18
-		  Event->pllx[obsidx].sslocation[shiftedidx][2]); //19
+		  Event->pllx[obsidx].sslocation[shiftedidx][0], //29
+		  Event->pllx[obsidx].sslocation[shiftedidx][1], //30
+		  Event->pllx[obsidx].sslocation[shiftedidx][2]); //31
 		    
 	  
 	  if(ndF>0)
@@ -464,9 +491,11 @@ void outputImages(struct event *Event, struct obsfilekeywords World[], struct sl
     }
   else
     {
-      tmp1 = "%s%s_%d_%d_%d",Paramfile->outputdir + Paramfile->run_name + "_"
-	+ to_string(Event->instance) + "_" + to_string(Paramfile->choosefield) + "_"
-	+  to_string(Event->id);
+      // Build the same base name as the other branch — avoid stray format literal and
+      // do not use the comma operator. Keep it as a plain concatenation.
+      tmp1 = Paramfile->outputdir + Paramfile->run_name + "_"
+        + to_string(Event->instance) + "_" + to_string(Paramfile->choosefield) + "_"
+        + to_string(Event->id);
     }
   basefname=tmp1;
 
@@ -474,13 +503,14 @@ void outputImages(struct event *Event, struct obsfilekeywords World[], struct sl
   for(int obsidx=0;obsidx<Paramfile->numobservatories;obsidx++)
     {
       if(Event->nepochsvec[obsidx+1]-Event->nepochsvec[obsidx]<=0) continue;
-      tmp1 += "." + to_string(obsidx) + "_";
+      // do not mutate tmp1/basefname; create a small suffix for this observation
+      string obs_suffix = "." + to_string(obsidx) + "_";
 
       filter = World[obsidx].filter;
 
       //first the baseline image
       imtype="base";
-      oname = basefname + tmp1 + imtype + extension + ".fits";
+      oname = basefname + obs_suffix + imtype + extension + ".fits";
 
       mag = Sources->mags[Event->source][filter];
 

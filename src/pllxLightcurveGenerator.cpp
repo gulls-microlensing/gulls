@@ -41,9 +41,9 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
      
     //if the event is saturated in each band, no need to calculate the lightcurve
     if(Event->nepochs==0 || Event->allsat)
-     {
-      return;
-     }
+    {
+        return;
+    }
     vector<int> idxshift;
     int shiftedidx;
 	const double timeout = Paramfile->lc_timeout;
@@ -55,16 +55,16 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
 
     //Calculate the lightcurve
     for (int idx = 0; idx < Event->nepochs; ++idx)
-      {
-					if (enforce_timeout)
-						{
-							time_t now = time(NULL);
-							if (difftime(now, starttime) > timeout)
-								{
-									timed_out = true;
-									break;
-								}
-						}
+    {
+		if (enforce_timeout)
+		{
+			time_t now = time(NULL);
+			if (difftime(now, starttime) > timeout)
+			{
+				timed_out = true;
+				break;
+			}
+		}
         obsidx = Event->obsidx[idx];
         shiftedidx=idx-idxshift[obsidx];
         double amp = 0.0;
@@ -72,28 +72,27 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
 	  {
             // Lightcurve is identical from observatory to observatory
             amp = Event->Atrue[shiftedidx];
-	  }
-	else
-	  {
+	  } else {
+
 	    double tt = (Event->epoch[idx] - Event->t0) / Event->tE_r;
             double uu = u0;
 
             if (Paramfile->pllxMultiplyer)
-	      {
+	        {
                 tt += Event->pllx[obsidx].tshift[shiftedidx];
                 uu += Event->pllx[obsidx].ushift[shiftedidx];
-	      }
+	        }
             Event->umin=min(Event->umin,qAdd(tt,uu));
             
 	    double xsCoM = tt * cosa - uu * sina + VBM_origin;
-            double ysCenter = tt * sina + uu * cosa;
+		double ysCenter = tt * sina + uu * cosa;
 
-            Event->xs[idx] = xsCoM;
-            Event->ys[idx] = ysCenter;
-            Event->xl1[idx] = VBM_origin;
-            Event->yl1[idx] = 0.0;
-            Event->xl2[idx] = VBM_origin + a;
-            Event->yl2[idx] = 0.0;
+		Event->xs[idx] = xsCoM;
+		Event->ys[idx] = ysCenter;
+		Event->xl1[idx] = VBM_origin;
+		Event->yl1[idx] = 0.0;
+		Event->xl2[idx] = VBM_origin + a;
+		Event->yl2[idx] = 0.0;
 	    Event->vbm->a1 = lim_gamma;
 	    amp = Event->vbm->BinaryMag2(a, q, xsCoM, ysCenter, rs);
 
@@ -102,42 +101,47 @@ void lightcurveGenerator(struct filekeywords* Paramfile, struct event *Event, st
 	    Event->vbm_therr[idx] = Event->vbm->therr;
 	    
 	    if(Paramfile->multiple_sources && Event->scompanions.size()>0)
-	      {
-		double xs2CoM, ys2Center;
-		double x2off = Event->scomp_s[0] * cos(Event->scomp_phase[0]*TO_RAD);
-		double y2off = Event->scomp_s[0] * sin(Event->scomp_phase[0]*TO_RAD) * cos(Event->scomp_inc[0]*TO_RAD);
-		xs2CoM = xsCoM + x2off * cos(Event->scomp_alpha[0]*TO_RAD) - y2off * sin(Event->scomp_alpha[0]*TO_RAD);
-		ys2Center = ysCenter + x2off * sin(Event->scomp_alpha[0]*TO_RAD) + y2off * cos(Event->scomp_alpha[0]*TO_RAD);
+	    {
+			double xs2CoM, ys2Center;
+			double x2off = Event->scomp_s[0] * cos(Event->scomp_phase[0]*TO_RAD);
+			double y2off = Event->scomp_s[0] * sin(Event->scomp_phase[0]*TO_RAD) * cos(Event->scomp_inc[0]*TO_RAD);
+			xs2CoM = xsCoM + x2off * cos(Event->scomp_alpha[0]*TO_RAD) - y2off * sin(Event->scomp_alpha[0]*TO_RAD);
+			ys2Center = ysCenter + x2off * sin(Event->scomp_alpha[0]*TO_RAD) + y2off * cos(Event->scomp_alpha[0]*TO_RAD);
 
-		double amp2 = Event->vbm->BinaryMag2(a, q, xs2CoM, ys2Center, Event->scomp_rs[0]);
-		Event->xs2[idx] = xs2CoM;
-		Event->ys2[idx] = ys2Center;
-	      
-		int filt = World[obsidx].filter;		
-		Event->Atrue[idx] = amp + Event->scomp_fsofs1[0][filt] * (amp2-1);
+			double amp2 = Event->vbm->BinaryMag2(a, q, xs2CoM, ys2Center, Event->scomp_rs[0]);
+			Event->xs2[idx] = xs2CoM;
+			Event->ys2[idx] = ys2Center;
 
-		//Put binary source astrometry here
-		//Event->xctrue[idx] = ;
-		//Event->yctrue[idx] = ;
+			// Store individual source magnifications
+			Event->Asrc1[idx] = amp;
+			Event->Asrc2[idx] = amp2;
+			
+			int filt = World[obsidx].filter;		
+			Event->Atrue[idx] = amp + Event->scomp_fsofs1[0][filt] * (amp2-1);
 
-	      }
-	    else
-	      {
-		Event->Atrue[idx] = amp;
+			//Put binary source astrometry here
+			//Event->xctrue[idx] = ;
+			//Event->yctrue[idx] = ;
 
+	    } else {
+		
+			Event->Asrc1[idx] = amp;
+			Event->Asrc2[idx] = 0.0; // No second source
+			Event->Atrue[idx] = amp;
 
 		//put single source astrometry here
 		//Event->xctrue[idx] = ;
 		//Event->yctrue[idx] = ;
-	      }
-	  }
+	      
+		}
+	}
 
-        // Keep track of highest magnification
-        if (amp > Event->Amax) {
-            Event->Amax = amp;
-            Event->peakpoint = idx;
-        }
+	// Keep track of highest magnification
+	if (amp > Event->Amax) {
+		Event->Amax = amp;
+		Event->peakpoint = idx;
     }
+}
 
 	if(timed_out)
 		{

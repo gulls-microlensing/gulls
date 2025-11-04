@@ -73,6 +73,78 @@ def _parse_header(lc_file: Path) -> Tuple[List[float] | None, List[float] | None
     return planet_vals, event_vals
 
 
+def _sanity_check_flux_conservation(
+    lc_file: Path,
+    true_flux: np.ndarray,
+    src1_flux: np.ndarray | None,
+    src2_flux: np.ndarray | None,
+    abs_tol: float = 1e-5,
+) -> None:
+    """Check that true_relative_flux ~= src1 + src2 + fblend for a couple of epochs.
+
+    This is a strict, non-configurable sanity check. It only runs when both
+    source1/source2 columns exist and the header contains #fs and #fs2. On
+    failure it raises SmokeTestError so CI/smoke-test runner fails.
+    """
+    # Only run when both source columns are present
+    if src1_flux is None or src2_flux is None:
+        return
+
+    fs = None
+    fs2 = None
+    with lc_file.open(encoding="utf-8") as header_reader:
+        for raw in header_reader:
+            if not raw.startswith("#"):
+                break
+            s = raw.strip()
+            if s.startswith("#fs:"):
+                parts = s.split()
+                if len(parts) >= 2:
+                    try:
+                        fs = float(parts[1])
+                    except Exception:
+                        fs = None
+            elif s.startswith("#fs2:"):
+                parts = s.split()
+                if len(parts) >= 2:
+                    try:
+                        fs2 = float(parts[1])
+                    except Exception:
+                        fs2 = None
+
+    if fs is None or fs2 is None:
+        # If header doesn't provide both, skip the strict check
+        return
+
+    fblend = 1.0 - float(fs) - float(fs2)
+
+    # choose representative epochs: first epoch and the epoch of peak true flux
+    try:
+        peak_idx = int(np.nanargmax(true_flux))
+    except Exception:
+        peak_idx = 0
+
+    indices = [0]
+    if peak_idx != 0:
+        indices.append(int(peak_idx))
+
+    for idx in indices:
+        try:
+            expected = float(src1_flux[idx]) + float(src2_flux[idx]) + float(fblend)
+            truev = float(true_flux[idx])
+        except Exception:
+            # If indexing or conversion fails, raise an error to surface the issue
+            raise SmokeTestError(
+                f"Flux sanity check failed: could not index/convert epoch {idx} in {lc_file.name}"
+            )
+        diff = abs(truev - expected)
+        if diff > abs_tol:
+            raise SmokeTestError(
+                f"Flux sanity check failed for {lc_file.name} at epoch index {idx}: true={truev:.8f}, expected={expected:.8f}, abs_diff={diff:.8e}, abs_tol={abs_tol}"
+            )
+
+
+
 def _plot_photometry_only(
     lc_file: Path,
     output_dir: Path,
@@ -81,6 +153,8 @@ def _plot_photometry_only(
     flux: np.ndarray,
     flux_err: np.ndarray,
     true_flux: np.ndarray | None,
+    src1_flux: np.ndarray | None = None,
+    src2_flux: np.ndarray | None = None,
 ) -> Path:
     fig, ax = plt.subplots(1, 1, figsize=(10, 6))
     fig.suptitle(title, fontsize=14)
@@ -105,6 +179,28 @@ def _plot_photometry_only(
             label="True",
             zorder=2,
             alpha=0.8,
+        )
+    if src1_flux is not None:
+        ax.plot(
+            time,
+            src1_flux,
+            "-",
+            linewidth=1.2,
+            color="magenta",
+            label="Source 1",
+            zorder=4,
+            alpha=0.7,
+        )
+    if src2_flux is not None:
+        ax.plot(
+            time,
+            src2_flux,
+            "-",
+            linewidth=1.2,
+            color="gold",
+            label="Source 2",
+            zorder=5,
+            alpha=0.7,
         )
     ax.axhline(1.0, color="k", linestyle="--", linewidth=1.5, label="Baseline", zorder=3)
     ax.set_xlabel("Time (days)")
@@ -408,6 +504,8 @@ def _render_astrometric_figure(
     true_y_vals: np.ndarray | None,
     meas_x: np.ndarray | None,
     meas_y: np.ndarray | None,
+    src1_flux: np.ndarray | None = None,
+    src2_flux: np.ndarray | None = None,
 ) -> Tuple[Path, Path | None]:
     fig, axes = plt.subplots(2, 2, figsize=(12, 10))
     fig.suptitle(title, fontsize=14)
@@ -437,6 +535,28 @@ def _render_astrometric_figure(
             label="True",
             zorder=2,
             alpha=0.8,
+        )
+    if src1_flux is not None:
+        ax_light.plot(
+            time,
+            src1_flux,
+            "-",
+            linewidth=1.2,
+            color="magenta",
+            label="Source 1",
+            zorder=4,
+            alpha=0.7,
+        )
+    if src2_flux is not None:
+        ax_light.plot(
+            time,
+            src2_flux,
+            "-",
+            linewidth=1.2,
+            color="gold",
+            label="Source 2",
+            zorder=5,
+            alpha=0.7,
         )
     ax_light.axhline(
         1.0,
@@ -695,6 +815,13 @@ def plot_lightcurves(
         if val is not None:
             astrometry_expected = str(val).strip().lower() not in {"0", "false", "off"}
 
+    # Determine whether MULTIPLE_SOURCES was requested in the parameter file.
+    multiple_sources_expected = False
+    if params:
+        ms = params.get("MULTIPLE_SOURCES")
+        if ms is not None:
+            multiple_sources_expected = str(ms).strip().lower() not in {"0", "false", "off"}
+
     for lc_file in lc_files:
         planet_vals, event_vals = _parse_header(lc_file)
         df = pd.read_csv(lc_file, sep=r"\s+", comment="#")
@@ -799,8 +926,23 @@ def plot_lightcurves(
                 f"Smoke test failed: astrometric columns missing in {lc_file.name}"
             )
 
+        # Extract source flux columns (optional for binary source events)
+        src1_flux = _optional_column("source1_relative_flux")
+        src2_flux = _optional_column("source2_relative_flux")
+
+        # If the parameter file did not request multiple sources, ignore any
+        # source1/source2 columns that may nevertheless appear in the output
+        # (prevents plotting Source 1/Source 2 when MULTIPLE_SOURCES isn't set).
+        if not multiple_sources_expected:
+            src1_flux = None
+            src2_flux = None
+
+        # Strict flux-conservation sanity check (non-configurable). Only run
+        # when multiple sources are expected and both columns are present.
+        _sanity_check_flux_conservation(lc_file, true_flux, src1_flux, src2_flux)
+
         if not has_astrom:
-            _plot_photometry_only(lc_file, output_dir, title, time, flux, flux_err, true_flux)
+            _plot_photometry_only(lc_file, output_dir, title, time, flux, flux_err, true_flux, src1_flux, src2_flux)
             continue
 
         true_N_mas = _require_column("true_N_centroid_mas")
@@ -945,6 +1087,8 @@ def plot_lightcurves(
             true_y_vals,
             meas_x,
             meas_y,
+            src1_flux,
+            src2_flux,
         )
 
         if astrometry_expected:

@@ -358,6 +358,8 @@ struct event{
   vector<double> Aobs;
   vector<double> Aerr;
   vector<double> Afit;
+    vector<double> Asrc1; //magnification of source 1
+  vector<double> Asrc2; //magnification of source 2
   vector<bool> nosat;      /*Is point unsaturated? */
   vector<double> backmag;
   vector<double> dF;

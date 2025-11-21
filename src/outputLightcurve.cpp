@@ -378,7 +378,7 @@ void outputLightcurve(struct event *Event, struct obsfilekeywords World[], struc
 	  }
 	  fprintf(lcfile_ptr, 
       "%.12g %.8g %g " 
-      "%.12g %g %.8g %.8g %d" 
+      "%.12g %g %.8g %.8g %d " 
       "%d %.8g "
       "%.8g %.8g %.8g %.8g "
       "%.8g %.8g %.8g %.8g "

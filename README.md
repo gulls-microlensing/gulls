@@ -1,5 +1,7 @@
 # gulls
 
+[![gitcgr](https://gitcgr.com/badge/gulls-microlensing/gulls.svg)](https://gitcgr.com/gulls-microlensing/gulls)
+
 A microlensing simulator optimized for space-based microlensing surveys.
 
 Warning: This repository is not yet fully operational due to our
